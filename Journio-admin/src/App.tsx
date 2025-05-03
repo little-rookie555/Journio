@@ -1,12 +1,15 @@
+import { router } from '@/router';
+import { ConfigProvider } from 'antd';
+import zhCN from 'antd/locale/zh_CN';
 import React from 'react';
-import './App.css';
+import { RouterProvider } from 'react-router-dom';
 
-function App(): React.ReactElement {
+const App: React.FC = () => {
   return (
-    <div className="app">
-      <h1>Journio-admin</h1>
-    </div>
+    <ConfigProvider locale={zhCN}>
+      <RouterProvider router={router} />
+    </ConfigProvider>
   );
-}
+};
 
 export default App;
