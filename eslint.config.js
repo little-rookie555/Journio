@@ -37,6 +37,7 @@ module.exports = [
       'react/react-in-jsx-scope': 'off',
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      '@typescript-eslint/no-explicit-any': 'off', // 添加这行来允许any类型
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },

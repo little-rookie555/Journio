@@ -1,3 +1,4 @@
+import AuthRoute from '@/components/AuthRoute';
 import MainLayout from '@/pages/Layout';
 import AuditList from '@/pages/audit';
 import Login from '@/pages/login';
@@ -10,15 +11,27 @@ export const router = createBrowserRouter([
   },
   {
     path: '/',
-    element: <MainLayout />,
+    element: (
+      <AuthRoute>
+        <MainLayout />
+      </AuthRoute>
+    ),
     children: [
       {
-        index: true, //默认加载
-        element: <Navigate to="/audit" replace />,
+        index: true,
+        element: (
+          <AuthRoute>
+            <Navigate to="/audit" replace />
+          </AuthRoute>
+        ),
       },
       {
         path: 'audit',
-        element: <AuditList />,
+        element: (
+          <AuthRoute>
+            <AuditList />
+          </AuthRoute>
+        ),
       },
     ],
   },
