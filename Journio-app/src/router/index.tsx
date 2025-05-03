@@ -1,0 +1,41 @@
+import Login from '@/pages/Login';
+import MyTravels from '@/pages/MyTravels';
+import Register from '@/pages/Register';
+import TravelDetail from '@/pages/TravelDetail';
+import TravelList from '@/pages/TravelList';
+import TravelPublish from '@/pages/TravelPublish';
+import { createBrowserRouter } from 'react-router-dom';
+import App from '../App';
+
+export const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <App />,
+    children: [
+      {
+        index: true,
+        element: <TravelList />,
+      },
+      {
+        path: 'my-travels',
+        element: <MyTravels />,
+      },
+      {
+        path: 'publish',
+        element: <TravelPublish />,
+      },
+      {
+        path: 'detail/:id',
+        element: <TravelDetail />,
+      },
+      {
+        path: 'login',
+        element: <Login />,
+      },
+      {
+        path: 'register',
+        element: <Register />,
+      },
+    ],
+  },
+]);
