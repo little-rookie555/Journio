@@ -1,7 +1,7 @@
 import MainLayout from '@/pages/Layout';
 import AuditList from '@/pages/audit';
 import Login from '@/pages/login';
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 export const router = createBrowserRouter([
   {
@@ -12,6 +12,10 @@ export const router = createBrowserRouter([
     path: '/',
     element: <MainLayout />,
     children: [
+      {
+        index: true, //默认加载
+        element: <Navigate to="/audit" replace />,
+      },
       {
         path: 'audit',
         element: <AuditList />,
