@@ -20,6 +20,23 @@ const TravelList: React.FC = () => {
 
   const hasMore = list.length < total;
 
+  // 将列表分成左右两列
+  const leftList = list.filter((_, index) => index % 2 === 0);
+  const rightList = list.filter((_, index) => index % 2 === 1);
+
+  const renderCard = (item: any) => (
+    <div key={item.id} className="travel-card" onClick={() => navigate(`/detail/${item.id}`)}>
+      <Image src={item.coverImage} className="travel-image" />
+      <div className="travel-info">
+        <h3 className="travel-title">{item.title}</h3>
+        <div className="author-info">
+          <Avatar src={item.author.avatar} />
+          <span className="author-name">{item.author.nickname}</span>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="travel-list">
       <SearchBar
@@ -33,23 +50,9 @@ const TravelList: React.FC = () => {
       {list.length === 0 && !loading ? (
         <Result status="info" title="暂无游记" description="快来分享你的旅行故事吧" />
       ) : (
-        <div className="travel-grid">
-          {list.map((item) => (
-            <div
-              key={item.id}
-              className="travel-card"
-              onClick={() => navigate(`/detail/${item.id}`)}
-            >
-              <Image src={item.coverImage} className="travel-image" />
-              <div className="travel-info">
-                <h3 className="travel-title">{item.title}</h3>
-                <div className="author-info">
-                  <Avatar src={item.author.avatar} />
-                  <span className="author-name">{item.author.nickname}</span>
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="masonry-grid">
+          <div className="masonry-column">{leftList.map(renderCard)}</div>
+          <div className="masonry-column">{rightList.map(renderCard)}</div>
         </div>
       )}
 
