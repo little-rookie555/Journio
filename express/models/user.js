@@ -40,6 +40,11 @@ const User = sequelize.define('User', {
     type: DataTypes.INTEGER,
     defaultValue: 1, // 1-正常，0-禁用
     allowNull: false
+  },
+  role: {
+    type: DataTypes.INTEGER,
+    defaultValue: 1, // 1-普通用户 2-审核人员 3-管理员
+    allowNull: false
   }
 }, {
   tableName: 'tb_user',

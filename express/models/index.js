@@ -1,10 +1,28 @@
 const sequelize = require('../config/db');
 const User = require('./user');
 const Trip = require('./trip');
+const TripReviewRecord = require('./tripReviewRecord');
 
 // 定义模型之间的关联关系
-User.hasMany(Trip, { foreignKey: 'userId' });
-Trip.belongsTo(User, { foreignKey: 'userId' });
+User.hasMany(Trip, { 
+  foreignKey: 'userId',
+  as: 'trips'  
+});
+Trip.belongsTo(User, { 
+  foreignKey: 'userId',
+  as: 'user'  
+});
+
+// 建立关联关系
+Trip.hasMany(TripReviewRecord, {
+  foreignKey: 'travelogue_id',
+  as: 'reviewRecords'
+});
+
+TripReviewRecord.belongsTo(Trip, {
+  foreignKey: 'travelogue_id',
+  as: 'trip'
+});
 
 // 同步所有模型到数据库
 const syncModels = async () => {
@@ -23,5 +41,5 @@ module.exports = {
   sequelize,
   User,
   Trip,
-  syncModels
+  TripReviewRecord
 };

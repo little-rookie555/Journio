@@ -11,7 +11,7 @@ const upload = multer({
       accessKeySecret: process.env.ACCESS_KEY_SECRET,
       bucket: process.env.BUCKET,
     },
-    destination: "public/images",
+    destination: "public/image",
   }),
 });
 

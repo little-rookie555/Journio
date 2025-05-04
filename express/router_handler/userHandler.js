@@ -6,7 +6,7 @@ const config = require('../config/config')
 // 获取用户基本信息
 exports.getUserInfo = async (req, res) => {
   const query = req.query
-  console.log(query)
+  // console.log(query.id)
   try {
     const user = await User.findByPk(query.id, {
       attributes: ['id', 'nick_name', 'phone', 'icon']
@@ -45,15 +45,16 @@ exports.updateUserInfo = async (req, res) => {
 
 // 注册新用户
 exports.registerUser = async (req, res) => {
-  // 获取客户端提交到服务器的用户信息
-  const userinfo = req.body
-  console.log(userinfo)
-  // 对用户名和密码进行合法性的校验
-  if (!userinfo.nick_name || !userinfo.password) {
-    return res.cc('用户名或密码不能为空！')
-  }
   
   try {
+    // 获取客户端提交到服务器的用户信息
+    const userinfo = req.body
+    console.log(userinfo)
+    // 对用户名和密码进行合法性的校验
+    if (!userinfo.nick_name || !userinfo.password) {
+      return res.cc('用户名或密码不能为空！')
+    }
+    
     // 查询用户名是否被占用
     const existUser = await User.findOne({ where: { nick_name: userinfo.nick_name } })
     
@@ -99,10 +100,13 @@ exports.loginUser = async (req, res) => {
     const compareResult = bcrypt.compareSync(userinfo.password, user.password);
     if (!compareResult) return res.cc('登录失败！密码错误');
 
+    // 判断用户是否被禁用
+    if (user.status === 0) return res.cc('登录失败！用户被禁用');
+
     // 在服务器端生成 Token 的字符串
     const userForToken = {
       id: user.id,
-      nick_name: user.nick_name,
+      role: user.role,
     };
     
     // 对用户的信息进行加密，生成 Token 字符串
@@ -119,3 +123,13 @@ exports.loginUser = async (req, res) => {
     res.cc(error);
   }
 }
+
+// 退出
+exports.logoutUser = async (req, res) => {
+  try {
+    // TODO: 增加黑名单操作 退出后先将用户加入黑名单
+    res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to logout" });
+  }
+};

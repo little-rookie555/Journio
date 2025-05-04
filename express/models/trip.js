@@ -3,74 +3,83 @@ const sequelize = require('../config/db');
 
 const Trip = sequelize.define('Trip', {
   id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.BIGINT.UNSIGNED,
     primaryKey: true,
-    autoIncrement: true
+    autoIncrement: true,
+    comment: '主键'
+  },
+  user_id: { 
+    type: DataTypes.BIGINT.UNSIGNED, 
+    allowNull: false,
+    field: 'user_id',
+    comment: '用户id'
   },
   title: { 
     type: DataTypes.STRING, 
-    allowNull: false 
+    allowNull: false,
+    comment: '标题'
   },
-  content: { 
-    type: DataTypes.TEXT, 
-    allowNull: false 
-  },
-  createTime: { 
-    type: DataTypes.DATE, 
-    defaultValue: DataTypes.NOW 
-  },
-  updateTime: { 
-    type: DataTypes.DATE, 
-    defaultValue: DataTypes.NOW 
-  },
-  userId: { 
-    type: DataTypes.STRING, 
-    allowNull: false 
+  status: { 
+    type: DataTypes.TINYINT, 
+    allowNull: false,
+    defaultValue: 0,
+    comment: '审核状态（0：待审查，1：通过，2：拒绝）'
   },
   images: { 
-    type: DataTypes.TEXT, 
-    defaultValue: '[]',
+    type: DataTypes.STRING(2048), 
+    allowNull: false,
+    defaultValue: '',
+    comment: '探店的照片，最多9张，多张以","隔开',
     get() {
       const rawValue = this.getDataValue('images');
-      return rawValue ? JSON.parse(rawValue) : [];
+      return rawValue ? rawValue.split(',') : [];
     },
     set(value) {
-      this.setDataValue('images', JSON.stringify(value || []));
+      if (Array.isArray(value)) {
+        this.setDataValue('images', value.join(','));
+      } else {
+        this.setDataValue('images', value || '');
+      }
     }
   },
-  // 审核状态：wait-待审核，pass-审核通过，reject-审核拒绝
-  auditStatus: { 
-    type: DataTypes.STRING, 
-    defaultValue: "wait" 
+  video_url: {
+    type: DataTypes.STRING(2048),
+    allowNull: true,
+    field: 'video_url',
+    comment: '视频链接'
   },
-  // 审核时间
-  auditTime: { 
-    type: DataTypes.DATE,
-    allowNull: true
+  content: { 
+    type: DataTypes.STRING(2048), 
+    allowNull: false,
+    comment: '文字描述'
   },
-  // 审核人
-  auditor: { 
-    type: DataTypes.STRING,
-    allowNull: true
+  liked: {
+    type: DataTypes.INTEGER.UNSIGNED,
+    allowNull: true,
+    defaultValue: 0,
+    comment: '点赞数量'
   },
-  // 删除原因
-  deleteReason: { 
-    type: DataTypes.STRING,
-    allowNull: true
+  comments: {
+    type: DataTypes.INTEGER.UNSIGNED,
+    allowNull: true,
+    comment: '评论数量'
   },
-  // 逻辑删除标识
-  isDeleted: { 
-    type: DataTypes.BOOLEAN, 
-    defaultValue: false 
+  create_time: { 
+    type: DataTypes.DATE, 
+    defaultValue: DataTypes.NOW,
+    field: 'create_time',
+    comment: '创建时间'
   },
-  // 拒绝原因
-  rejectReason: { 
-    type: DataTypes.STRING,
-    allowNull: true
+  update_time: { 
+    type: DataTypes.DATE, 
+    defaultValue: DataTypes.NOW,
+    field: 'update_time',
+    comment: '更新时间'
   }
 }, {
-  tableName: 'trips',
-  timestamps: false
+  tableName: 'tb_blog',
+  timestamps: false,
+  underscored: true // 使用下划线命名法
 });
 
 module.exports = Trip;
