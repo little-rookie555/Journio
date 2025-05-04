@@ -1,0 +1,82 @@
+.register {
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+  display: flex;
+  flex-direction: column;
+
+  .nav-bar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: solid 1px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .register-form {
+    flex: 1;
+    margin: 20px auto;
+    width: calc(100% - 32px);
+    max-width: 400px;
+    background: #fff;
+    padding: 24px 20px;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+
+    .logo-container {
+      text-align: center;
+      // margin-bottom: 12px;
+
+      .logo {
+        width: 160px;
+        height: auto;
+        margin: 0 auto;
+      }
+    }
+
+    :global(.adm-form-item) {
+      margin-bottom: 24px;
+
+      :global(.adm-list-item-content) {
+        padding: 0;
+      }
+    }
+
+    :global(.adm-input) {
+      --font-size: 16px;
+      padding: 12px 0;
+    }
+
+    :global(.adm-form-item-label) {
+      font-size: 15px;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    :global(.adm-button) {
+      height: 44px;
+      font-size: 16px;
+      font-weight: 500;
+      border-radius: 8px;
+    }
+
+    .register-footer {
+      margin-top: 24px;
+      text-align: center;
+      color: #666;
+      font-size: 15px;
+
+      a {
+        color: #1677ff;
+        margin-left: 6px;
+        font-weight: 500;
+        text-decoration: none;
+
+        &:active {
+          opacity: 0.8;
+        }
+      }
+    }
+  }
+}
