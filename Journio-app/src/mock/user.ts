@@ -15,6 +15,11 @@ export interface UserInfo {
   createTime: string;
 }
 
+export interface UserLoginParams {
+  username: string;
+  password: string;
+}
+
 // 注册接口
 Mock.mock('/api/user/register', 'post', (options: any) => {
   const params = JSON.parse(options.body) as UserRegisterParams;
@@ -36,5 +41,30 @@ Mock.mock('/api/user/register', 'post', (options: any) => {
       avatar: params.avatar || Mock.Random.image('100x100'),
       createTime: Mock.Random.datetime(),
     },
+  };
+});
+
+// 登录接口
+Mock.mock('/api/user/login', 'post', (options: any) => {
+  const params = JSON.parse(options.body) as UserLoginParams;
+
+  // 模拟登录验证
+  if (params.username === 'admin' && params.password === '123456') {
+    return {
+      code: 200,
+      data: {
+        id: 1001,
+        username: 'admin',
+        nickname: '管理员',
+        avatar: Mock.Random.image('100x100'),
+        createTime: Mock.Random.datetime(),
+        token: 'mock-token-' + Mock.Random.string('lower', 32),
+      },
+    };
+  }
+
+  return {
+    code: 401,
+    message: '用户名或密码错误',
   };
 });
