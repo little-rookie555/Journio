@@ -33,7 +33,7 @@ service.interceptors.response.use(
       });
       return Promise.reject(new Error(res.message || 'Error'));
     }
-    return res.data;
+    return res;
   },
   (error) => {
     if (error.response?.status === 401) {
