@@ -107,3 +107,21 @@ Mock.mock('/api/travel/publish', 'post', (options: any) => {
     data: travel,
   };
 });
+
+// 游记详情接口
+Mock.mock(/\/api\/travel\/detail\/\d+/, 'get', (options) => {
+  const id = Number(options.url.split('/').pop());
+  const travel = mockTravelList.find((item: any) => item.id === id);
+
+  if (!travel) {
+    return {
+      code: 404,
+      message: '游记不存在',
+    };
+  }
+
+  return {
+    code: 200,
+    data: travel,
+  };
+});

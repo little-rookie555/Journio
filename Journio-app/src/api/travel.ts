@@ -27,3 +27,8 @@ export const publishTravel = (
   console.log(params);
   return request.post('/travel/publish', params);
 };
+
+// 获取游记详情
+export const getTravelDetail = (id: number): Promise<{ code: number; data: TravelItem }> => {
+  return request.get(`/travel/detail/${id}`);
+};
