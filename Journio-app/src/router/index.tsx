@@ -1,3 +1,4 @@
+import { AuthRoute } from '@/components/AuthRoute';
 import Layout from '@/pages/Layout';
 import Login from '@/pages/Login';
 import MyTravels from '@/pages/MyTravels';
@@ -26,11 +27,19 @@ export const router = createBrowserRouter([
       },
       {
         path: 'my-travels',
-        element: <MyTravels />,
+        element: (
+          <AuthRoute>
+            <MyTravels />
+          </AuthRoute>
+        ),
       },
       {
         path: 'publish',
-        element: <TravelPublish />,
+        element: (
+          <AuthRoute>
+            <TravelPublish />
+          </AuthRoute>
+        ),
       },
       {
         path: 'detail/:id',
