@@ -70,3 +70,40 @@ Mock.mock(/\/api\/travel\/list.*/, 'get', (options) => {
     },
   };
 });
+
+export interface TravelPublishParams {
+  title: string;
+  content: string;
+  coverImage: string;
+  images: string[];
+  authorId: number;
+  authorNickname: string;
+  authorAvatar: string;
+}
+
+// 发布游记接口
+Mock.mock('/api/travel/publish', 'post', (options: any) => {
+  const params = JSON.parse(options.body) as TravelPublishParams;
+
+  const travel: TravelItem = {
+    id: Mock.Random.integer(1000, 9999),
+    title: params.title,
+    content: params.content,
+    coverImage: params.coverImage,
+    images: params.images,
+    author: {
+      id: params.authorId || 1001, // 使用传入的用户ID或默认值
+      nickname: params.authorNickname || '管理员',
+      avatar: params.authorAvatar || Mock.Random.image('100x100'),
+    },
+    status: 0,
+    createTime: Mock.Random.datetime('yyyy-MM-dd HH:mm:ss'),
+  };
+
+  mockTravelList.unshift(travel);
+
+  return {
+    code: 200,
+    data: travel,
+  };
+});
