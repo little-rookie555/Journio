@@ -32,3 +32,13 @@ export const publishTravel = (
 export const getTravelDetail = (id: number): Promise<{ code: number; data: TravelItem }> => {
   return request.get(`/travel/detail/${id}`);
 };
+
+// 获取用户游记列表
+export const getUserTravels = (userId: number): Promise<{ code: number; data: TravelItem[] }> => {
+  return request.get(`/travel/user/${userId}`);
+};
+
+// 删除游记
+export const deleteTravel = (id: number): Promise<{ code: number }> => {
+  return request.delete(`/travel/${id}`);
+};

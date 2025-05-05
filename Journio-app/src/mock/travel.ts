@@ -125,3 +125,28 @@ Mock.mock(/\/api\/travel\/detail\/\d+/, 'get', (options) => {
     data: travel,
   };
 });
+
+// 获取用户游记列表
+Mock.mock(/\/api\/travel\/user\/\d+/, 'get', (options) => {
+  const userId = Number(options.url.split('/').pop());
+  const userTravels = mockTravelList.filter((item: any) => item.author.id === userId);
+
+  return {
+    code: 200,
+    data: userTravels,
+  };
+});
+
+// 删除游记
+Mock.mock(/\/api\/travel\/\d+/, 'delete', (options) => {
+  const id = Number(options.url.split('/').pop());
+  const index = mockTravelList.findIndex((item: any) => item.id === id);
+
+  if (index !== -1) {
+    mockTravelList.splice(index, 1);
+  }
+
+  return {
+    code: 200,
+  };
+});
