@@ -1,14 +1,45 @@
-import { publishTravel } from '@/api/travel';
-import { Button, Form, ImageUploader, Input, NavBar, TextArea, Toast } from 'antd-mobile';
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { getTravelDetail, publishTravel, updateTravel } from '@/api/travel';
 import { useUserStore } from '@/store/user';
+import { Button, Form, ImageUploader, Input, NavBar, TextArea, Toast } from 'antd-mobile';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import './index.scss';
 
 const TravelPublish: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const { userInfo } = useUserStore();
+  const [searchParams] = useSearchParams();
+  const [form] = Form.useForm();
+  const editId = searchParams.get('edit');
+
+  useEffect(() => {
+    const fetchTravelDetail = async () => {
+      if (!editId) return;
+
+      try {
+        setLoading(true);
+        const res = await getTravelDetail(Number(editId));
+        if (res.code === 200) {
+          // 设置表单初始值
+          form.setFieldsValue({
+            title: res.data.title,
+            content: res.data.content,
+            images: res.data.images.map((url) => ({ url })),
+          });
+        }
+      } catch {
+        Toast.show({
+          icon: 'fail',
+          content: '获取游记详情失败',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTravelDetail();
+  }, [editId, form]);
 
   const onFinish = async (values: any) => {
     try {
@@ -22,25 +53,38 @@ const TravelPublish: React.FC = () => {
       }
 
       setLoading(true);
-      const res = await publishTravel({
+      const travelData = {
         ...values,
         images: values.images.map((item: any) => item.url),
         coverImage: values.images[0]?.url || '',
         authorId: userInfo?.id,
         authorNickname: userInfo?.nickname,
         authorAvatar: userInfo?.avatar,
-      });
+      };
+
+      let res;
+      if (editId) {
+        // 编辑模式
+        res = await updateTravel(Number(editId), travelData);
+      } else {
+        // 发布模式
+        res = await publishTravel(travelData);
+      }
+
       if (res.code === 200) {
         Toast.show({
           icon: 'success',
-          content: '发布成功',
+          content: editId ? '更新成功' : '发布成功',
         });
         navigate('/');
       }
     } catch (error: any) {
       Toast.show({
         icon: 'fail',
-        content: error?.response?.data?.message || error?.message || '发布失败，请稍后重试',
+        content:
+          error?.response?.data?.message ||
+          error?.message ||
+          (editId ? '更新失败，请稍后重试' : '发布失败，请稍后重试'),
       });
     } finally {
       setLoading(false);
@@ -50,15 +94,16 @@ const TravelPublish: React.FC = () => {
   return (
     <div className="travel-publish">
       <NavBar onBack={() => navigate(-1)} className="nav-bar">
-        发布游记
+        {editId ? '编辑游记' : '发布游记'}
       </NavBar>
       <div className="publish-form">
         <Form
+          form={form}
           layout="vertical"
           onFinish={onFinish}
           footer={
             <Button block type="submit" color="primary" loading={loading}>
-              发布
+              {editId ? '保存' : '发布'}
             </Button>
           }
         >

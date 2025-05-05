@@ -92,7 +92,7 @@ Mock.mock('/api/travel/publish', 'post', (options: any) => {
     coverImage: params.coverImage,
     images: params.images,
     author: {
-      id: params.authorId || 1001, // 使用传入的用户ID或默认值
+      id: params.authorId || 1001,
       nickname: params.authorNickname || '管理员',
       avatar: params.authorAvatar || Mock.Random.image('100x100'),
     },
@@ -105,6 +105,35 @@ Mock.mock('/api/travel/publish', 'post', (options: any) => {
   return {
     code: 200,
     data: travel,
+  };
+});
+
+// 更新游记接口
+Mock.mock(/\/api\/travel\/update\/\d+/, 'put', (options: any) => {
+  const id = Number(options.url.split('/').pop());
+  const params = JSON.parse(options.body) as TravelPublishParams;
+
+  const index = mockTravelList.findIndex((item: any) => item.id === id);
+
+  if (index === -1) {
+    return {
+      code: 404,
+      message: '游记不存在',
+    };
+  }
+
+  // 更新游记内容
+  mockTravelList[index] = {
+    ...mockTravelList[index],
+    title: params.title,
+    content: params.content,
+    coverImage: params.coverImage,
+    images: params.images,
+  };
+
+  return {
+    code: 200,
+    data: mockTravelList[index],
   };
 });
 
