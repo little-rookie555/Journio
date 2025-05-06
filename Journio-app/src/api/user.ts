@@ -1,4 +1,4 @@
-import { UserInfo, UserLoginParams, UserRegisterParams } from '@/mock/user';
+import { UserInfo, UserLoginParams, UserRegisterParams, UserUpdateParams } from '@/mock/user';
 import request from '@/utils/request';
 
 // 用户注册
@@ -14,4 +14,11 @@ export const login = (
   params: UserLoginParams,
 ): Promise<{ code: number; data: UserInfo & { token: string }; message?: string }> => {
   return request.post('/user/login', params);
+};
+
+// 更新用户信息
+export const updateUserInfo = (
+  params: UserUpdateParams,
+): Promise<{ code: number; data: UserInfo; message?: string }> => {
+  return request.put('/user/update', params);
 };

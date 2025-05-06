@@ -20,6 +20,11 @@ export interface UserLoginParams {
   password: string;
 }
 
+export interface UserUpdateParams {
+  nickname: string;
+  avatar?: string;
+}
+
 // 注册接口
 Mock.mock('/api/user/register', 'post', (options: any) => {
   const params = JSON.parse(options.body) as UserRegisterParams;
@@ -66,5 +71,22 @@ Mock.mock('/api/user/login', 'post', (options: any) => {
   return {
     code: 401,
     message: '用户名或密码错误',
+  };
+});
+
+// 更新用户信息接口
+Mock.mock('/api/user/update', 'put', (options: any) => {
+  const params = JSON.parse(options.body) as UserUpdateParams;
+  
+  return {
+    code: 200,
+    data: {
+      id: 1001,
+      username: 'admin',
+      nickname: params.nickname,
+      avatar: params.avatar || Mock.Random.image('100x100'),
+      createTime: Mock.Random.datetime(),
+    },
+    message: '更新成功',
   };
 });

@@ -25,6 +25,22 @@
         font-size: 14px;
         color: #666;
       }
+      .profile-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+    }
+  }
+  .edit-profile-popup {
+    padding: 16px;
+    
+    .adm-form {
+      --prefix-width: 60px;
+
+      .adm-image-uploader {
+        --cell-size: 80px;
+      }
     }
   }
 

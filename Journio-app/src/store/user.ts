@@ -1,5 +1,5 @@
-import { login } from '@/api/user';
-import { UserInfo } from '@/mock/user';
+import { login, updateUserInfo } from '@/api/user';
+import { UserInfo, UserUpdateParams } from '@/mock/user';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -11,6 +11,7 @@ interface UserState {
   setToken: (token: string) => void;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
+  updateInfo: (params: UserUpdateParams) => Promise<void>;
 }
 
 export const useUserStore = create<UserState>()(
@@ -42,6 +43,22 @@ export const useUserStore = create<UserState>()(
 
       logout: () => {
         set({ userInfo: null, token: '' });
+      },
+      
+      updateInfo: async (params) => {
+        set({ loading: true });
+        try {
+          const res = await updateUserInfo(params);
+          if (res.code === 200) {
+            set({
+              userInfo: res.data,
+            });
+          } else {
+            throw new Error(res.message);
+          }
+        } finally {
+          set({ loading: false });
+        }
       },
     }),
     {
