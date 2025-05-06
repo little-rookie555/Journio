@@ -48,6 +48,7 @@
       font-size: 16px;
       line-height: 1.6;
       margin-bottom: 20px;
+      padding: 20px;
     }
 
     .image-list {
@@ -69,5 +70,44 @@
     padding: 20px;
     text-align: center;
     color: #999;
+  }
+
+  .content {
+    padding: 16px;
+    line-height: 1.6;
+    font-size: 15px;
+    color: #333;
+
+    // 富文本内容样式
+    h1 {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 20px 0 12px;
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 16px 0 10px;
+    }
+
+    p {
+      margin: 12px 0;
+    }
+
+    ul, ol {
+      padding-left: 24px;
+      margin: 12px 0;
+    }
+
+    li {
+      margin: 8px 0;
+    }
+
+    // 确保内容不会溢出容器
+    img {
+      max-width: 100%;
+      height: auto;
+    }
   }
 }

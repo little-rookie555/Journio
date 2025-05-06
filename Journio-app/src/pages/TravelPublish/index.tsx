@@ -1,6 +1,8 @@
 import { getTravelDetail, publishTravel, updateTravel } from '@/api/travel';
 import { useUserStore } from '@/store/user';
-import { Button, Form, ImageUploader, Input, NavBar, TextArea, Toast } from 'antd-mobile';
+import { Button, Form, ImageUploader, Input, NavBar, Toast } from 'antd-mobile';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.bubble.css';  // 替换 snow 主题
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './index.scss';
@@ -12,6 +14,15 @@ const TravelPublish: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [form] = Form.useForm();
   const editId = searchParams.get('edit');
+  const [content, setContent] = useState('');
+
+  const modules = {
+    toolbar: [
+      [{ 'header': '1' }, { 'header': '2' },
+        'bold', 'underline',
+        { 'list': 'ordered'}, { 'list': 'bullet' }],  // 直接配置 h1, h2 标题按钮
+    ]
+  };
 
   useEffect(() => {
     const fetchTravelDetail = async () => {
@@ -21,12 +32,11 @@ const TravelPublish: React.FC = () => {
         setLoading(true);
         const res = await getTravelDetail(Number(editId));
         if (res.code === 200) {
-          // 设置表单初始值
           form.setFieldsValue({
             title: res.data.title,
-            content: res.data.content,
             images: res.data.images.map((url) => ({ url })),
           });
+          setContent(res.data.content);
         }
       } catch {
         Toast.show({
@@ -55,6 +65,7 @@ const TravelPublish: React.FC = () => {
       setLoading(true);
       const travelData = {
         ...values,
+        content: content,
         images: values.images.map((item: any) => item.url),
         coverImage: values.images[0]?.url || '',
         authorId: userInfo?.id,
@@ -110,12 +121,14 @@ const TravelPublish: React.FC = () => {
           <Form.Item name="title" label="标题" rules={[{ required: true, message: '请输入标题' }]}>
             <Input placeholder="请输入游记标题" />
           </Form.Item>
-          <Form.Item
-            name="content"
-            label="正文"
-            rules={[{ required: true, message: '请输入正文' }]}
-          >
-            <TextArea placeholder="请输入游记正文" rows={10} maxLength={5000} showCount />
+          <Form.Item label="正文" rules={[{ required: true, message: '请输入正文' }]}>
+            <ReactQuill 
+              theme="bubble"
+              value={content}
+              onChange={setContent}
+              modules={modules}
+              placeholder="请输入游记正文"
+            />
           </Form.Item>
           <Form.Item
             name="images"
@@ -126,7 +139,6 @@ const TravelPublish: React.FC = () => {
               multiple
               maxCount={9}
               upload={async (file) => {
-                // 这里模拟上传，实际项目中需要替换为真实的上传接口
                 return {
                   url: URL.createObjectURL(file),
                 };

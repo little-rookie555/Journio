@@ -51,5 +51,35 @@
       font-weight: 500;
       margin-top: 24px;
     }
+
+    .quill {
+
+      // 编辑区域样式
+      .ql-container {
+        width: 100%;
+        min-height: 200px;
+        font-size: 14px;
+        
+        .ql-editor {
+          width: 100%;
+          max-width: 100%;  // 确保不会超出容器
+          box-sizing: border-box;  // 确保padding不会导致超出
+          padding: 12px;
+          white-space: pre-wrap;
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+          overflow-x: hidden;  // 防止水平滚动
+        }
+      }
+
+      // 确保编辑器内容不会溢出容器
+      .ql-bubble {
+        .ql-editor {
+          padding: 12px;
+          max-width: 100%;
+          box-sizing: border-box;
+        }
+      }
+    }
   }
 }

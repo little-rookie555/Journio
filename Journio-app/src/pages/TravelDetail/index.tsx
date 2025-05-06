@@ -1,6 +1,7 @@
 import { getTravelDetail } from '@/api/travel';
 import { TravelItem } from '@/mock/travel';
 import { Image, NavBar, Toast, Swiper } from 'antd-mobile';
+import DOMPurify from 'dompurify';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import './index.scss';
@@ -41,6 +42,11 @@ const TravelDetail: React.FC = () => {
     return <div className="empty">暂无游记数据</div>;
   }
 
+  const sanitizedContent = travel.content ? DOMPurify.sanitize(travel.content, {
+    ALLOWED_TAGS: ['p', 'h1', 'h2', 'strong', 'em', 'u', 'ol', 'ul', 'li', 'br'],
+    ALLOWED_ATTR: [], // 不允许任何属性
+  }) : '';
+  // console.log(sanitizedContent);
   return (
     <div className="travel-detail">
       <NavBar onBack={() => window.history.back()}>游记详情</NavBar>
@@ -66,7 +72,10 @@ const TravelDetail: React.FC = () => {
           </div>
         )}
 
-        <div className="content">{travel.content}</div>
+        <div 
+          className="content"
+          dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+        />
       </div>
     </div>
   );

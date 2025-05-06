@@ -5,6 +5,7 @@ import type { ImageUploadItem } from 'antd-mobile/es/components/image-uploader';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './index.scss';
+import { stripHtml } from '@/components/utils';
 
 const MyTravels: React.FC = () => {
   const navigate = useNavigate();
@@ -79,7 +80,6 @@ const MyTravels: React.FC = () => {
     Toast.show('退出成功');
     navigate('/login');
   };
-
   return (
     <div className="my-travels">
       <NavBar
@@ -174,7 +174,7 @@ const MyTravels: React.FC = () => {
             <div className="card-right">
               <div className="content">
                 <h3 className="title">{item.title}</h3>
-                <p className="desc">{item.content}</p>
+                <p className="desc">{stripHtml(item.content, 100)}</p>
               </div>
               <div className="actions">
                 <Button size="small" onClick={() => navigate(`/publish?edit=${item.id}`)}>
