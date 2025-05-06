@@ -5,6 +5,7 @@ export interface TravelItem {
   title: string;
   coverImage: string;
   images: string[];
+  video?: string; // 添加可选的视频字段
   author: {
     id: number;
     nickname: string;
@@ -76,6 +77,7 @@ export interface TravelPublishParams {
   content: string;
   coverImage: string;
   images: string[];
+  video?: string; // 添加可选的视频字段
   authorId: number;
   authorNickname: string;
   authorAvatar: string;
@@ -91,6 +93,7 @@ Mock.mock('/api/travel/publish', 'post', (options: any) => {
     content: params.content,
     coverImage: params.coverImage,
     images: params.images,
+    video: params.video, // 添加视频URL
     author: {
       id: params.authorId || 1001,
       nickname: params.authorNickname || '管理员',
@@ -129,6 +132,7 @@ Mock.mock(/\/api\/travel\/update\/\d+/, 'put', (options: any) => {
     content: params.content,
     coverImage: params.coverImage,
     images: params.images,
+    video: params.video, // 添加视频URL更新
   };
 
   return {

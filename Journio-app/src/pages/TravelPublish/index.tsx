@@ -1,6 +1,7 @@
 import { getTravelDetail, publishTravel, updateTravel } from '@/api/travel';
 import { useUserStore } from '@/store/user';
 import { Button, Form, ImageUploader, Input, NavBar, Toast } from 'antd-mobile';
+import { VideoUploader } from '@/components/VideoUploader';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.bubble.css';  // 替换 snow 主题
 import React, { useEffect, useState } from 'react';
@@ -35,6 +36,7 @@ const TravelPublish: React.FC = () => {
           form.setFieldsValue({
             title: res.data.title,
             images: res.data.images.map((url) => ({ url })),
+            video: res.data.video ? { url: res.data.video } : null,
           });
           setContent(res.data.content);
         }
@@ -68,6 +70,7 @@ const TravelPublish: React.FC = () => {
         content: content,
         images: values.images.map((item: any) => item.url),
         coverImage: values.images[0]?.url || '',
+        video: values.video?.url || '', // 添加视频URL
         authorId: userInfo?.id,
         authorNickname: userInfo?.nickname,
         authorAvatar: userInfo?.avatar,
@@ -128,6 +131,19 @@ const TravelPublish: React.FC = () => {
               onChange={setContent}
               modules={modules}
               placeholder="请输入游记正文"
+            />
+          </Form.Item>
+          <Form.Item
+            name="video"
+            label="视频"
+          >
+            <VideoUploader 
+              maxSize={50} 
+              upload={async (file) => {
+                return {
+                  url: URL.createObjectURL(file),
+                };
+              }}
             />
           </Form.Item>
           <Form.Item
