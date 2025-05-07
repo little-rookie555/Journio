@@ -111,3 +111,30 @@
     }
   }
 }
+
+
+.comment-popup {
+  .adm-text-area {
+    --font-size: 16px;
+    margin-bottom: 16px;
+  }
+
+  .comment-actions {
+    margin-top: 16px;
+  }
+}
+
+
+
+@keyframes heartBeat {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.4);
+  }
+  100% {
+    transform: scale(1.2);
+  }
+}
+

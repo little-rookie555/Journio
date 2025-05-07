@@ -1,0 +1,77 @@
+.action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: #fff;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  z-index: 10;
+
+  .action-input {
+    flex: 1;
+    margin-right: 16px;
+    cursor: pointer;
+    &:active {
+      opacity: 0.8;
+    }
+    .input-box {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      background: #f5f5f5;
+      border-radius: 20px;
+      color: #999;
+      
+      span {
+        margin-left: 8px;
+        font-size: 14px;
+      }
+    }
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 16px;
+
+    .action-item {
+      display: flex;
+      align-items: center;
+      color: #666;
+      
+      span {
+        margin-left: 4px;
+        font-size: 14px;
+      }
+      
+      .icon-liked {
+        color: #ff4d4f;
+        transform: scale(1.2);
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: heartBeat 0.5s ease-in-out;
+      }
+      
+      .icon-starred {
+        color: rgb(255, 215, 0);
+        transform: scale(1.2);
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: heartBeat 0.5s ease-in-out;
+      }
+    }
+  }
+}
+
+@keyframes heartBeat {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.4);
+  }
+  100% {
+    transform: scale(1.2);
+  }
+}

@@ -54,3 +54,55 @@ export const getUserTravels = (userId: number): Promise<ApiResponse<TravelItem[]
 export const deleteTravel = (id: number): Promise<ApiResponse<null>> => {
   return request.delete(`/travel/${id}`);
 };
+
+// 评论接口参数类型定义
+export interface CommentParams {
+  travelId: number;
+  content: string;
+  userId: number;    // 添加用户ID
+  parentId?: number; // 可选的父评论ID，用于回复功能
+}
+
+// 评论数据类型定义
+export interface Comment {
+  id: number;
+  content: string;
+  createTime: string;
+  author: {
+    id: number;
+    nickname: string;
+    avatar: string;
+  };
+}
+
+// 发表评论
+export const createComment = (params: CommentParams): Promise<{ code: number; data: Comment; message?: string }> => {
+  return request.post(`/travel/comment`, params);
+};
+
+// 获取评论列表
+export const getCommentList = (travelId: number): Promise<{ code: number; data: Comment[]; message?: string }> => {
+  return request.get(`/travel/comment/list/${travelId}`);
+};
+
+interface LikeParams {
+  travelId: number;
+  userId: number;
+  liked?: boolean;
+}
+
+interface StarParams {
+  travelId: number;
+  userId: number;
+  starred?: boolean;
+}
+
+// 点赞/取消点赞
+export const likeTravel = (params: LikeParams): Promise<ApiResponse<{ liked: boolean; likeCount: number }>> => {
+  return request.post('/travel/like', params);
+};
+
+// 收藏/取消收藏
+export const starTravel = (params: StarParams): Promise<ApiResponse<{ starred: boolean }>> => {
+  return request.post('/travel/star', params);
+};

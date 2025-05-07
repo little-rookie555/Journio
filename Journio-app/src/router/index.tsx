@@ -18,6 +18,18 @@ export const router = createBrowserRouter([
     element: <Register />,
   },
   {
+    path: '/publish',
+    element: (
+      <AuthRoute>
+        <TravelPublish />
+      </AuthRoute>
+    ),
+  },
+  {
+    path: '/detail/:id',
+    element: <TravelDetail />,
+  },
+  {
     path: '/',
     element: <Layout />,
     children: [
@@ -32,18 +44,6 @@ export const router = createBrowserRouter([
             <MyTravels />
           </AuthRoute>
         ),
-      },
-      {
-        path: 'publish',
-        element: (
-          <AuthRoute>
-            <TravelPublish />
-          </AuthRoute>
-        ),
-      },
-      {
-        path: 'detail/:id',
-        element: <TravelDetail />,
       },
     ],
   },

@@ -1,7 +1,18 @@
 import { login, updateUserInfo } from '@/api/user';
 import { UserInfo, UserUpdateParams } from '@/mock/user';
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+
+const TOKEN_KEY = 'token';
+
+// 获取 localStorage 中的 token
+const getTokenFromLocalStorage = () => localStorage.getItem(TOKEN_KEY);
+
+// 设置 token 到 localStorage
+const setTokenToLocalStorage = (token: string) => localStorage.setItem(TOKEN_KEY, token);
+
+// 从 localStorage 中移除 token
+const removeTokenFromLocalStorage = () => localStorage.removeItem(TOKEN_KEY);
 
 interface UserState {
   userInfo: UserInfo | null;
@@ -18,21 +29,25 @@ export const useUserStore = create<UserState>()(
   persist(
     (set) => ({
       userInfo: null,
-      token: '',
+      token: getTokenFromLocalStorage() || '',
       loading: false,
 
       setUserInfo: (userInfo) => set({ userInfo }),
-      setToken: (token) => set({ token }),
+      setToken: (token) => {
+        setTokenToLocalStorage(token);
+        set({ token });
+      },
 
       login: async (username, password) => {
         set({ loading: true });
         try {
           const res = await login({ username, password });
           if (res.code === 200) {
-            localStorage.setItem('token', res.data.token); // 添加token存储
+            const { token, ...userData } = res.data;
+            setTokenToLocalStorage(token);
             set({
-              userInfo: res.data,
-              token: res.data.token,
+              userInfo: userData as UserInfo,
+              token,
             });
           } else {
             throw new Error(res.message);
@@ -43,9 +58,10 @@ export const useUserStore = create<UserState>()(
       },
 
       logout: () => {
+        removeTokenFromLocalStorage();
         set({ userInfo: null, token: '' });
       },
-      
+
       updateInfo: async (params) => {
         set({ loading: true });
         try {
@@ -64,6 +80,9 @@ export const useUserStore = create<UserState>()(
     }),
     {
       name: 'user-storage',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({ userInfo: state.userInfo }),
     },
   ),
 );
+    
