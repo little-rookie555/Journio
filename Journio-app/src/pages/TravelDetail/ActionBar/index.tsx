@@ -15,10 +15,10 @@ interface ActionBarProps {
   onLikeChange: (liked: boolean) => void;
   onStarChange: (starred: boolean) => void;
   onLikeCountChange: (count: number) => void; // 添加点赞数更新回调
+  onCommentList: () => void;
 }
 
 const ActionBar: React.FC<ActionBarProps> = ({
-  onComment,
   commentCount,
   likeCount,
   isLiked,
@@ -28,6 +28,8 @@ const ActionBar: React.FC<ActionBarProps> = ({
   onLikeChange,
   onStarChange,
   onLikeCountChange,
+  onComment,
+  onCommentList,
 }) => {
   const handleLike = async () => {
     try {
@@ -101,7 +103,7 @@ const ActionBar: React.FC<ActionBarProps> = ({
           )}
           <span>{isStarred ? '已收藏' : '收藏'}</span>
         </div>
-        <div className="action-item" onClick={onComment}>
+        <div className="action-item" onClick={onCommentList}>
           <MessageOutline />
           <span>{commentCount}</span>
         </div>

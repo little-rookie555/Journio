@@ -175,6 +175,7 @@ const TravelDetail: React.FC = () => {
       {/* 新增底部固定栏 */}
       <ActionBar
         onComment={() => setShowCommentPopup(true)}
+        onCommentList={() => setShowCommentList(true)}
         commentCount={comments.length}
         likeCount={likeCount}
         isLiked={isLiked}
