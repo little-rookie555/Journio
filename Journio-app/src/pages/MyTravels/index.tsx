@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './index.scss';
 import { stripHtml } from '@/components/utils';
+import { AppOutline, CheckOutline, ClockCircleOutline, CloseOutline } from 'antd-mobile-icons';
 
 const MyTravels: React.FC = () => {
   const navigate = useNavigate();
@@ -82,15 +83,26 @@ const MyTravels: React.FC = () => {
   };
   return (
     <div className="my-travels">
-      <NavBar
-        right={
-          <Button size="small" color="primary" onClick={() => navigate('/publish')}>
-            发布游记
-          </Button>
-        }
-      >
-        我的游记
-      </NavBar>
+      <div className="header-container">
+        <NavBar
+          style={{
+            background: 'transparent',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1
+          }}
+          onBack={() => navigate('/')}
+          right={
+            <Button size="small" color="primary" onClick={() => navigate('/publish')}>
+              发布游记
+            </Button>
+          }
+        >
+          我的游记
+        </NavBar>
+      </div>
 
       <div className="user-profile">
         <Image src={userInfo?.avatar} className="profile-avatar" />
@@ -100,10 +112,24 @@ const MyTravels: React.FC = () => {
             <span>游记数: {travels.length}</span>
           </div>
           <div className="profile-actions">
-            <Button size="small" onClick={() => setShowEditProfile(true)}>
+            <Button 
+              size="small" 
+              style={{ background: 'transparent',
+                       border: '1px solid rgba(255,255,255,0.5)',
+                      borderRadius: '20px',
+                      color: 'rgba(255,255,255,0.8)' }}
+              onClick={() => setShowEditProfile(true)}
+            >
               编辑资料
             </Button>
-            <Button size="small" color="danger" onClick={handleLogout}>
+            <Button 
+              size="small" 
+              style={{ background: 'transparent',
+                       border: '1px solid rgba(255,255,255,0.5)',
+                       borderRadius: '20px',
+                       color: 'rgba(255,255,255,0.8)'}}
+              onClick={handleLogout}
+            >
               退出登录
             </Button>
           </div>
@@ -157,11 +183,20 @@ const MyTravels: React.FC = () => {
         </div>
       </Popup>
 
-      <Tabs activeKey={activeTab} onChange={setActiveTab}>
-        <Tabs.Tab title="全部" key="all" />
-        <Tabs.Tab title="已通过" key="approved" />
-        <Tabs.Tab title="待审核" key="pending" />
-        <Tabs.Tab title="未通过" key="rejected" />
+      <Tabs 
+        activeKey={activeTab} 
+        onChange={setActiveTab}
+        style={{
+          '--title-font-size': '14px',
+          '--active-title-color': '#000',
+          // '--title-color': 'rgba(0,0,0,0.45)', // 非激活状态的颜色
+          '--content-padding': '0'
+        }}
+      >
+        <Tabs.Tab title={<><AppOutline /> 全部</>} key="all" />
+        <Tabs.Tab title={<><CheckOutline /> 已通过</>} key="approved" />
+        <Tabs.Tab title={<><ClockCircleOutline /> 待审核</>} key="pending" />
+        <Tabs.Tab title={<><CloseOutline /> 未通过</>} key="rejected" />
       </Tabs>
 
       <div className="travel-list">
@@ -180,7 +215,7 @@ const MyTravels: React.FC = () => {
                 <Button size="small" onClick={() => navigate(`/publish?edit=${item.id}`)}>
                   编辑
                 </Button>
-                <Button size="small" color="danger" onClick={() => handleDelete(item.id)}>
+                <Button size="small" color="primary" onClick={() => handleDelete(item.id)}>
                   删除
                 </Button>
               </div>

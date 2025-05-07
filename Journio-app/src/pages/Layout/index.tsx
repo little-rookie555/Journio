@@ -1,7 +1,7 @@
 import React from 'react';
 import { TabBar } from 'antd-mobile';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { AppOutline, AddCircleOutline, UserOutline } from 'antd-mobile-icons';
+import { AppOutline, AddOutline, UserOutline } from 'antd-mobile-icons';
 import './index.scss';
 
 const Layout: React.FC = () => {
@@ -17,8 +17,21 @@ const Layout: React.FC = () => {
     },
     {
       key: '/publish',
-      title: '发布',
-      icon: <AddCircleOutline />,
+      icon: (
+        <div style={{
+          backgroundColor: '#4a90e2',  // 浅蓝色
+          borderRadius: '12px',        
+          width: '52px',               // 增加宽度
+          height: '39px',              // 降低高度
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginTop: '-16px',           // 减小上浮距离
+          boxShadow: '0 2px 12px rgba(74, 144, 226, 0.3)'
+        }}>
+          <AddOutline color="#fff" fontSize={24} /> 
+        </div>
+      ),
     },
     {
       key: '/my-travels',

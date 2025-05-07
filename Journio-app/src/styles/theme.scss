@@ -1,0 +1,36 @@
+:root:root {
+
+
+
+  // 主色调 - 深蓝色
+  // 主色调 - 浅蓝色
+  --adm-color-primary: #4a90e2;
+  --adm-color-success: #5cb3cc;
+  --adm-color-warning: #64b5f6;
+  --adm-color-danger: #ef5350;
+
+  // 主色调的不同状态
+  --adm-color-primary-dark: #357abd;
+  --adm-color-primary-light: #64a5e8;
+  --adm-color-primary-disabled: rgba(74, 144, 226, 0.4);
+
+  // 文字颜色
+  --adm-color-text: #333333;
+  --adm-color-text-secondary: #666666;
+  --adm-color-weak: #999999;
+
+  // 背景色
+  --adm-color-background: #f8fafc;
+  --adm-color-box: #ffffff;
+
+  // 边框颜色
+  --adm-border-color: #e8e8e8;
+
+  // 字体大小
+  --adm-font-size-main: 15px;
+
+  // 圆角
+  --adm-radius-s: 4px;
+  --adm-radius-m: 8px;
+  --adm-radius-l: 12px;
+}
