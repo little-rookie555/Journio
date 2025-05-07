@@ -25,6 +25,12 @@ const Trip = sequelize.define('Trip', {
     defaultValue: 0,
     comment: '审核状态（0：待审查，1：通过，2：拒绝）'
   },
+  is_deleted: { 
+    type: DataTypes.TINYINT, 
+    allowNull: false,
+    defaultValue: 0,
+    comment: '逻辑删除 (0: 未删除, 1: 已删除)'
+  },
   images: { 
     type: DataTypes.STRING(2048), 
     allowNull: false,

@@ -8,6 +8,7 @@ const path = require('path');
 const fs = require('fs');
 const db = require("../config/db");
 const sharp = require('sharp');
+const Op = require('sequelize').Op;
 
 // 视频截图函数
 const extractVideoThumbnail = async (videoUrl) => {
@@ -86,6 +87,7 @@ exports.createTrip = async (req, res) => {
       coverImage: coverImage,
       video_url: req.body.video || null,
       liked: 0,
+      is_deleted: 0,
       comments: 0
     };
 
@@ -129,7 +131,7 @@ exports.updateTrip = async (req, res) => {
     const userId = req.id;
     const trip = await Trip.findByPk(req.params.id);
     
-    if (!trip) {
+    if (!trip || trip.is_deleted === 1) {
       return res.status(404).json({ 
         code: 404,
         message: '游记不存在'
@@ -193,7 +195,7 @@ exports.deleteTrip = async (req, res) => {
     const tripId = req.params.id;
     
     const trip = await Trip.findByPk(tripId);
-    if (!trip) {
+    if (!trip || trip.is_deleted === 1) {
       return res.status(404).json({ 
         code: 404,
         message: "游记不存在" 
@@ -208,9 +210,9 @@ exports.deleteTrip = async (req, res) => {
       });
     }
     
-    // 执行删除
+    // 执行逻辑删除
     console.log("deleteTrip trip:");
-    await trip.destroy();
+    await trip.update({ is_deleted: 1 });
     
     return res.status(200).json({
       code: 200,
@@ -245,6 +247,7 @@ exports.getAllTrips = async (req, res) => {
               // { nick_name: { [Op.like]: `%${keyword}%` } }
             ]
           },
+          {is_deleted: 0} ,
           { status: 1 } // 审核通过
         ]
       },
@@ -367,6 +370,7 @@ exports.searchTrip = async (req, res) => {
               { content: { [Op.like]: `%${keyword}%` } }
             ]
           },
+          {is_deleted: 0},
           { status: 1 } // 审核通过
         ]
       },
@@ -394,7 +398,7 @@ exports.getTripsByUser = async (req, res) => {
     const page = parseInt(req.query.pageNum) || 1;
     const limit = parseInt(req.query.pageSize) || 10;
     const offset = (page - 1) * limit;
-    const where = { user_id: userId };
+    const where = [Op.and][{ user_id: userId }, {is_deleted: 0}];
 
     const { count, rows: trips } = await Trip.findAndCountAll({
       where,

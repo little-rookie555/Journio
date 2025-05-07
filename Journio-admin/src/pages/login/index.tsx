@@ -4,10 +4,13 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './index.scss';
 
+// 类型定义结构 用于规范化参数
 interface LoginParams {
   username: string;
   password: string;
 }
+
+// React函数组件：React.FC
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -16,7 +19,7 @@ const Login: React.FC = () => {
     localStorage.setItem('token', res.data.token);
     localStorage.setItem('username', res.data.userInfo.username);
     message.success('登录成功');
-    navigate('/audit');
+    navigate('/audit'); // 登录成功后跳转到审核页面
   };
 
   return (

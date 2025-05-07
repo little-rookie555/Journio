@@ -1,7 +1,9 @@
-const { User } = require("../models");
+const { Trip, TripReviewRecord, User } = require("../models");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const config = require('../config/config')
+const db = require("../config/db");
+const { Op } = require('sequelize');  // 添加 Op 导入
 
 
 // 登录
@@ -128,38 +130,22 @@ exports.logoutAdmin = async (req, res) => {
 //   }
 // };
 
-// 获取审核状态的所有游记
-exports.getTripByAuditStatus = async (req, res) => {
+
+// 获取所有游记
+exports.getTripList = async (req, res) => {
   try {
-    // console.log("req.role:", req.role);
-    if (req.role==1) {
+    if (req.role!==2 && req.role!== 3) {
       return res.status(403).json({ message: "无权限获取审核游记列表" });
     }
     
-    // 判断传入status是否合法
-    const statusMap = {
-      'all': null,
-      '0': 0,    // 待审核
-      '1': 1,    // 通过
-      '2': 2     // 拒绝
-    };
-    
-    if (!Object.keys(statusMap).includes(req.query.status)) {
-      throw new Error("status参数不合法");
-    }
-    
-    const status = statusMap[req.query.status];
     const page = parseInt(req.query.pageNum) || 1;
     const limit = parseInt(req.query.pageSize) || 10;
     const offset = (page - 1) * limit;
 
-    const where = {};
-    if (status !== null) {
-      where.status = status;
-    }
-
     const { count, rows: trips } = await Trip.findAndCountAll({
-      where,
+      where: {
+        is_deleted: 0  // 修复语法错误
+      },
       limit,
       offset,
       order: [['create_time', 'DESC']],
@@ -173,24 +159,88 @@ exports.getTripByAuditStatus = async (req, res) => {
     });
 
     if (offset >= count && count !== 0) {
-      return res.status(404).json({ message: "页码超出范围" });
+      return res.status(404).json({ code: 404, message: "页码超出范围" });
     }
 
-    res.status(200).json({ data: trips, total: count });
+    // 修改返回数据格式以匹配前端AuditItem接口
+    const formattedTrips = trips.map(trip => ({
+      key: trip.id,
+      title: trip.title,
+      author: trip.user.username,
+      status: trip.status,
+      createTime: trip.create_time,
+      content: trip.content
+    }));
+
+    res.status(200).json({ 
+      code: 200, 
+      data: formattedTrips,
+      message: "获取成功"
+    });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ 
+      code: 500,
+      message: error.message 
+    });
   }
 };
+
+
+// 获取单个游记详情
+exports.getTripDetail = async (req, res) => {
+  console.log("req.params.id:", req.params.id);
+  try {
+    const trip = await Trip.findByPk(req.params.id, {
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'nick_name', 'icon']
+        }
+      ]
+    });
+    
+    if (trip) {
+      res.status(200).json({
+        code: 200,
+        data: {
+          key: trip.id,
+          title: trip.title,
+          author: trip.user.username,
+          status: trip.status,
+          createTime: trip.create_time,
+          content: trip.content,
+        }
+      });
+    } else {
+        return {
+          code: 404,
+          message: '游记不存在',
+        };
+    }
+  } catch (error) {
+    return res.status(500).json({ 
+      code: 500,
+      message: error.message 
+    });
+  }
+};
+
+
 
 // 审核通过
 exports.passAuditTrip = async (req, res) => {
   try {
+    console.log("审核通过", req.id, req.body.id, req.role);
     // 校验身份，super和admin才能审核通过
-    if (req.role==1) {
-      return res.status(403).json({ message: "无权限审核游记" });
+    if (req.role !== 2 && req.role!== 3) {
+      return res.status(403).json({ 
+        code: 403,
+        message: "无权限审核游记" 
+      });
     }
     
-    const tripId = req.query.id;
+    const tripId = req.body.id;
     const reviewerId = req.id;
     
     // 开启事务
@@ -216,30 +266,43 @@ exports.passAuditTrip = async (req, res) => {
       
       // 提交事务
       await t.commit();
-      res.status(200).json({ message: "审核通过" });
+      res.status(200).json({ 
+        code: 200,
+        message: "审核通过" 
+      });
     } catch (error) {
       // 回滚事务
       await t.rollback();
       throw error;
     }
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ 
+      code: 500,
+      message: error.message 
+    });
   }
 };
 
 // 审核拒绝
 exports.rejectAuditTrip = async (req, res) => {
   try {
-    if (req.role==1) {
-      return res.status(403).json({ message: "无权限审核游记" });
+    console.log("审核拒绝", req.body.reason);
+    if (req.role !== 2 && req.role!== 3) {ss
+      return res.status(403).json({ 
+        code: 403,
+        message: "无权限审核游记" 
+      });
     }
     
-    const tripId = req.query.id;
+    const tripId = req.body.id;
     const reviewerId = req.id;
     const reason = req.body.reason;
     // 拒绝原因必填
-    if (!reason || reason.trim() === '') {
-      return res.status(400).json({ message: "拒绝原因不能为空" });
+    if (!reason || reason === '') {
+      return res.status(400).json({ 
+        code: 400,
+        message: "拒绝原因不能为空" 
+      });
     }
     
     // 开启事务
@@ -266,32 +329,61 @@ exports.rejectAuditTrip = async (req, res) => {
       
       // 提交事务
       await t.commit();
-      res.status(200).json({ message: "拒绝通过" });
+      res.status(200).json({ 
+        code: 200,
+        message: "拒绝通过" 
+      });
     } catch (error) {
       // 回滚事务
       await t.rollback();
       throw error;
     }
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ 
+      code: 500,
+      message: error.message 
+    });
   }
 };
 
-// TODO: 逻辑删除游记
-// exports.deleteAuditTrip = async (req, res) => {
-//   try {
-//     // 后期需要校验角色权限，超级管理员才能删除游记
-//     if (req.role !== 3) {
-//       return res.status(403).json({ message: "无权限删除游记" });
-//     }
-//     await Trip.findByIdAndUpdate(req.params.id, {
-//       isDeleted: true,
-//     });
-//     res.status(200).json({ message: "游记已删除" });
-//   } catch (error) {
-//     return res.status(500).json({ message: error.message });
-//   }
-// };
+// 删除游记
+exports.deleteAuditTrip = async (req, res) => {
+  try {
+    // 校验身份
+    console.log("删除游记", req.params.id, req.id);
+    if (req.role != 2 && req.role !== 3) {
+      return res.status(403).json({ 
+        code: 403,
+        message: "无权限删除游记" 
+      });
+    }
+    const tripId = req.params.id;
+    
+    try {
+      // 1. 逻辑删除游记
+      await Trip.update(
+        { is_deleted: 1 },
+        {
+          where: { id: tripId },
+        }
+      );
+      
+      res.status(200).json({ 
+        code: 200,
+        message: "游记删除成功" 
+      });
+    } catch (error) {
+      // 回滚事务
+      await t.rollback();
+      throw error;
+    }
+  } catch (error) {
+    return res.status(500).json({ 
+      code: 500,
+      message: error.message 
+    });
+  }
+};
 
 
 

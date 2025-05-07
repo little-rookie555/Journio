@@ -32,7 +32,7 @@ exports.updateUserInfo = async (req, res) => {
   try {
     // 获取当前用户ID和客户端提交的数据
     const id = req.id;
-    console.log('update user: ', req.body)
+    console.log('更新用户基本信息: ', req.body)
     const userinfo = req.body
     
     // 查询昵称是否被占用（排除当前用户）
@@ -85,7 +85,6 @@ exports.updateUserInfo = async (req, res) => {
 exports.registerUser = async (req, res) => {
   try {
     // 获取客户端提交到服务器的用户信息
-    console.log('register: ', req.body)
     const userinfo = req.body
     
     // 查询用户名是否被占用
@@ -99,7 +98,6 @@ exports.registerUser = async (req, res) => {
     if (existnick) {
       return res.cc('昵称被占用，请更换其他昵称！')
     }
-    console.log(userinfo)
     
     // 对密码进行加密
     const hashedPassword = bcrypt.hashSync(userinfo.password, 10)
@@ -115,7 +113,7 @@ exports.registerUser = async (req, res) => {
       icon: avatarUrl || 'https://journio.oss-cn-beijing.aliyuncs.com/public/image/d7f25286eae11c9b6d5efec97508f18d.png',
     })
 
-    console.log('我的新用户：', newUser)
+    console.log('创建新用户：', newUser)
     
     if (!newUser) return res.cc('注册用户失败，请稍后再试！')
 
