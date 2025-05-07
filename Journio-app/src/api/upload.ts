@@ -9,7 +9,7 @@ export interface image {
  * @param file 要上传的文件
  * @returns 上传结果，包含图片URL
  */
-export const uploadImage = (file: File): Promise<{ code: number; data: image; message?: string }> => {
+export const uploadFile = (file: File): Promise<{ code: number; data: image; message?: string }> => {
   const formData = new FormData();
   formData.append('file', file);
   return request({

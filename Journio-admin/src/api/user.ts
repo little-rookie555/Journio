@@ -18,5 +18,5 @@ export interface LoginResponse {
 }
 
 export const login = (data: LoginParams): Promise<LoginResponse> => {
-  return request.post('/login', data);
+  return request.post('/audit/login', data);
 };

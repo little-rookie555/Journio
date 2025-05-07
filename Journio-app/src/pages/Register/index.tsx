@@ -1,5 +1,5 @@
 import { register } from '@/api/user';
-import { uploadImage } from '@/api/upload';
+import { uploadFile } from '@/api/upload';
 import { Button, Form, ImageUploader, Input, NavBar, Toast } from 'antd-mobile';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -81,7 +81,7 @@ const Register: React.FC = () => {
               maxCount={1}
               upload={async (file) => {
                 try {
-                  const res = await uploadImage(file);
+                  const res = await uploadFile(file);
                   console.log('上传结果：', res);
                   if (res.code === 200) {
                     return {

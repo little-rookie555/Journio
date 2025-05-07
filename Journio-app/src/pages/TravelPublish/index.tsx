@@ -1,5 +1,5 @@
 import { getTravelDetail, publishTravel, updateTravel } from '@/api/travel';
-import { uploadImage } from '@/api/upload';
+import { uploadFile } from '@/api/upload';
 import { useUserStore } from '@/store/user';
 import { Button, Form, ImageUploader, Input, NavBar, Toast } from 'antd-mobile';
 import { VideoUploader } from '@/components/VideoUploader';
@@ -143,7 +143,7 @@ const TravelPublish: React.FC = () => {
               upload={async (file) => {
                 // 上传视频，逻辑与照片一样
                 try {
-                  const res = await uploadImage(file);
+                  const res = await uploadFile(file);
                   if (res.code === 200) {
                     return {
                       url: res.data.url,
@@ -180,7 +180,7 @@ const TravelPublish: React.FC = () => {
               maxCount={9}
               upload={async (file) => {
                 try {
-                  const res = await uploadImage(file);
+                  const res = await uploadFile(file);
                   if (res.code === 200) {
                     return {
                       url: res.data.url,

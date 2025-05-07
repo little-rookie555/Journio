@@ -1,6 +1,6 @@
 const { Trip, TripReviewRecord, User } = require("../models");
 const upload = require("../middlewares/upload");
-const {ossConfig, uploadToOSS} = require("../config/ossConfig");
+const {ossConfig, uploadToOSS} = require("../config/ossClient");
 const multer = require("multer");
 const ffmpeg = require('fluent-ffmpeg');
 ffmpeg.setFfmpegPath('D:\\softwore\\ffmpeg-7.0.2-essentials_build\\bin\\ffmpeg.exe');
@@ -53,6 +53,7 @@ const extractVideoThumbnail = async (videoUrl) => {
     
     // 上传到OSS
     const ossPath = `public/image/thumbnail_${timestamp}.jpg`;
+    
     const result = await uploadToOSS(ossConfig, ossPath, processedImageBuffer);
     
     // 删除本地临时文件
@@ -67,7 +68,6 @@ const extractVideoThumbnail = async (videoUrl) => {
 
 // 创建游记
 exports.createTrip = async (req, res) => {
-  console.log("createTrip req.body:", req.body);
   try {
     const userId = req.id;
     
@@ -88,8 +88,6 @@ exports.createTrip = async (req, res) => {
       liked: 0,
       comments: 0
     };
-    
-    console.log("createTrip tripData:", req.body);
 
     const newTrip = await Trip.create(tripData);
     
@@ -449,227 +447,10 @@ exports.getTripsByUser = async (req, res) => {
 };
 
 
-// 获取访问接口用户某个审核状态的所有游记
-exports.getTripByStatus = async (req, res) => {
-  try {
-    // 判断传入status是否合法
-    const statusMap = {
-      'all': null,
-      '0': 0,    // 待审核
-      '1': 1,    // 通过
-      '2': 2     // 拒绝
-    };
-    
-    // console.log("req.params.status:", req.query.status);
-    
-    if (!Object.keys(statusMap).includes(req.query.status)) {
-      throw new Error("status参数不合法");
-    }
-    
-    const userId = req.id;
-    const status = statusMap[req.query.status];
-    const page = parseInt(req.query.pageNum) || 1;
-    const limit = parseInt(req.query.pageSize) || 10;
-    const offset = (page - 1) * limit;
-
-    const where = { user_id: userId };
-    if (status !== null) {
-      where.status = status;
-    }
-
-    const { count, rows: trips } = await Trip.findAndCountAll({
-      where,
-      limit,
-      offset,
-      order: [['create_time', 'DESC']],
-      include: [
-        {
-          model: User,
-          as: 'user',
-          attributes: ['id', 'nick_name', 'icon']
-        }
-      ]
-    });
-
-    if (offset >= count && count !== 0) {
-      return res.status(404).json({ message: "页码超出范围" });
-    }
-
-    res.status(200).json({ data: trips, total: count });
-  } catch (error) {
-    // console.log("getTripByStatus error:", error);
-    return res.status(500).json({ message: error.message });
-  }
-};
-
 // TODO:点赞
 
 // TODO:评论功能
 
-// 获取审核状态的所有游记
-exports.getTripByAuditStatus = async (req, res) => {
-  try {
-    // console.log("req.role:", req.role);
-    if (req.role==1) {
-      return res.status(403).json({ message: "无权限获取审核游记列表" });
-    }
-    
-    // 判断传入status是否合法
-    const statusMap = {
-      'all': null,
-      '0': 0,    // 待审核
-      '1': 1,    // 通过
-      '2': 2     // 拒绝
-    };
-    
-    if (!Object.keys(statusMap).includes(req.query.status)) {
-      throw new Error("status参数不合法");
-    }
-    
-    const status = statusMap[req.query.status];
-    const page = parseInt(req.query.pageNum) || 1;
-    const limit = parseInt(req.query.pageSize) || 10;
-    const offset = (page - 1) * limit;
-
-    const where = {};
-    if (status !== null) {
-      where.status = status;
-    }
-
-    const { count, rows: trips } = await Trip.findAndCountAll({
-      where,
-      limit,
-      offset,
-      order: [['create_time', 'DESC']],
-      include: [
-        {
-          model: User,
-          as: 'user',
-          attributes: ['id', 'nick_name', 'icon']
-        }
-      ]
-    });
-
-    if (offset >= count && count !== 0) {
-      return res.status(404).json({ message: "页码超出范围" });
-    }
-
-    res.status(200).json({ data: trips, total: count });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-};
-
-// 审核通过
-exports.passAuditTrip = async (req, res) => {
-  try {
-    // 校验身份，super和admin才能审核通过
-    if (req.role==1) {
-      return res.status(403).json({ message: "无权限审核游记" });
-    }
-    
-    const tripId = req.query.id;
-    const reviewerId = req.id;
-    
-    // 开启事务
-    const t = await db.transaction();
-    
-    try {
-      // 1. 更新游记状态
-      await Trip.update(
-        { status: 1 }, // 1: 通过
-        { 
-          where: { id: tripId },
-          transaction: t
-        }
-      );
-      
-      // 2. 创建审核记录
-      await TripReviewRecord.create({
-        travelogue_id: tripId,
-        reviewer_id: reviewerId,
-        status: 1, // 1: 通过
-        reviewed_at: new Date()
-      }, { transaction: t });
-      
-      // 提交事务
-      await t.commit();
-      res.status(200).json({ message: "审核通过" });
-    } catch (error) {
-      // 回滚事务
-      await t.rollback();
-      throw error;
-    }
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-};
-
-// 审核拒绝
-exports.rejectAuditTrip = async (req, res) => {
-  try {
-    if (req.role==1) {
-      return res.status(403).json({ message: "无权限审核游记" });
-    }
-    
-    const tripId = req.query.id;
-    const reviewerId = req.id;
-    const reason = req.body.reason;
-    // 拒绝原因必填
-    if (!reason || reason.trim() === '') {
-      return res.status(400).json({ message: "拒绝原因不能为空" });
-    }
-    
-    // 开启事务
-    const t = await db.transaction();
-    
-    try {
-      // 1. 更新游记状态
-      await Trip.update(
-        { status: 2 }, // 2: 拒绝
-        { 
-          where: { id: tripId },
-          transaction: t
-        }
-      );
-      
-      // 2. 创建审核记录
-      await TripReviewRecord.create({
-        travelogue_id: tripId,
-        reviewer_id: reviewerId,
-        status: 2, // 2: 拒绝
-        reason: reason,
-        reviewed_at: new Date()
-      }, { transaction: t });
-      
-      // 提交事务
-      await t.commit();
-      res.status(200).json({ message: "拒绝通过" });
-    } catch (error) {
-      // 回滚事务
-      await t.rollback();
-      throw error;
-    }
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-};
-
-// TODO: 逻辑删除游记
-// exports.deleteAuditTrip = async (req, res) => {
-//   try {
-//     // 后期需要校验角色权限，超级管理员才能删除游记
-//     if (req.role !== 3) {
-//       return res.status(403).json({ message: "无权限删除游记" });
-//     }
-//     await Trip.findByIdAndUpdate(req.params.id, {
-//       isDeleted: true,
-//     });
-//     res.status(200).json({ message: "游记已删除" });
-//   } catch (error) {
-//     return res.status(500).json({ message: error.message });
-//   }
-// };
 
 // 上传游记图片列表或视频
 exports.uploadTripMedia = (req, res) => {

@@ -34,23 +34,11 @@ router.get("/detail/:id", tripHandler.getTripDetail); // 通过query参数传递
 router.get("/user/:userId", checkAuth, tripHandler.getTripsByUser); // 通过URL参数传递用户ID
 // 通过标题的关键词搜索游记 - 浏览游记，无需鉴权
 router.get("/search", tripHandler.searchTrip); // 通过query参数传递搜索关键词
-// 获取访问当前用户某个审核状态的所有游记
-router.get("/status/", checkAuth, tripHandler.getTripByStatus); // 通过URL参数传递审核状态
+// // 获取访问当前用户某个审核状态的所有游记
+// router.get("/status/", checkAuth, tripHandler.getTripByStatus); // 通过URL参数传递审核状态
+
 // // 为游记点赞或取消点赞
 // // router.post("/like", tripController.likeTrip); // 使用URL参数传递游记ID
-
-// 获取某个审核状态的所有游记
-router.get(
-    "/audit/status",
-    checkAuth,
-    tripHandler.getTripByAuditStatus
-  ); // 通过query传递审核状态
-// 审核通过游记
-router.put("/audit/pass", checkAuth, tripHandler.passAuditTrip); // 使用PUT方法，并通过URL参数传递ID
-// 审核拒绝游记
-router.put("/audit/reject", checkAuth, tripHandler.rejectAuditTrip); // 使用PUT方法，并通过URL参数传递ID
-// TODO: 逻辑删除游记
-// router.put("/audit/del", checkAuth, tripHandler.deleteAuditTrip);
 
 // 上传游记图片列表或视频
 router.post("/upload", tripHandler.uploadTripMedia); // 使用POST方法
