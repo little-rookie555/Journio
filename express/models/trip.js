@@ -42,6 +42,12 @@ const Trip = sequelize.define('Trip', {
       }
     }
   },
+  coverImage: {
+    type: DataTypes.STRING(2048),
+    allowNull: false,
+    field: 'cover_image',
+    comment: '封面图片URL'
+  },
   video_url: {
     type: DataTypes.STRING(2048),
     allowNull: true,

@@ -15,6 +15,10 @@ export interface UserInfo {
   createTime: string;
 }
 
+export interface image {
+  url: string;
+}
+
 export interface UserLoginParams {
   username: string;
   password: string;

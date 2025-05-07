@@ -33,6 +33,7 @@ export const useTravelStore = create<TravelState>((set, get) => ({
     set({ loading: true });
     try {
       const response = await getTravelList({ page, pageSize, keyword });
+      console.log('response', response.data.list);
       set({
         list: page === 1 ? response.data.list : [...get().list, ...response.data.list],
         total: response.data.total,

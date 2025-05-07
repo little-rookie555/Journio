@@ -1,4 +1,5 @@
 import { getTravelDetail, publishTravel, updateTravel } from '@/api/travel';
+import { uploadImage } from '@/api/upload';
 import { useUserStore } from '@/store/user';
 import { Button, Form, ImageUploader, Input, NavBar, Toast } from 'antd-mobile';
 import { VideoUploader } from '@/components/VideoUploader';
@@ -140,9 +141,32 @@ const TravelPublish: React.FC = () => {
             <VideoUploader 
               maxSize={50} 
               upload={async (file) => {
-                return {
-                  url: URL.createObjectURL(file),
-                };
+                // 上传视频，逻辑与照片一样
+                try {
+                  const res = await uploadImage(file);
+                  if (res.code === 200) {
+                    return {
+                      url: res.data.url,
+                    };
+                  } else {
+                    Toast.show({
+                      icon: 'fail',
+                      content: '上传失败',
+                    });
+                    return {
+                      url: URL.createObjectURL(file),
+                    };
+                  }
+                } catch (error) {
+                  console.error('上传失败:', error);
+                  Toast.show({
+                    icon: 'fail',
+                    content: '上传失败，请稍后重试',
+                  });
+                  return {
+                    url: URL.createObjectURL(file),
+                  };
+                }
               }}
             />
           </Form.Item>
@@ -155,9 +179,32 @@ const TravelPublish: React.FC = () => {
               multiple
               maxCount={9}
               upload={async (file) => {
-                return {
-                  url: URL.createObjectURL(file),
-                };
+                try {
+                  const res = await uploadImage(file);
+                  if (res.code === 200) {
+                    return {
+                      url: res.data.url,
+                    };
+                  } else {
+                    Toast.show({
+                      icon: 'fail',
+                      content: '上传失败',
+                    });
+                    return {
+                      url: URL.createObjectURL(file),
+                    };
+                  }
+                } catch (error) {
+                  console.error('上传失败:', error);
+                  Toast.show({
+                    icon: 'fail',
+                    content: '上传失败，请稍后重试',
+                  });
+                  // 上传失败时，仍然返回本地预览URL
+                  return {
+                    url: URL.createObjectURL(file),
+                  };
+                }
               }}
             />
           </Form.Item>

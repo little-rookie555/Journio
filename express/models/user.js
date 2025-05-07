@@ -9,6 +9,11 @@ const User = sequelize.define('User', {
     primaryKey: true,
     autoIncrement: true
   },
+  username: {
+    type: DataTypes.STRING(32),
+    allowNull: false,
+    unique: true
+  },
   nick_name: { 
     type: DataTypes.STRING(32), 
     allowNull: false,
@@ -24,7 +29,7 @@ const User = sequelize.define('User', {
     unique: false
   },
   icon: { 
-    type: DataTypes.STRING(255),
+    type: DataTypes.STRING(2048),
     allowNull: true,
     defaultValue: ''
   },
@@ -66,6 +71,7 @@ module.exports = User;
 
 // 定义用户名和密码的验证规则
 const nick_name = joi.string().alphanum().min(1).max(32).required();
+const username = joi.string().alphanum().min(1).max(32).required();
 const password = joi
   .string()
   .pattern(/^[\S]{6,12}$/)
@@ -81,8 +87,17 @@ const icon = joi.string().dataUri().required();
 // 定义验证注册和登录表单数据的规则对象
 exports.reg_login_schema = {
   body: {
-    nick_name,
+    username,
     password,
+  },
+};
+
+// 定义验证注册和登录表单数据的规则对象
+exports.reg_gerister_schema = {
+  body: {
+    username,
+    password,
+    nick_name,
   },
 };
 

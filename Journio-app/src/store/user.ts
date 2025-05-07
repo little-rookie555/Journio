@@ -29,6 +29,7 @@ export const useUserStore = create<UserState>()(
         try {
           const res = await login({ username, password });
           if (res.code === 200) {
+            localStorage.setItem('token', res.data.token); // 添加token存储
             set({
               userInfo: res.data,
               token: res.data.token,

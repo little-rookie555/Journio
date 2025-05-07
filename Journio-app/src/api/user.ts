@@ -5,7 +5,7 @@ import request from '@/utils/request';
 export const register = (
   params: UserRegisterParams,
 ): Promise<{ code: number; data: UserInfo; message?: string }> => {
-  // console.log('params', params);
+  console.log('注册成功！', params);
   return request.post('/user/register', params);
 };
 

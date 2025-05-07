@@ -1,4 +1,5 @@
 import { register } from '@/api/user';
+import { uploadImage } from '@/api/upload';
 import { Button, Form, ImageUploader, Input, NavBar, Toast } from 'antd-mobile';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +13,7 @@ const Register: React.FC = () => {
     try {
       setLoading(true);
       const res = await register(values);
+      console.log('注册结果：', res);
       if (res.code === 200) {
         Toast.show({
           icon: 'success',
@@ -78,11 +80,33 @@ const Register: React.FC = () => {
             <ImageUploader
               maxCount={1}
               upload={async (file) => {
-                console.log('上传文件：', file);
-                // 这里模拟上传，实际项目中需要替换为真实的上传接口
-                return {
-                  url: URL.createObjectURL(file),
-                };
+                try {
+                  const res = await uploadImage(file);
+                  console.log('上传结果：', res);
+                  if (res.code === 200) {
+                    return {
+                      url: res.data.url,
+                    };
+                  } else {
+                    Toast.show({
+                      icon: 'fail',
+                      content: '上传失败',
+                    });
+                    return {
+                      url: URL.createObjectURL(file),
+                    };
+                  }
+                } catch (error) {
+                  console.error('上传失败:', error);
+                  Toast.show({
+                    icon: 'fail',
+                    content: '上传失败，请稍后重试',
+                  });
+                  // 上传失败时，仍然返回本地预览URL
+                  return {
+                    url: URL.createObjectURL(file),
+                  };
+                }
               }}
             />
           </Form.Item>

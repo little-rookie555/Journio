@@ -3,6 +3,7 @@ const config = require("../config/config");
 
 const checkAuth = (req, res, next) => {
   const authHeader = req.headers.authorization;
+  console.log('authHeader:', req.headers); // 添加日志，输出authHeader的内容，方便调试
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).cc('未提供token，请先登录！');

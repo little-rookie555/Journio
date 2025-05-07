@@ -8,4 +8,20 @@ const client = new OSS({
   bucket: process.env.BUCKET,
 });
 
+// 辅助函数：上传到OSS
+const uploadToOSS = async (config, ossPath, buffer) => {
+  const OSS = require('ali-oss');
+  const client = new OSS(config);
+  
+  try {
+    const result = await client.put(ossPath, buffer);
+    return result.url;
+  } catch (err) {
+    console.error('上传到OSS失败:', err);
+    throw err;
+  }
+};
+
 module.exports = client;
+module.exports.uploadToOSS = uploadToOSS; // 导出辅助函数 uploa
+

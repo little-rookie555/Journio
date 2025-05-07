@@ -36,7 +36,7 @@ export const mockTravelList = Mock.mock({
   ],
 }).list;
 
-// console.log('mockTravelList', mockTravelList);
+console.log('mockTravelList', mockTravelList);
 
 // 游记列表接口
 function getQueryObject(url: string) {

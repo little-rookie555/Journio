@@ -4,13 +4,27 @@ import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 
 // 创建axios实例
 const service: AxiosInstance = axios.create({
   baseURL: '/api',
+  // baseURL: 'http://localhost:5107/api',
   timeout: 10000,
 });
+
+// async function determineBaseURL() {
+//   try {
+//     const testURL = 'http://localhost:5107/api/travel/list';
+//     await axios.get(testURL, { timeout: 2000 });
+//     return 'http://localhost:5107/api';
+//   } catch (error) {
+//     return '/api';
+//   }
+// }
+
+console.log('baseURL', service);
 
 // 请求拦截器
 service.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('token');
+    console.log('Current token:', token); // 添加调试日志
     if (token) {
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
