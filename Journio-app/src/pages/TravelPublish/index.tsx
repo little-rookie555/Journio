@@ -2,7 +2,8 @@ import { getTravelDetail, publishTravel, updateTravel } from '@/api/travel';
 import { uploadFile } from '@/api/upload';
 import { VideoUploader } from '@/components/VideoUploader';
 import { useUserStore } from '@/store/user';
-import { Button, DatePicker, Form, ImageUploader, Input, NavBar, Toast } from 'antd-mobile';
+import { Amap } from '@amap/amap-react';
+import { Button, DatePicker, Form, ImageUploader, Input, NavBar, Popup, Toast } from 'antd-mobile';
 import React, { useEffect, useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.bubble.css'; // 替换 snow 主题
@@ -18,7 +19,8 @@ const TravelPublish: React.FC = () => {
   const editId = searchParams.get('edit');
   const [content, setContent] = useState('');
   const [dateVisible, setDateVisible] = useState(false); // 添加状态控制日期选择器显示
-
+  // const [location, setLocation] = useState<{ name: string; lat: number; lng: number } | null>(null);
+  const [mapVisible, setMapVisible] = useState(false);
   const modules = {
     toolbar: [
       [
@@ -265,6 +267,48 @@ const TravelPublish: React.FC = () => {
                 className="cost-item"
               >
                 <Input type="number" placeholder="请输入人均消费金额" />
+              </Form.Item>
+              {/* 添加地点选择 */}
+              <Form.Item
+                name="location"
+                label="游玩地点"
+                rules={[{ required: true, message: '请选择游玩地点' }]}
+              >
+                <div className="location-picker">
+                  <div className="location-input" onClick={() => setMapVisible(true)}>
+                    {'点击选择地点'}
+                  </div>
+                  <Popup
+                    visible={mapVisible}
+                    onMaskClick={() => setMapVisible(false)}
+                    bodyStyle={{
+                      height: '80vh',
+                      borderTopLeftRadius: '8px',
+                      borderTopRightRadius: '8px',
+                    }}
+                  >
+                    <div style={{ height: '400px', width: '100%' }}>
+                      <Amap zoom={15}>
+                        {/* <Marker
+                          position={[116.473179, 39.993169]}
+                          label={{
+                            content: 'Hello, AMap-React!',
+                            direction: 'bottom',
+                          }}
+                          draggable
+                        /> */}
+                      </Amap>
+                      <Button
+                        block
+                        color="primary"
+                        onClick={() => setMapVisible(false)}
+                        style={{ marginTop: '12px' }}
+                      >
+                        确定
+                      </Button>
+                    </div>
+                  </Popup>
+                </div>
               </Form.Item>
             </div>
           </Form.Item>
