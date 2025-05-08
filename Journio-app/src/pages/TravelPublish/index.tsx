@@ -1,11 +1,11 @@
 import { getTravelDetail, publishTravel, updateTravel } from '@/api/travel';
 import { uploadFile } from '@/api/upload';
-import { useUserStore } from '@/store/user';
-import { Button, Form, ImageUploader, Input, NavBar, Toast } from 'antd-mobile';
 import { VideoUploader } from '@/components/VideoUploader';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.bubble.css';  // 替换 snow 主题
+import { useUserStore } from '@/store/user';
+import { Button, DatePicker, Form, ImageUploader, Input, NavBar, Toast } from 'antd-mobile';
 import React, { useEffect, useState } from 'react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.bubble.css'; // 替换 snow 主题
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './index.scss';
 
@@ -17,13 +17,19 @@ const TravelPublish: React.FC = () => {
   const [form] = Form.useForm();
   const editId = searchParams.get('edit');
   const [content, setContent] = useState('');
+  const [dateVisible, setDateVisible] = useState(false); // 添加状态控制日期选择器显示
 
   const modules = {
     toolbar: [
-      [{ 'header': '1' }, { 'header': '2' },
-        'bold', 'underline',
-        { 'list': 'ordered'}, { 'list': 'bullet' }],  // 直接配置 h1, h2 标题按钮
-    ]
+      [
+        { header: '1' },
+        { header: '2' },
+        'bold',
+        'underline',
+        { list: 'ordered' },
+        { list: 'bullet' },
+      ], // 直接配置 h1, h2 标题按钮
+    ],
   };
 
   useEffect(() => {
@@ -38,6 +44,9 @@ const TravelPublish: React.FC = () => {
             title: res.data.title,
             images: res.data.images.map((url) => ({ url })),
             video: res.data.video ? { url: res.data.video } : null,
+            travelDate: new Date(res.data.travelDate),
+            duration: res.data.duration,
+            cost: res.data.cost,
           });
           setContent(res.data.content);
         }
@@ -71,7 +80,10 @@ const TravelPublish: React.FC = () => {
         content: content,
         images: values.images.map((item: any) => item.url),
         coverImage: values.images[0]?.url || '',
-        video: values.video?.url || '', // 添加视频URL
+        video: values.video?.url || '',
+        travelDate: values.travelDate.toISOString().split('T')[0], // 格式化日期
+        duration: Number(values.duration),
+        cost: Number(values.cost),
         authorId: userInfo?.id,
         authorNickname: userInfo?.nickname,
         authorAvatar: userInfo?.avatar,
@@ -113,6 +125,10 @@ const TravelPublish: React.FC = () => {
       </NavBar>
       <div className="publish-form">
         <Form
+          style={{
+            '--border-inner': 'none',
+            '--border-top': 'none',
+          }}
           form={form}
           layout="vertical"
           onFinish={onFinish}
@@ -122,91 +138,152 @@ const TravelPublish: React.FC = () => {
             </Button>
           }
         >
-          <Form.Item name="title" label="标题" rules={[{ required: true, message: '请输入标题' }]}>
-            <Input placeholder="请输入游记标题" />
-          </Form.Item>
-          <Form.Item label="正文" rules={[{ required: true, message: '请输入正文' }]}>
-            <ReactQuill 
-              theme="bubble"
-              value={content}
-              onChange={setContent}
-              modules={modules}
-              placeholder="请输入游记正文"
-            />
-          </Form.Item>
-          <Form.Item
-            name="video"
-            label="视频"
-          >
-            <VideoUploader 
-              maxSize={50} 
-              upload={async (file) => {
-                // 上传视频，逻辑与照片一样
-                try {
-                  const res = await uploadFile(file);
-                  if (res.code === 200) {
-                    return {
-                      url: res.data.url,
-                    };
-                  } else {
+          <Form.Item label="上传图片视频" className="travel-info-card">
+            <Form.Item name="images" rules={[{ required: true, message: '请上传至少一张图片' }]}>
+              <ImageUploader
+                multiple
+                maxCount={9}
+                upload={async (file) => {
+                  try {
+                    const res = await uploadFile(file);
+                    if (res.code === 200) {
+                      return {
+                        url: res.data.url,
+                      };
+                    } else {
+                      Toast.show({
+                        icon: 'fail',
+                        content: '上传失败',
+                      });
+                      return {
+                        url: URL.createObjectURL(file),
+                      };
+                    }
+                  } catch (error) {
+                    console.error('上传失败:', error);
                     Toast.show({
                       icon: 'fail',
-                      content: '上传失败',
+                      content: '上传失败，请稍后重试',
+                    });
+                    // 上传失败时，仍然返回本地预览URL
+                    return {
+                      url: URL.createObjectURL(file),
+                    };
+                  }
+                }}
+              />
+            </Form.Item>
+            <Form.Item name="video">
+              <VideoUploader
+                maxSize={50}
+                upload={async (file) => {
+                  // 上传视频，逻辑与照片一样
+                  try {
+                    const res = await uploadFile(file);
+                    if (res.code === 200) {
+                      return {
+                        url: res.data.url,
+                      };
+                    } else {
+                      Toast.show({
+                        icon: 'fail',
+                        content: '上传失败',
+                      });
+                      return {
+                        url: URL.createObjectURL(file),
+                      };
+                    }
+                  } catch (error) {
+                    console.error('上传失败:', error);
+                    Toast.show({
+                      icon: 'fail',
+                      content: '上传失败，请稍后重试',
                     });
                     return {
                       url: URL.createObjectURL(file),
                     };
                   }
-                } catch (error) {
-                  console.error('上传失败:', error);
-                  Toast.show({
-                    icon: 'fail',
-                    content: '上传失败，请稍后重试',
-                  });
-                  return {
-                    url: URL.createObjectURL(file),
-                  };
-                }
-              }}
-            />
+                }}
+              />
+            </Form.Item>
           </Form.Item>
-          <Form.Item
-            name="images"
-            label="图片"
-            rules={[{ required: true, message: '请上传至少一张图片' }]}
-          >
-            <ImageUploader
-              multiple
-              maxCount={9}
-              upload={async (file) => {
-                try {
-                  const res = await uploadFile(file);
-                  if (res.code === 200) {
-                    return {
-                      url: res.data.url,
-                    };
-                  } else {
-                    Toast.show({
-                      icon: 'fail',
-                      content: '上传失败',
-                    });
-                    return {
-                      url: URL.createObjectURL(file),
-                    };
-                  }
-                } catch (error) {
-                  console.error('上传失败:', error);
-                  Toast.show({
-                    icon: 'fail',
-                    content: '上传失败，请稍后重试',
-                  });
-                  // 上传失败时，仍然返回本地预览URL
-                  return {
-                    url: URL.createObjectURL(file),
-                  };
-                }
-              }}
-            />
+          {/* 添加新的表单项组 */}
+          <Form.Item label="游玩信息" className="travel-info-card">
+            <div className="travel-info-container">
+              {/* 第一行：出发日期和游玩时长 */}
+              <div className="travel-info-row">
+                <Form.Item
+                  name="travelDate"
+                  label="出发日期"
+                  rules={[{ required: true, message: '请选择出发时间' }]}
+                  className="date-picker-item"
+                >
+                  <DatePicker
+                    visible={dateVisible}
+                    onClose={() => setDateVisible(false)}
+                    onConfirm={(val) => {
+                      form.setFieldValue('travelDate', val);
+                    }}
+                    max={new Date()}
+                    precision="month"
+                  >
+                    {(value) => (
+                      <div
+                        onClick={() => setDateVisible(true)}
+                        style={{
+                          height: '32px',
+                          lineHeight: '32px',
+                          padding: '0 12px',
+                          border: 'none',
+                          fontSize: '15px',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          color: value ? '#333' : '#999',
+                        }}
+                      >
+                        {value
+                          ? value.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long' })
+                          : '请选择出发日期'}
+                      </div>
+                    )}
+                  </DatePicker>
+                </Form.Item>
+                <Form.Item
+                  name="duration"
+                  label="旅行天数"
+                  rules={[{ required: true, message: '请填写旅行天数' }]}
+                  className="duration-item"
+                >
+                  <Input type="number" placeholder="请输入" />
+                </Form.Item>
+              </div>
+              {/* 第二行：人均消费 */}
+              <Form.Item
+                name="cost"
+                label="人均消费（元）"
+                rules={[{ required: true, message: '请填写人均消费' }]}
+                className="cost-item"
+              >
+                <Input type="number" placeholder="请输入人均消费金额" />
+              </Form.Item>
+            </div>
+          </Form.Item>
+          <Form.Item label="游记内容" className="travel-info-card">
+            <Form.Item name="title" rules={[{ required: true, message: '请输入标题' }]}>
+              <Input placeholder="请输入游记标题" />
+            </Form.Item>
+            <Form.Item
+              rules={[{ required: true, message: '请输入正文' }]}
+              style={{ padding: 0 }} // 添加 padding: 0
+            >
+              <ReactQuill
+                theme="bubble"
+                value={content}
+                onChange={setContent}
+                modules={modules}
+                placeholder="请输入游记正文"
+              />
+            </Form.Item>
           </Form.Item>
         </Form>
       </div>

@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
 import { Button, Toast } from 'antd-mobile';
+import React, { useRef, useState } from 'react';
 import './index.scss';
 
 interface VideoUploaderProps {
@@ -53,7 +53,7 @@ export const VideoUploader: React.FC<VideoUploaderProps> = ({
         url = (window.URL || window.webkitURL).createObjectURL(file);
       }
       onChange?.({ url });
-    } catch (error) {
+    } catch {
       Toast.show({
         icon: 'fail',
         content: '视频上传失败',
@@ -84,12 +84,7 @@ export const VideoUploader: React.FC<VideoUploaderProps> = ({
       {value ? (
         <div className="video-preview">
           <video src={value.url} controls className="preview-video" />
-          <Button
-            size="small"
-            color="danger"
-            onClick={handleRemove}
-            className="remove-btn"
-          >
+          <Button size="small" color="danger" onClick={handleRemove} className="remove-btn">
             删除视频
           </Button>
         </div>
@@ -104,12 +99,8 @@ export const VideoUploader: React.FC<VideoUploaderProps> = ({
             style={{ display: 'none' }}
           />
           <div className="upload-area" onClick={handleClick}>
-            <Button loading={loading}>
-              {loading ? '上传中...' : '上传视频'}
-            </Button>
-            <div className="upload-tip">
-              支持视频格式：MP4、WebM等（{maxSize}MB以内）
-            </div>
+            <Button loading={loading}>{loading ? '上传中...' : '上传视频'}</Button>
+            <div className="upload-tip">支持视频格式：MP4、WebM等（{maxSize}MB以内）</div>
           </div>
         </div>
       )}

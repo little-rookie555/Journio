@@ -1,13 +1,19 @@
-import { getTravelDetail, getCommentList, createComment, likeTravel, starTravel } from '@/api/travel';
+import {
+  createComment,
+  getCommentList,
+  getTravelDetail,
+  likeTravel,
+  starTravel,
+} from '@/api/travel';
 import { TravelItem } from '@/mock/travel';
-import { Image, NavBar, Toast, Swiper, Popup, TextArea, Button } from 'antd-mobile';
+import { useUserStore } from '@/store/user';
+import { Button, Image, NavBar, Popup, Swiper, TextArea, Toast } from 'antd-mobile';
 import DOMPurify from 'dompurify';
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import './index.scss';
-import CommentList, {Comment} from './CommentList';
-import { useUserStore } from '@/store/user';
+import { useNavigate, useParams } from 'react-router-dom';
 import ActionBar from './ActionBar';
+import CommentList, { Comment } from './CommentList';
+import './index.scss';
 
 const TravelDetail: React.FC = () => {
   const { id } = useParams();
@@ -30,22 +36,22 @@ const TravelDetail: React.FC = () => {
         if (res.code === 200) {
           setTravel(res.data);
           setLikeCount(res.data.likeCount); // 设置初始点赞数
-          
+
           // 获取用户的点赞和收藏状态
           if (userInfo) {
             // 获取点赞状态
             const likeRes = await likeTravel({
               travelId: Number(id),
-              userId: userInfo.id
+              userId: userInfo.id,
             });
             if (likeRes.code === 200) {
               setIsLiked(likeRes.data.liked);
             }
-  
+
             // 获取收藏状态
             const starRes = await starTravel({
               travelId: Number(id),
-              userId: userInfo.id
+              userId: userInfo.id,
             });
             if (starRes.code === 200) {
               setIsStarred(starRes.data.starred);
@@ -68,7 +74,7 @@ const TravelDetail: React.FC = () => {
         if (res.code === 200) {
           setComments(res.data);
         }
-      } catch (error: any) {
+      } catch {
         Toast.show({
           icon: 'fail',
           content: '获取评论失败',
@@ -90,33 +96,35 @@ const TravelDetail: React.FC = () => {
     return <div className="empty">暂无游记数据</div>;
   }
 
-  const sanitizedContent = travel.content ? DOMPurify.sanitize(travel.content, {
-    ALLOWED_TAGS: ['p', 'h1', 'h2', 'strong', 'em', 'u', 'ol', 'ul', 'li', 'br'],
-    ALLOWED_ATTR: [], // 不允许任何属性
-  }) : '';
+  const sanitizedContent = travel.content
+    ? DOMPurify.sanitize(travel.content, {
+        ALLOWED_TAGS: ['p', 'h1', 'h2', 'strong', 'em', 'u', 'ol', 'ul', 'li', 'br'],
+        ALLOWED_ATTR: [], // 不允许任何属性
+      })
+    : '';
   // console.log(sanitizedContent);
   const handleComment = async () => {
     if (!id) return;
-    
+
     try {
       const res = await createComment({
         travelId: Number(id),
         content: commentText,
         userId: userInfo!.id, // 这里应该使用当前登录用户的ID
       });
-  
+
       if (res.code === 200) {
         Toast.show({
           icon: 'success',
           content: '评论成功',
         });
-        
+
         // 重新获取评论列表
         const commentsRes = await getCommentList(Number(id));
         if (commentsRes.code === 200) {
           setComments(commentsRes.data);
         }
-        
+
         // 清空输入框并关闭弹窗
         setCommentText('');
         setShowCommentPopup(false);
@@ -165,11 +173,27 @@ const TravelDetail: React.FC = () => {
             </Swiper>
           </div>
         )}
-
-        <div 
-          className="content"
-          dangerouslySetInnerHTML={{ __html: sanitizedContent }}
-        />
+        {/* 添加游玩信息卡片 */}
+        <div className="travel-info-card">
+          <div className="info-item">
+            <span className="label">出发时间</span>
+            <span className="value">
+              {new Date(travel.travelDate).toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: 'long',
+              })}
+            </span>
+          </div>
+          <div className="info-item">
+            <span className="label">行程天数</span>
+            <span className="value">{travel.duration}天</span>
+          </div>
+          <div className="info-item">
+            <span className="label">人均花费</span>
+            <span className="value">¥{travel.cost}</span>
+          </div>
+        </div>
+        <div className="content" dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
       </div>
 
       {/* 新增底部固定栏 */}
@@ -201,7 +225,7 @@ const TravelDetail: React.FC = () => {
         bodyStyle={{
           borderTopLeftRadius: '8px',
           borderTopRightRadius: '8px',
-          padding: '16px'
+          padding: '16px',
         }}
       >
         <div className="comment-popup">
@@ -212,12 +236,7 @@ const TravelDetail: React.FC = () => {
             rows={4}
           />
           <div className="comment-actions">
-            <Button
-              block
-              color="primary"
-              onClick={handleComment}
-              disabled={!commentText.trim()}
-            >
+            <Button block color="primary" onClick={handleComment} disabled={!commentText.trim()}>
               发送
             </Button>
           </div>

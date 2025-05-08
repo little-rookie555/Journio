@@ -16,6 +16,9 @@ export interface TravelItem {
   createTime: string;
   content: string;
   likeCount: number; // 添加点赞数字段
+  travelDate: string; // 添加出发日期
+  duration: number; // 添加旅行天数
+  cost: number; // 添加人均消费
 }
 
 export const mockTravelList = Mock.mock({
@@ -35,6 +38,9 @@ export const mockTravelList = Mock.mock({
       createTime: '@datetime("yyyy-MM-dd HH:mm:ss")',
       content: '@cparagraph(10,20)',
       'likeCount|0-100': 0, // 添加随机点赞数
+      travelDate: '@date("yyyy-MM-dd")',
+      'duration|1-30': 1,
+      'cost|100-10000': 1000,
     },
   ],
 }).list;
@@ -84,6 +90,9 @@ export interface TravelPublishParams {
   authorId: number;
   authorNickname: string;
   authorAvatar: string;
+  travelDate: string; // 添加出发日期
+  duration: number; // 添加旅行天数
+  cost: number; // 添加人均消费
 }
 
 // 发布游记接口
@@ -105,6 +114,9 @@ Mock.mock('/api/travel/publish', 'post', (options: any) => {
     status: 0,
     createTime: Mock.Random.datetime('yyyy-MM-dd HH:mm:ss'),
     likeCount: 0,
+    travelDate: params.travelDate,
+    duration: params.duration,
+    cost: params.cost,
   };
 
   mockTravelList.unshift(travel);
@@ -137,6 +149,9 @@ Mock.mock(/\/api\/travel\/update\/\d+/, 'put', (options: any) => {
     coverImage: params.coverImage,
     images: params.images,
     video: params.video, // 添加视频URL更新
+    travelDate: params.travelDate,
+    duration: params.duration,
+    cost: params.cost,
   };
 
   return {
@@ -194,18 +209,20 @@ const mockComments: Record<number, Comment[]> = {};
 // 初始化一些模拟评论数据
 const generateMockComments = (travelId: number) => {
   const comments: Comment[] = Mock.mock({
-    'array|5-15': [{
-      'id|+1': Mock.Random.integer(1000, 9999),
-      content: '@cparagraph(1, 3)',
-      createTime: '@datetime("yyyy-MM-dd HH:mm:ss")',
-      author: {
-        'id|+1': 1,
-        nickname: '@cname',
-        avatar: '@image("100x100")',
+    'array|5-15': [
+      {
+        'id|+1': Mock.Random.integer(1000, 9999),
+        content: '@cparagraph(1, 3)',
+        createTime: '@datetime("yyyy-MM-dd HH:mm:ss")',
+        author: {
+          'id|+1': 1,
+          nickname: '@cname',
+          avatar: '@image("100x100")',
+        },
       },
-    }]
+    ],
   }).array;
-  
+
   mockComments[travelId] = comments;
   return comments;
 };
@@ -213,12 +230,12 @@ const generateMockComments = (travelId: number) => {
 // 获取评论列表接口
 Mock.mock(/\/api\/travel\/comment\/list\/\d+/, 'get', (options) => {
   const travelId = Number(options.url.split('/').pop());
-  
+
   // 如果这个游记还没有评论，生成一些模拟评论
   if (!mockComments[travelId]) {
     generateMockComments(travelId);
   }
-  
+
   return {
     code: 200,
     data: mockComments[travelId] || [],
@@ -228,7 +245,7 @@ Mock.mock(/\/api\/travel\/comment\/list\/\d+/, 'get', (options) => {
 // 发表评论接口
 Mock.mock('/api/travel/comment', 'post', (options: any) => {
   const params = JSON.parse(options.body) as CommentParams;
-  
+
   const comment: Comment = {
     id: Mock.Random.integer(1000, 9999),
     content: params.content,
@@ -263,19 +280,19 @@ mockTravelList.forEach((travel: TravelItem) => {
 // 点赞接口
 Mock.mock('/api/travel/like', 'post', (options: any) => {
   const { travelId, userId, liked } = JSON.parse(options.body);
-  
+
   if (!userActions[travelId]) {
     userActions[travelId] = {};
   }
   if (!userActions[travelId][userId]) {
     userActions[travelId][userId] = { liked: false, starred: false };
   }
-  
+
   if (!travelLikes[travelId]) {
-    const travel = mockTravelList.find((t:TravelItem) => t.id === travelId);
+    const travel = mockTravelList.find((t: TravelItem) => t.id === travelId);
     travelLikes[travelId] = travel ? travel.likeCount : 0;
   }
-  
+
   // 如果是获取状态的请求，直接返回当前状态
   if (liked === undefined) {
     return {
@@ -286,12 +303,12 @@ Mock.mock('/api/travel/like', 'post', (options: any) => {
       },
     };
   }
-  
+
   const oldLiked = userActions[travelId][userId].liked;
   userActions[travelId][userId].liked = liked;
-  travelLikes[travelId] += liked ? (oldLiked ? 0 : 1) : (oldLiked ? -1 : 0);
+  travelLikes[travelId] += liked ? (oldLiked ? 0 : 1) : oldLiked ? -1 : 0;
 
-  const travelIndex = mockTravelList.findIndex((t:TravelItem) => t.id === travelId);
+  const travelIndex = mockTravelList.findIndex((t: TravelItem) => t.id === travelId);
   if (travelIndex !== -1) {
     mockTravelList[travelIndex].likeCount = travelLikes[travelId];
   }
@@ -308,24 +325,24 @@ Mock.mock('/api/travel/like', 'post', (options: any) => {
 // 收藏接口
 Mock.mock('/api/travel/star', 'post', (options: any) => {
   const { travelId, userId, starred } = JSON.parse(options.body);
-  
+
   if (!userActions[travelId]) {
     userActions[travelId] = {};
   }
   if (!userActions[travelId][userId]) {
     userActions[travelId][userId] = { liked: false, starred: false };
   }
-  
+
   // 如果是获取状态的请求，直接返回当前状态
   if (starred === undefined) {
     return {
       code: 200,
       data: {
-        starred: userActions[travelId][userId].starred
+        starred: userActions[travelId][userId].starred,
       },
     };
   }
-  
+
   userActions[travelId][userId].starred = starred;
 
   return {

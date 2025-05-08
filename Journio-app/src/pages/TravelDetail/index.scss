@@ -64,7 +64,33 @@
       }
     }
   }
+  .travel-info-card {
+    margin: 16px 0;
+    padding: 16px;
+    background: var(--adm-color-background);
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    display: flex;
+    justify-content: space-around;
 
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+
+      .label {
+        font-size: 14px;
+        color: var(--adm-color-weak);
+      }
+
+      .value {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--adm-color-text);
+      }
+    }
+  }
   .loading,
   .empty {
     padding: 20px;
@@ -95,7 +121,8 @@
       margin: 12px 0;
     }
 
-    ul, ol {
+    ul,
+    ol {
       padding-left: 24px;
       margin: 12px 0;
     }
@@ -112,7 +139,6 @@
   }
 }
 
-
 .comment-popup {
   .adm-text-area {
     --font-size: 16px;
@@ -123,18 +149,3 @@
     margin-top: 16px;
   }
 }
-
-
-
-@keyframes heartBeat {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.4);
-  }
-  100% {
-    transform: scale(1.2);
-  }
-}
-

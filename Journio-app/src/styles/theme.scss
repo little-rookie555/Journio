@@ -1,7 +1,4 @@
 :root:root {
-
-
-
   // 主色调 - 深蓝色
   // 主色调 - 浅蓝色
   --adm-color-primary: #4a90e2;
@@ -20,7 +17,7 @@
   --adm-color-weak: #999999;
 
   // 背景色
-  --adm-color-background: #f8fafc;
+  --adm-color-background: #fafcfe;
   --adm-color-box: #ffffff;
 
   // 边框颜色
@@ -33,4 +30,14 @@
   --adm-radius-s: 4px;
   --adm-radius-m: 8px;
   --adm-radius-l: 12px;
+
+  // 字体设置
+  --adm-font-family:
+    'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue',
+    Helvetica, Arial, sans-serif;
+}
+
+// 添加全局字体设置
+* {
+  font-family: var(--adm-font-family);
 }

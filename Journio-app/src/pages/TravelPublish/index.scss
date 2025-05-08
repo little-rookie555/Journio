@@ -53,22 +53,21 @@
     }
 
     .quill {
-
       // 编辑区域样式
       .ql-container {
         width: 100%;
         min-height: 200px;
         font-size: 14px;
-        
+        padding: 0px;
+
         .ql-editor {
           width: 100%;
-          max-width: 100%;  // 确保不会超出容器
-          box-sizing: border-box;  // 确保padding不会导致超出
-          padding: 12px;
+          max-width: 100%; // 确保不会超出容器
+          box-sizing: border-box; // 确保padding不会导致超出
           white-space: pre-wrap;
           word-wrap: break-word;
           overflow-wrap: break-word;
-          overflow-x: hidden;  // 防止水平滚动
+          overflow-x: hidden; // 防止水平滚动
         }
       }
 
@@ -81,5 +80,46 @@
         }
       }
     }
+  }
+}
+
+.travel-info-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  padding: 12px;
+  margin-bottom: 12px;
+
+  .travel-info-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .travel-info-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+
+    .date-picker-item {
+      flex: 2;
+      margin-bottom: 0;
+    }
+
+    .duration-item {
+      flex: 1;
+      margin-bottom: 0;
+    }
+  }
+
+  .cost-item {
+    margin-bottom: 0;
+  }
+
+  // 为所有输入框添加统一的样式
+  :global(.adm-input) {
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 8px 12px;
   }
 }
