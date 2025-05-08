@@ -1,7 +1,15 @@
-import React from 'react';
-import { EditSOutline, HeartOutline, HeartFill, StarOutline, StarFill, MessageOutline } from 'antd-mobile-icons';
-import { Toast } from 'antd-mobile';
 import { likeTravel, starTravel } from '@/api/travel';
+import { Toast } from 'antd-mobile';
+import {
+  EditSOutline,
+  HeartFill,
+  HeartOutline,
+  MessageOutline,
+  StarFill,
+  StarOutline,
+} from 'antd-mobile-icons';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './index.scss';
 
 interface ActionBarProps {
@@ -11,7 +19,7 @@ interface ActionBarProps {
   isLiked: boolean;
   isStarred: boolean;
   travelId: number;
-  userId: number;
+  userId: number | undefined;
   onLikeChange: (liked: boolean) => void;
   onStarChange: (starred: boolean) => void;
   onLikeCountChange: (count: number) => void; // 添加点赞数更新回调
@@ -31,14 +39,29 @@ const ActionBar: React.FC<ActionBarProps> = ({
   onComment,
   onCommentList,
 }) => {
+  const navigate = useNavigate();
+  // 添加登录检查工具函数
+  const checkLogin = () => {
+    if (!userId) {
+      Toast.show({
+        content: '请先登录',
+        icon: 'fail',
+      });
+      navigate('/login');
+      return false;
+    }
+    return true;
+  };
+
   const handleLike = async () => {
     try {
+      if (!checkLogin()) return;
       const res = await likeTravel({
         travelId,
         userId,
         liked: !isLiked,
       });
-      
+
       if (res.code === 200) {
         onLikeChange(!isLiked);
         onLikeCountChange(res.data.likeCount); // 更新点赞数
@@ -57,12 +80,13 @@ const ActionBar: React.FC<ActionBarProps> = ({
 
   const handleStar = async () => {
     try {
+      if (!checkLogin()) return;
       const res = await starTravel({
         travelId,
         userId,
         starred: !isStarred,
       });
-      
+
       if (res.code === 200) {
         onStarChange(!isStarred);
         Toast.show({
@@ -89,22 +113,22 @@ const ActionBar: React.FC<ActionBarProps> = ({
       <div className="action-buttons">
         <div className="action-item" onClick={handleLike}>
           {isLiked ? (
-            <HeartFill className="icon-liked" />
+            <HeartFill fontSize={24} className="icon-liked" />
           ) : (
-            <HeartOutline className="icon-default" />
+            <HeartOutline fontSize={24} className="icon-default" />
           )}
           <span>{likeCount}</span>
         </div>
         <div className="action-item" onClick={handleStar}>
           {isStarred ? (
-            <StarFill className="icon-starred" />
+            <StarFill fontSize={24} className="icon-starred" />
           ) : (
-            <StarOutline className="icon-default" />
+            <StarOutline fontSize={24} className="icon-default" />
           )}
           <span>{isStarred ? '已收藏' : '收藏'}</span>
         </div>
         <div className="action-item" onClick={onCommentList}>
-          <MessageOutline />
+          <MessageOutline fontSize={24} />
           <span>{commentCount}</span>
         </div>
       </div>

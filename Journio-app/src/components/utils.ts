@@ -6,15 +6,15 @@
  */
 export const stripHtml = (html: string, maxLength?: number): string => {
   if (!html) return '';
-  
+
   // 将段落和换行标签转换为实际的换行符
   const textWithBreaks = html
-    .replace(/<p[^>]*>/gi, '')  // 移除 <p> 开始标签
-    .replace(/<\/p>/gi, '\n\n')  // 将 </p> 转换为两个换行
-    .replace(/<br\s*\/?>/gi, '\n')  // 将 <br> 转换为单个换行
-    .replace(/<[^>]+>/g, '')  // 移除所有其他 HTML 标签
-    .replace(/\n\s*\n/g, '\n\n')  // 将多个连续换行减少为最多两个
-    .replace(/^\s+|\s+$/g, '');  // 移除首尾空白
+    .replace(/<p[^>]*>/gi, '') // 移除 <p> 开始标签
+    .replace(/<\/p>/gi, '\n\n') // 将 </p> 转换为两个换行
+    .replace(/<br\s*\/?>/gi, '\n') // 将 <br> 转换为单个换行
+    .replace(/<[^>]+>/g, '') // 移除所有其他 HTML 标签
+    .replace(/\n\s*\n/g, '\n\n') // 将多个连续换行减少为最多两个
+    .replace(/^\s+|\s+$/g, ''); // 移除首尾空白
 
   // 如果指定了最大长度，截取文本
   if (maxLength && textWithBreaks.length > maxLength) {

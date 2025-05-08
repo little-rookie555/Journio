@@ -59,7 +59,7 @@ export const deleteTravel = (id: number): Promise<ApiResponse<null>> => {
 export interface CommentParams {
   travelId: number;
   content: string;
-  userId: number;    // 添加用户ID
+  userId: number; // 添加用户ID
   parentId?: number; // 可选的父评论ID，用于回复功能
 }
 
@@ -76,29 +76,35 @@ export interface Comment {
 }
 
 // 发表评论
-export const createComment = (params: CommentParams): Promise<{ code: number; data: Comment; message?: string }> => {
+export const createComment = (
+  params: CommentParams,
+): Promise<{ code: number; data: Comment; message?: string }> => {
   return request.post(`/travel/comment`, params);
 };
 
 // 获取评论列表
-export const getCommentList = (travelId: number): Promise<{ code: number; data: Comment[]; message?: string }> => {
+export const getCommentList = (
+  travelId: number,
+): Promise<{ code: number; data: Comment[]; message?: string }> => {
   return request.get(`/travel/comment/list/${travelId}`);
 };
 
 interface LikeParams {
   travelId: number;
-  userId: number;
+  userId: number | undefined;
   liked?: boolean;
 }
 
 interface StarParams {
   travelId: number;
-  userId: number;
+  userId: number | undefined;
   starred?: boolean;
 }
 
 // 点赞/取消点赞
-export const likeTravel = (params: LikeParams): Promise<ApiResponse<{ liked: boolean; likeCount: number }>> => {
+export const likeTravel = (
+  params: LikeParams,
+): Promise<ApiResponse<{ liked: boolean; likeCount: number }>> => {
   return request.post('/travel/like', params);
 };
 

@@ -7,7 +7,15 @@ import './index.scss';
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const { login, loading } = useUserStore();
-
+  // 封装导航逻辑
+  const handleNavigation = () => {
+    const canGoBack = window.history.state && window.history.state.idx > 0;
+    if (canGoBack) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
   const onFinish = async (values: any) => {
     try {
       await login(values.username, values.password);
@@ -15,7 +23,8 @@ const Login: React.FC = () => {
         icon: 'success',
         content: '登录成功',
       });
-      navigate('/');
+      // 尝试返回上一页，如果没有上一页则跳转到首页
+      handleNavigation();
     } catch (error: any) {
       Toast.show({
         icon: 'fail',
@@ -26,7 +35,7 @@ const Login: React.FC = () => {
 
   return (
     <div className="login">
-      <NavBar onBack={() => navigate('/')} className="nav-bar">
+      <NavBar onBack={handleNavigation} className="nav-bar">
         登录账号
       </NavBar>
       <div className="login-form">

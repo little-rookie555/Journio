@@ -103,14 +103,28 @@ const TravelDetail: React.FC = () => {
       })
     : '';
   // console.log(sanitizedContent);
+  // 添加登录检查工具函数
+  const checkLogin = () => {
+    if (!userInfo) {
+      Toast.show({
+        content: '请先登录',
+        icon: 'fail',
+      });
+      navigator('/login');
+      return false;
+    }
+    return true;
+  };
+
+  // 修改处理函数
   const handleComment = async () => {
-    if (!id) return;
+    if (!id || !checkLogin()) return;
 
     try {
       const res = await createComment({
         travelId: Number(id),
         content: commentText,
-        userId: userInfo!.id, // 这里应该使用当前登录用户的ID
+        userId: userInfo!.id,
       });
 
       if (res.code === 200) {
@@ -138,10 +152,12 @@ const TravelDetail: React.FC = () => {
   };
 
   const handleLikeChange = (liked: boolean) => {
+    if (!checkLogin()) return;
     setIsLiked(liked);
   };
 
   const handleStarChange = (starred: boolean) => {
+    if (!checkLogin()) return;
     setIsStarred(starred);
   };
 
@@ -198,14 +214,18 @@ const TravelDetail: React.FC = () => {
 
       {/* 新增底部固定栏 */}
       <ActionBar
-        onComment={() => setShowCommentPopup(true)}
+        onComment={() => {
+          if (checkLogin()) {
+            setShowCommentPopup(true);
+          }
+        }}
         onCommentList={() => setShowCommentList(true)}
         commentCount={comments.length}
         likeCount={likeCount}
         isLiked={isLiked}
         isStarred={isStarred}
         travelId={Number(id)}
-        userId={userInfo!.id}
+        userId={userInfo?.id} // 改为可选链操作符
         onLikeChange={handleLikeChange}
         onStarChange={handleStarChange}
         onLikeCountChange={handleLikeCountChange} // 添加点赞数更新处理
