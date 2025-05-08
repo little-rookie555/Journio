@@ -6,6 +6,7 @@ import { getAuditDetail } from '@/api/audit';
 
 const AuditList: React.FC = () => {
   const { auditList, loading, fetchAuditList, approveAudit, rejectAudit, deleteAudit } = useAuditStore();
+  const role = localStorage.getItem('role');
   const [detailLoading, setDetailLoading] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const rejectReasonRef = useRef(''); // 添加这行声明
@@ -116,10 +117,15 @@ const AuditList: React.FC = () => {
       dataIndex: 'author',
       key: 'author',
     },
+    // {
+    //   title: '创建时间',
+    //   dataIndex: 'createTime',
+    //   key: 'createTime',
+    // },
     {
-      title: '创建时间',
-      dataIndex: 'createTime',
-      key: 'createTime',
+      title: '修改时间',
+      dataIndex: 'updateTime',
+      key: 'updateTime',
     },
     {
       title: '内容',
@@ -157,26 +163,29 @@ const AuditList: React.FC = () => {
           <Button type="link" onClick={() => handleView(record)}>
             查看
           </Button>
-          <Popconfirm
-            title="确认删除"
-            description={`确定要删除"${record.title}"吗？`}
-            onConfirm={async () => {
-              try {
-                await deleteAudit(record.key);
-                message.success('删除成功');
-                // 删除成功后刷新列表
-                fetchAuditList();
-              } catch (error) {
-                console.error('删除失败:', error);
-              }
-            }}
-            okText="确定"
-            cancelText="取消"
-          >
-            <Button type="link" danger>
-              删除
-            </Button>
-          </Popconfirm>
+          {/* 只有管理员(role=3)才能看到删除按钮 */}
+          {role === '3' && (
+            <Popconfirm
+              title="确认删除"
+              description={`确定要删除"${record.title}"吗？`}
+              onConfirm={async () => {
+                try {
+                  await deleteAudit(record.key);
+                  message.success('删除成功');
+                  // 删除成功后刷新列表
+                  fetchAuditList();
+                } catch (error) {
+                  console.error('删除失败:', error);
+                }
+              }}
+              okText="确定"
+              cancelText="取消"
+            >
+              <Button type="link" danger>
+                删除
+              </Button>
+            </Popconfirm>
+          )}
         </Space>
       ),
     },

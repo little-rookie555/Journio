@@ -71,6 +71,8 @@ const extractVideoThumbnail = async (videoUrl) => {
 exports.createTrip = async (req, res) => {
   try {
     const userId = req.id;
+
+    console.log("创建游记的内容:", req.body.content);
     
     // 如果有视频，先处理视频截图
     let coverImage = req.body.coverImage;
@@ -398,7 +400,12 @@ exports.getTripsByUser = async (req, res) => {
     const page = parseInt(req.query.pageNum) || 1;
     const limit = parseInt(req.query.pageSize) || 10;
     const offset = (page - 1) * limit;
-    const where = [Op.and][{ user_id: userId }, {is_deleted: 0}];
+    const where = {
+      [Op.and]: [
+        { user_id: userId },
+        { is_deleted: 0 }
+      ]
+    };
 
     const { count, rows: trips } = await Trip.findAndCountAll({
       where,

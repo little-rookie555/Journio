@@ -1,12 +1,25 @@
 import { UnorderedListOutlined } from '@ant-design/icons';
 import { Layout, Menu } from 'antd';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 
 const { Header, Sider, Content } = Layout;
 
 const MainLayout: React.FC = () => {
   const navigate = useNavigate();
+  const [role, setRole] = useState<string | null>(localStorage.getItem('role'));
+
+  // 监听localStorage的变化
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setRole(localStorage.getItem('role'));
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   const menuItems = [
     {
@@ -15,6 +28,14 @@ const MainLayout: React.FC = () => {
       label: '审核列表',
       onClick: () => navigate('/audit'),
     },
+    ...(role !== '3' ? [] : [
+      {
+        key: 'admin',
+        icon: <UnorderedListOutlined />,
+        label: '管理列表',
+        onClick: () => navigate('/admin'),
+      }
+    ])
   ];
 
   return (

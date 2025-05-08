@@ -37,6 +37,7 @@ export interface AuditItem {
   author: string;
   status: AuditStatus;
   createTime: string;
+  updateTime: string;
   content: string;
 }
 

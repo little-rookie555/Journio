@@ -1,4 +1,5 @@
 import { deleteTravel, getUserTravels } from '@/api/travel';
+import { uploadFile } from '@/api/upload';
 import { useUserStore } from '@/store/user';
 import { Button, Image, NavBar, Tabs, Tag, Toast, Popup, Form, Input, ImageUploader } from 'antd-mobile';
 import type { ImageUploadItem } from 'antd-mobile/es/components/image-uploader';
@@ -165,10 +166,32 @@ const MyTravels: React.FC = () => {
                 value={userInfo?.avatar ? [{ url: userInfo.avatar }] : []}
                 maxCount={1}
                 upload={async (file) => {
-                  // 这里模拟上传，实际项目中需要替换为真实的上传接口
-                  return {
-                    url: URL.createObjectURL(file),
-                  };
+                  try {
+                    const res = await uploadFile(file);
+                    if (res.code === 200) {
+                      return {
+                        url: res.data.url,
+                      };
+                    } else {
+                      Toast.show({
+                        icon: 'fail',
+                        content: '上传失败',
+                      });
+                      return {
+                        url: URL.createObjectURL(file),
+                      };
+                    }
+                  } catch (error) {
+                    console.error('上传失败:', error);
+                    Toast.show({
+                      icon: 'fail',
+                      content: '上传失败，请稍后重试',
+                    });
+                    // 上传失败时，仍然返回本地预览URL
+                    return {
+                      url: URL.createObjectURL(file),
+                    };
+                  }
                 }}
               />
             </Form.Item>

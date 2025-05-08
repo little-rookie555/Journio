@@ -153,7 +153,7 @@ exports.getTripList = async (req, res) => {
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'nick_name', 'icon']
+          attributes: ['id', 'nick_name', 'icon', 'username']  // 添加username字段
         }
       ]
     });
@@ -169,6 +169,7 @@ exports.getTripList = async (req, res) => {
       author: trip.user.username,
       status: trip.status,
       createTime: trip.create_time,
+      updateTime: trip.update_time,
       content: trip.content
     }));
 
