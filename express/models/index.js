@@ -1,27 +1,33 @@
 const sequelize = require('../config/db');
 const User = require('./user');
-const Trip = require('./trip');
+const { Trip, TripLike, TripStar } = require('./trip');
 const TripReviewRecord = require('./tripReviewRecord');
+const Comment = require('./comment');
 
 // 定义模型之间的关联关系
-User.hasMany(Trip, { 
+User.hasMany(Trip, {
   foreignKey: 'userId',
-  as: 'trips'  
+  as: 'trips',
 });
-Trip.belongsTo(User, { 
+Trip.belongsTo(User, {
   foreignKey: 'userId',
-  as: 'user'  
+  as: 'user',
 });
 
 // 建立关联关系
+Trip.hasMany(TripLike, { foreignKey: 'travel_id' });
+TripLike.belongsTo(Trip, { foreignKey: 'travel_id' });
+
+Trip.hasMany(TripStar, { foreignKey: 'travel_id' });
+TripStar.belongsTo(Trip, { foreignKey: 'travel_id' });
 Trip.hasMany(TripReviewRecord, {
   foreignKey: 'travelogue_id',
-  as: 'reviewRecords'
+  as: 'reviewRecords',
 });
 
 TripReviewRecord.belongsTo(Trip, {
   foreignKey: 'travelogue_id',
-  as: 'trip'
+  as: 'trip',
 });
 
 // 同步所有模型到数据库
@@ -37,9 +43,30 @@ const syncModels = async () => {
   }
 };
 
+// 评论关联关系
+Trip.hasMany(Comment, {
+  foreignKey: 'travel_id',
+  as: 'travelComments',
+});
+Comment.belongsTo(Trip, {
+  foreignKey: 'travel_id',
+  as: 'trip',
+});
+User.hasMany(Comment, {
+  foreignKey: 'user_id',
+  as: 'userComments',
+});
+Comment.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user',
+});
+
 module.exports = {
   sequelize,
   User,
   Trip,
-  TripReviewRecord
+  TripReviewRecord,
+  TripLike,
+  TripStar,
+  Comment,
 };

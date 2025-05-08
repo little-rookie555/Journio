@@ -1,12 +1,12 @@
-const { Trip, TripReviewRecord, User } = require("../models");
-const upload = require("../middlewares/upload");
-const {ossConfig, uploadToOSS} = require("../config/ossClient");
-const multer = require("multer");
+const { Trip, TripLike, TripStar, User, Comment } = require('../models');
+const upload = require('../middlewares/upload');
+const { ossConfig, uploadToOSS } = require('../config/ossClient');
+const multer = require('multer');
 const ffmpeg = require('fluent-ffmpeg');
 ffmpeg.setFfmpegPath('D:\\softwore\\ffmpeg-7.0.2-essentials_build\\bin\\ffmpeg.exe');
 const path = require('path');
 const fs = require('fs');
-const db = require("../config/db");
+const db = require('../config/db');
 const sharp = require('sharp');
 const Op = require('sequelize').Op;
 
@@ -20,7 +20,7 @@ const extractVideoThumbnail = async (videoUrl) => {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    
+
     // 使用ffmpeg截取第一帧
     await new Promise((resolve, reject) => {
       ffmpeg(videoUrl)
@@ -36,30 +36,32 @@ const extractVideoThumbnail = async (videoUrl) => {
           timestamps: ['00:00:01'],
           filename: `thumbnail_${timestamp}.jpg`,
           folder: path.join(__dirname, '../public/thumbnails'),
-          size: '1280x720'
+          size: '1280x720',
         });
     });
 
     // 读取生成的截图文件
     const imageBuffer = await fs.promises.readFile(thumbnailPath);
-    
+
     // 使用sharp处理图片
-    const processedImageBuffer = await sharp(imageBuffer)
-      .jpeg()
-      .toBuffer();
-      
+    const processedImageBuffer = await sharp(imageBuffer).jpeg().toBuffer();
+
     // 创建一个临时文件对象用于上传
     const formData = new FormData();
-    formData.append('file', new Blob([processedImageBuffer], { type: 'image/jpeg' }), `thumbnail_${timestamp}.jpg`);
-    
+    formData.append(
+      'file',
+      new Blob([processedImageBuffer], { type: 'image/jpeg' }),
+      `thumbnail_${timestamp}.jpg`,
+    );
+
     // 上传到OSS
     const ossPath = `public/image/thumbnail_${timestamp}.jpg`;
-    
+
     const result = await uploadToOSS(ossConfig, ossPath, processedImageBuffer);
-    
+
     // 删除本地临时文件
     await fs.promises.unlink(thumbnailPath);
-    
+
     return result;
   } catch (error) {
     console.error('视频截图失败:', error);
@@ -72,14 +74,14 @@ exports.createTrip = async (req, res) => {
   try {
     const userId = req.id;
 
-    console.log("创建游记的内容:", req.body.content);
-    
+    console.log('创建游记的内容:', req.body.content);
+
     // 如果有视频，先处理视频截图
     let coverImage = req.body.coverImage;
     if (req.body.video) {
       coverImage = await extractVideoThumbnail(req.body.video);
     }
-    
+
     const tripData = {
       user_id: userId,
       title: req.body.title,
@@ -90,16 +92,16 @@ exports.createTrip = async (req, res) => {
       video_url: req.body.video || null,
       liked: 0,
       is_deleted: 0,
-      comments: 0
+      comments: 0,
     };
 
     const newTrip = await Trip.create(tripData);
-    
+
     // 获取用户信息
     const user = await User.findByPk(userId, {
-      attributes: ['id', 'nick_name', 'icon']
+      attributes: ['id', 'nick_name', 'icon'],
     });
-    
+
     // 返回格式与前端一致
     return res.status(201).json({
       code: 200,
@@ -114,14 +116,14 @@ exports.createTrip = async (req, res) => {
         author: {
           id: user.id,
           nickname: user.nick_name,
-          avatar: user.icon
-        }
-      }
+          avatar: user.icon,
+        },
+      },
     });
   } catch (error) {
-    return res.status(500).json({ 
+    return res.status(500).json({
       code: 500,
-      message: error.message 
+      message: error.message,
     });
   }
 };
@@ -132,19 +134,19 @@ exports.updateTrip = async (req, res) => {
     // 判断用户是否有权限修改游记，即判断游记的作者是否为当前用户
     const userId = req.id;
     const trip = await Trip.findByPk(req.params.id);
-    
+
     if (!trip || trip.is_deleted === 1) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         code: 404,
-        message: '游记不存在'
+        message: '游记不存在',
       });
     } else if (trip.user_id !== userId) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         code: 403,
-        message: '无权限修改该游记'
+        message: '无权限修改该游记',
       });
     }
-    
+
     // 更新游记内容
     const updateData = {
       title: req.body.title,
@@ -152,16 +154,16 @@ exports.updateTrip = async (req, res) => {
       coverImage: req.body.coverImage,
       images: req.body.images,
       status: 0, // 修改后重新设为待审核状态
-      update_time: new Date()
+      update_time: new Date(),
     };
-    
+
     await trip.update(updateData);
-    
+
     // 获取用户信息
     const user = await User.findByPk(userId, {
-      attributes: ['id', 'nick_name', 'icon']
+      attributes: ['id', 'nick_name', 'icon'],
     });
-    
+
     // 返回格式与前端一致
     return res.status(200).json({
       code: 200,
@@ -176,15 +178,15 @@ exports.updateTrip = async (req, res) => {
         author: {
           id: user.id,
           nickname: user.nick_name,
-          avatar: user.icon
-        }
-      }
+          avatar: user.icon,
+        },
+      },
     });
   } catch (error) {
-    console.log("updateTrip error:", error);
-    return res.status(500).json({ 
+    console.log('updateTrip error:', error);
+    return res.status(500).json({
       code: 500,
-      message: error.message 
+      message: error.message,
     });
   }
 };
@@ -193,39 +195,38 @@ exports.updateTrip = async (req, res) => {
 exports.deleteTrip = async (req, res) => {
   try {
     // 获取当前登录用户ID
-    const userId = req.id; 
+    const userId = req.id;
     const tripId = req.params.id;
-    
+
     const trip = await Trip.findByPk(tripId);
     if (!trip || trip.is_deleted === 1) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         code: 404,
-        message: "游记不存在" 
+        message: '游记不存在',
       });
     }
-    
+
     // 验证游记是否属于当前用户
     if (trip.user_id !== userId) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         code: 403,
-        message: "无权限删除该游记" 
+        message: '无权限删除该游记',
       });
     }
-    
+
     // 执行逻辑删除
-    console.log("deleteTrip trip:");
+    console.log('deleteTrip trip:');
     await trip.update({ is_deleted: 1 });
-    
+
     return res.status(200).json({
       code: 200,
-      message: "删除成功"
+      message: '删除成功',
     });
-    
   } catch (error) {
-    console.error("删除游记出错:", error);
-    return res.status(500).json({ 
+    console.error('删除游记出错:', error);
+    return res.status(500).json({
       code: 500,
-      message: "删除游记失败" 
+      message: '删除游记失败',
     });
   }
 };
@@ -233,10 +234,10 @@ exports.deleteTrip = async (req, res) => {
 // 获取所有游记
 exports.getAllTrips = async (req, res) => {
   try {
-    const { Op } = require('sequelize');  // 操作符 - 复杂查询（Or.like - 模糊查询）
+    const { Op } = require('sequelize'); // 操作符 - 复杂查询（Or.like - 模糊查询）
     const page = parseInt(req.query.pageNum) || 1;
     const limit = parseInt(req.query.pageSize) || 20;
-    const keyword = req.query.keyword || "";
+    const keyword = req.query.keyword || '';
     const offset = (page - 1) * limit;
 
     const { count, rows: trips } = await Trip.findAndCountAll({
@@ -244,14 +245,14 @@ exports.getAllTrips = async (req, res) => {
         [Op.and]: [
           {
             [Op.or]: [
-              { title: { [Op.like]: `%${keyword}%` } },  // 关键字匹配
+              { title: { [Op.like]: `%${keyword}%` } }, // 关键字匹配
               { content: { [Op.like]: `%${keyword}%` } },
               // { nick_name: { [Op.like]: `%${keyword}%` } }
-            ]
+            ],
           },
-          {is_deleted: 0} ,
-          { status: 1 } // 审核通过
-        ]
+          { is_deleted: 0 },
+          { status: 1 }, // 审核通过
+        ],
       },
       limit,
       offset,
@@ -260,24 +261,24 @@ exports.getAllTrips = async (req, res) => {
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'nick_name', 'icon']
-        }
+          attributes: ['id', 'nick_name', 'icon'],
+        },
       ],
-      attributes: { 
+      attributes: {
         exclude: ['password'],
-        include: ['coverImage']
-      }
+        include: ['coverImage'],
+      },
     });
 
     if (offset >= count && count !== 0) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         code: 404,
-        message: "页码超出范围" 
+        message: '页码超出范围',
       });
     }
-    
+
     // 格式化返回数据
-    const formattedTrips = trips.map(trip => ({
+    const formattedTrips = trips.map((trip) => ({
       id: trip.id,
       title: trip.title,
       coverImage: trip.coverImage,
@@ -288,27 +289,26 @@ exports.getAllTrips = async (req, res) => {
       author: {
         id: trip.user.id,
         nickname: trip.user.nick_name,
-        avatar: trip.user.icon
-      }
+        avatar: trip.user.icon,
+      },
     }));
 
-    // console.log("formattedTrips:", formattedTrips); 
+    // console.log("formattedTrips:", formattedTrips);
 
     res.status(200).json({
       code: 200,
       data: {
         list: formattedTrips,
-        total: count
-      }
+        total: count,
+      },
     });
   } catch (error) {
-    return res.status(500).json({ 
+    return res.status(500).json({
       code: 500,
-      message: error.message 
+      message: error.message,
     });
   }
 };
-
 
 // 获取单个游记详情
 exports.getTripDetail = async (req, res) => {
@@ -318,11 +318,11 @@ exports.getTripDetail = async (req, res) => {
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'nick_name', 'icon']
-        }
-      ]
+          attributes: ['id', 'nick_name', 'icon'],
+        },
+      ],
     });
-    
+
     if (trip) {
       res.status(200).json({
         code: 200,
@@ -332,26 +332,26 @@ exports.getTripDetail = async (req, res) => {
           content: trip.content,
           coverImage: trip.coverImage,
           images: trip.images,
-          video: trip.video_url, 
+          video: trip.video_url,
           status: trip.status,
           createTime: trip.create_time,
           author: {
             id: trip.user.id,
             nickname: trip.user.nick_name,
-            avatar: trip.user.icon
-          }
-        }
+            avatar: trip.user.icon,
+          },
+        },
       });
     } else {
-        return {
-          code: 404,
-          message: '游记不存在',
-        };
+      return {
+        code: 404,
+        message: '游记不存在',
+      };
     }
   } catch (error) {
-    return res.status(500).json({ 
+    return res.status(500).json({
       code: 500,
-      message: error.message 
+      message: error.message,
     });
   }
 };
@@ -360,29 +360,29 @@ exports.getTripDetail = async (req, res) => {
 exports.searchTrip = async (req, res) => {
   try {
     const keyword = req.query.keyword;
-    const { Op } = require('sequelize');  // 操作符 - 复杂查询（Or.like - 模糊查询）
+    const { Op } = require('sequelize'); // 操作符 - 复杂查询（Or.like - 模糊查询）
     // console.log("req.query.keyword:", req.query.keyword);
-    
+
     const trips = await Trip.findAll({
       where: {
         [Op.and]: [
           {
             [Op.or]: [
               { title: { [Op.like]: `%${keyword}%` } },
-              { content: { [Op.like]: `%${keyword}%` } }
-            ]
+              { content: { [Op.like]: `%${keyword}%` } },
+            ],
           },
-          {is_deleted: 0},
-          { status: 1 } // 审核通过
-        ]
+          { is_deleted: 0 },
+          { status: 1 }, // 审核通过
+        ],
       },
       include: [
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'nick_name', 'icon']
-        }
-      ]
+          attributes: ['id', 'nick_name', 'icon'],
+        },
+      ],
     });
 
     res.status(200).json({ data: trips });
@@ -395,16 +395,13 @@ exports.searchTrip = async (req, res) => {
 exports.getTripsByUser = async (req, res) => {
   try {
     const userId = req.params.userId;
-    console.log("获取用户游记，用户ID:", userId);
-    
+    console.log('获取用户游记，用户ID:', userId);
+
     const page = parseInt(req.query.pageNum) || 1;
     const limit = parseInt(req.query.pageSize) || 10;
     const offset = (page - 1) * limit;
     const where = {
-      [Op.and]: [
-        { user_id: userId },
-        { is_deleted: 0 }
-      ]
+      [Op.and]: [{ user_id: userId }, { is_deleted: 0 }],
     };
 
     const { count, rows: trips } = await Trip.findAndCountAll({
@@ -416,19 +413,19 @@ exports.getTripsByUser = async (req, res) => {
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'nick_name', 'icon']
-        }
-      ]
+          attributes: ['id', 'nick_name', 'icon'],
+        },
+      ],
     });
 
-    console.log("查询到的游记数量:", trips.length);
+    console.log('查询到的游记数量:', trips.length);
 
     if (offset >= count && count !== 0) {
-      return res.status(404).json({ message: "页码超出范围" });
+      return res.status(404).json({ message: '页码超出范围' });
     }
-    
+
     // 格式化数据以匹配前端期望的格式
-    const formattedTrips = trips.map(trip => ({
+    const formattedTrips = trips.map((trip) => ({
       id: trip.id,
       title: trip.title,
       content: trip.content,
@@ -439,91 +436,351 @@ exports.getTripsByUser = async (req, res) => {
       author: {
         id: trip.user.id,
         nickname: trip.user.nick_name,
-        avatar: trip.user.icon
-      }
+        avatar: trip.user.icon,
+      },
     }));
 
     // 使用res.json发送响应
     return res.status(200).json({
       code: 200,
-      data: formattedTrips
+      data: formattedTrips,
     });
   } catch (error) {
-    console.log("getTripsByUser error:", error);
-    return res.status(500).json({ 
+    console.log('getTripsByUser error:', error);
+    return res.status(500).json({
       code: 500,
-      message: error.message 
+      message: error.message,
     });
   }
 };
 
+// 点赞/取消点赞
+exports.likeTrip = async (req, res) => {
+  try {
+    console.log('likeTrip req.body:', req.body);
+    const { travelId, userId, liked } = req.body;
 
-// TODO:点赞
+    // 开启事务
+    const transaction = await db.transaction();
 
-// TODO:评论功能
+    try {
+      // 1. 查找游记
+      const trip = await Trip.findByPk(travelId, { transaction });
 
+      if (!trip || trip.is_deleted === 1) {
+        await transaction.rollback();
+        return res.status(404).json({
+          code: 404,
+          message: '游记不存在',
+        });
+      }
+
+      // 2. 如果是获取状态的请求，只需查询点赞记录
+      if (liked === undefined) {
+        const likeRecord = await TripLike.findOne({
+          where: {
+            travel_id: travelId,
+            user_id: userId,
+          },
+          transaction,
+        });
+        // 若likeRecord.is_liked为1，则返回true，否则返回false
+        const is_liked = likeRecord && likeRecord.is_liked === 1 ? true : false;
+        await transaction.commit();
+        console.log('like显示结果:', is_liked, trip.liked);
+        return res.status(200).json({
+          code: 200,
+          data: {
+            liked: is_liked,
+            likeCount: trip.liked,
+          },
+        });
+      }
+
+      // 3. 点赞 - 查找点赞记录或创建新记录
+      const [likeRecord, created] = await TripLike.findOrCreate({
+        where: { travel_id: travelId, user_id: userId },
+        defaults: { is_liked: liked }, // 创建新纪录时的默认值
+        transaction,
+      });
+
+      // 4. 点赞 - 如果记录已存在且状态不同，则更新点赞状态和计数
+      if (!created && likeRecord.is_liked !== liked) {
+        await likeRecord.update({ is_liked: liked }, { transaction });
+        const likeCount = liked ? trip.liked + 1 : trip.liked - 1;
+        await trip.update({ liked: likeCount }, { transaction });
+      }
+      // 5. 如果是新记录且是点赞操作
+      else if (created && liked) {
+        await trip.update({ liked: trip.liked + 1 }, { transaction });
+      }
+
+      await transaction.commit();
+
+      return res.status(200).json({
+        code: 200,
+        data: {
+          liked: liked,
+          likeCount: trip.liked,
+        },
+      });
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  } catch (error) {
+    return res.status(500).json({
+      code: 500,
+      message: error.message,
+    });
+  }
+};
+
+// 收藏/取消收藏
+exports.starTrip = async (req, res) => {
+  try {
+    console.log('starTrip req.body:', req.body);
+    const { travelId, userId, starred } = req.body;
+
+    // 开启事务
+    const transaction = await db.transaction();
+
+    try {
+      // 1. 查找游记
+      const trip = await Trip.findByPk(travelId, { transaction });
+
+      if (!trip || trip.is_deleted === 1) {
+        await transaction.rollback();
+        return res.status(404).json({
+          code: 404,
+          message: '游记不存在',
+        });
+      }
+
+      // 2. 如果是获取状态的请求，只需查询点赞记录
+      if (starred === undefined) {
+        const starRecord = await TripStar.findOne({
+          where: {
+            travel_id: travelId,
+            user_id: userId,
+          },
+          transaction,
+        });
+        // 若starRecord.is_starred为1，则返回true，否则返回false
+        const is_starred = starRecord && starRecord.is_starred === 1 ? true : false;
+        await transaction.commit();
+        return res.status(200).json({
+          code: 200,
+          data: {
+            starred: is_starred,
+          },
+        });
+      }
+
+      // 3. 收藏 - 查找收藏记录或创建新记录
+      const [starRecord, created] = await TripStar.findOrCreate({
+        where: { travel_id: travelId, user_id: userId },
+        defaults: { is_starred: starred }, // 创建新纪录时的默认值
+        transaction,
+      });
+
+      // 4. 点赞 - 如果记录已存在且状态不同，则更新点赞状态和计数
+      if (!created && starRecord.is_starred !== starred) {
+        await starRecord.update({ is_starred: starred }, { transaction });
+        const Count = starred ? trip.starred + 1 : trip.starred - 1;
+        await trip.update({ starred: Count }, { transaction });
+      }
+      // 5. 如果是新记录且是点赞操作
+      else if (created && starred) {
+        await trip.update({ starred: trip.starred + 1 }, { transaction });
+      }
+
+      await transaction.commit();
+
+      return res.status(200).json({
+        code: 200,
+        data: {
+          starred: starred,
+        },
+      });
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  } catch (error) {
+    return res.status(500).json({
+      code: 500,
+      message: error.message,
+    });
+  }
+};
+
+// 创建评论
+exports.createComment = async (req, res) => {
+  try {
+    const { travelId, content, userId } = req.body;
+
+    // 检查游记是否存在
+    const trip = await Trip.findByPk(travelId);
+    if (!trip || trip.is_deleted === 1) {
+      return res.status(404).json({
+        code: 404,
+        message: '游记不存在',
+      });
+    }
+
+    // 创建评论
+    const comment = await Comment.create({
+      travel_id: travelId,
+      user_id: userId,
+      content: content,
+    });
+
+    // 更新游记的评论数
+    await trip.increment('comments');
+
+    // 获取评论用户信息
+    const user = await User.findByPk(userId, {
+      attributes: ['id', 'nick_name', 'icon'],
+    });
+
+    // 返回格式化的评论数据
+    return res.status(200).json({
+      code: 200,
+      data: {
+        id: comment.id,
+        content: comment.content,
+        createTime: comment.create_time,
+        author: {
+          id: user.id,
+          nickname: user.nick_name,
+          avatar: user.icon,
+        },
+      },
+    });
+  } catch (error) {
+    console.error('创建评论失败:', error);
+    return res.status(500).json({
+      code: 500,
+      message: error.message || '创建评论失败',
+    });
+  }
+};
+
+// 获取评论列表
+exports.getCommentList = async (req, res) => {
+  try {
+    // 1. 获取游记
+    const travelId = req.params.travelId;
+
+    // 检查游记是否存在
+    const trip = await Trip.findByPk(travelId);
+    if (!trip || trip.is_deleted === 1) {
+      return res.status(404).json({
+        code: 404,
+        message: '游记不存在',
+      });
+    }
+
+    // 2. 获取评论列表
+    const comments = await Comment.findAll({
+      where: { travel_id: travelId },
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'nick_name', 'icon'],
+        },
+      ],
+      order: [['create_time', 'DESC']],
+    });
+
+    // 格式化评论数据
+    const formattedComments = comments.map((comment) => ({
+      id: comment.id,
+      content: comment.content,
+      createTime: comment.create_time,
+      author: {
+        id: comment.user.id,
+        nickname: comment.user.nick_name,
+        avatar: comment.user.icon,
+      },
+    }));
+
+    return res.status(200).json({
+      code: 200,
+      data: formattedComments,
+    });
+  } catch (error) {
+    console.error('获取评论列表失败:', error);
+    return res.status(500).json({
+      code: 500,
+      message: error.message || '获取评论列表失败',
+    });
+  }
+};
 
 // 上传游记图片列表或视频
 exports.uploadTripMedia = (req, res) => {
   try {
-    upload.single("file")(req, res, function (err) {
+    upload.single('file')(req, res, function (err) {
       if (err) {
         console.log('上传错误:', err);
-        return res.status(500).json({ 
+        return res.status(500).json({
           code: 500,
-          message: err instanceof multer.MulterError ? err.message : "文件上传失败" 
+          message: err instanceof multer.MulterError ? err.message : '文件上传失败',
         });
       }
-      
+
       if (!req.file) {
         console.log('没有文件被上传');
-        return res.status(400).json({ 
+        return res.status(400).json({
           code: 400,
-          message: "没有文件被上传" 
+          message: '没有文件被上传',
         });
       }
-      
+
       console.log('上传的文件信息:', req.file.url);
-      return res.status(200).json({ 
+      return res.status(200).json({
         code: 200,
         data: { url: req.file.url },
-        message: "上传成功" 
+        message: '上传成功',
       });
     });
   } catch (error) {
     console.log('捕获到异常:', error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       code: 500,
-      message: "文件上传过程发生异常" 
+      message: '文件上传过程发生异常',
     });
   }
 };
 
 exports.uploadTripMediaMultiple = (req, res) => {
   try {
-    upload.array("images", 9)(req, res, function (err) {
+    upload.array('images', 9)(req, res, function (err) {
       console.log('开始处理多文件上传');
-      
+
       if (err) {
         console.log('上传错误:', err);
-        return res.status(500).json({ 
-          message: err instanceof multer.MulterError ? err.message : "文件上传失败" 
+        return res.status(500).json({
+          message: err instanceof multer.MulterError ? err.message : '文件上传失败',
         });
       }
-      
+
       if (!req.files || req.files.length === 0) {
         console.log('没有文件被上传');
-        return res.status(400).json({ message: "没有文件被上传" });
+        return res.status(400).json({ message: '没有文件被上传' });
       }
-      
+
       console.log('上传的文件信息:', req.files);
-      const urls = req.files.map(file => file.url);
+      const urls = req.files.map((file) => file.url);
       console.log('生成的URL列表:', urls);
-      
-      return res.status(200).json({ urls, message: "上传成功" });
+
+      return res.status(200).json({ urls, message: '上传成功' });
     });
   } catch (error) {
     console.log('捕获到异常:', error);
-    return res.status(500).json({ message: "文件上传过程发生异常" });
+    return res.status(500).json({ message: '文件上传过程发生异常' });
   }
 };
