@@ -1,5 +1,47 @@
 .travel-detail {
   padding-bottom: 60px;
+  background-color: var(--adm-color-background);
+  transition: all 0.3s ease;
+
+  &.dark {
+    .detail-content {
+      .title {
+        color: var(--adm-color-text);
+      }
+
+      .author-info {
+        .name {
+          color: var(--adm-color-text);
+        }
+
+        .time {
+          color: var(--adm-color-text-secondary);
+        }
+      }
+
+      .content {
+        color: var(--adm-color-text);
+
+        h1, h2 {
+          color: var(--adm-color-text);
+        }
+
+        p, ul, ol, li {
+          color: var(--adm-color-text);
+        }
+      }
+    }
+
+    .travel-info-card {
+      background: var(--adm-color-box);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .loading,
+    .empty {
+      color: var(--adm-color-text-secondary);
+    }
+  }
 
   .detail-content {
     padding: 12px;
@@ -140,12 +182,12 @@
 }
 
 .comment-popup {
-  .adm-text-area {
-    --font-size: 16px;
-    margin-bottom: 16px;
-  }
+  background-color: var(--adm-color-box);
 
-  .comment-actions {
-    margin-top: 16px;
+  .adm-text-area {
+    --background-color: var(--adm-color-box);
+    --color: var(--adm-color-text);
+    --placeholder-color: var(--adm-color-text-secondary);
+    border: 1px solid var(--adm-border-color);
   }
 }

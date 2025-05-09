@@ -1,5 +1,6 @@
 import { Button, Toast } from 'antd-mobile';
 import React, { useRef, useState } from 'react';
+import { useTheme } from '@/contexts/ThemeContext';
 import './index.scss';
 
 interface VideoUploaderProps {
@@ -17,6 +18,7 @@ export const VideoUploader: React.FC<VideoUploaderProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { theme } = useTheme();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -80,7 +82,7 @@ export const VideoUploader: React.FC<VideoUploaderProps> = ({
   };
 
   return (
-    <div className="video-uploader">
+    <div className={`video-uploader ${theme === 'dark' ? 'dark' : ''}`}>
       {value ? (
         <div className="video-preview">
           <video src={value.url} controls className="preview-video" />

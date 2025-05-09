@@ -1,8 +1,56 @@
 .travel-publish {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: var(--adm-color-background);
   display: flex;
   flex-direction: column;
+  transition: all 0.3s ease;
+
+  &.dark {
+    .nav-bar {
+      background: rgba(30, 30, 30, 0.95);
+      border-bottom: solid 1px var(--adm-border-color);
+    }
+
+    .publish-form {
+      :global(.adm-form-item) {
+        background: var(--adm-color-box);
+        
+        :global(.adm-form-item-label) {
+          color: var(--adm-color-text);
+        }
+      }
+
+      :global(.adm-input) {
+        color: var(--adm-color-text);
+        --color: var(--adm-color-text);
+        --placeholder-color: var(--adm-color-text-secondary);
+      }
+
+      .quill {
+        .ql-container {
+          color: var(--adm-color-text);
+          
+          .ql-editor {
+            color: var(--adm-color-text);
+
+            &.ql-blank::before {
+              color: var(--adm-color-text-secondary);
+            }
+          }
+        }
+
+        .ql-bubble {
+          .ql-toolbar {
+            background-color: var(--adm-color-box);
+            
+            .ql-formats button {
+              color: var(--adm-color-text);
+            }
+          }
+        }
+      }
+    }
+  }
 
   .nav-bar {
     background: rgba(255, 255, 255, 0.95);
@@ -11,6 +59,7 @@
     position: sticky;
     top: 0;
     z-index: 100;
+    transition: all 0.3s ease;
   }
 
   .publish-form {
@@ -84,11 +133,12 @@
 }
 
 .travel-info-card {
-  background: #fff;
+  background: var(--adm-color-box);
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   padding: 12px;
   margin-bottom: 12px;
+  transition: all 0.3s ease;
 
   .travel-info-container {
     display: flex;
@@ -118,8 +168,22 @@
 
   // 为所有输入框添加统一的样式
   :global(.adm-input) {
-    border: 1px solid #e5e5e5;
+    border: 1px solid var(--adm-border-color);
     border-radius: 8px;
     padding: 8px 12px;
+    background-color: var(--adm-color-box);
+    transition: all 0.3s ease;
+  }
+
+  .location-picker {
+    .location-input {
+      border: 1px solid var(--adm-border-color);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: var(--adm-color-text);
+      background-color: var(--adm-color-box);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
   }
 }

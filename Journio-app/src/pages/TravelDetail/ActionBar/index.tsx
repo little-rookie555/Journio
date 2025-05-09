@@ -11,6 +11,7 @@ import {
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './index.scss';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface ActionBarProps {
   onComment: () => void;
@@ -40,6 +41,7 @@ const ActionBar: React.FC<ActionBarProps> = ({
   onCommentList,
 }) => {
   const navigate = useNavigate();
+  const { theme } = useTheme();
   // 添加登录检查工具函数
   const checkLogin = () => {
     if (!userId) {
@@ -103,7 +105,7 @@ const ActionBar: React.FC<ActionBarProps> = ({
   };
 
   return (
-    <div className="action-bar">
+    <div className={`action-bar ${theme === 'dark' ? 'dark' : ''}`}>
       <div className="action-input" onClick={onComment}>
         <div className="input-box">
           <EditSOutline />

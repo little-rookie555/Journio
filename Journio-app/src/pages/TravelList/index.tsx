@@ -3,9 +3,11 @@ import { Avatar, DotLoading, Image, InfiniteScroll, Result, SearchBar } from 'an
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './index.scss';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const TravelList: React.FC = () => {
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const { list, loading, total, keyword, setKeyword, fetchList, loadMore } = useTravelStore();
   const [searchValue, setSearchValue] = useState(keyword);
 
@@ -38,13 +40,17 @@ const TravelList: React.FC = () => {
   );
 
   return (
-    <div className="travel-list">
+    <div className={`travel-list ${theme === 'dark' ? 'dark' : ''}`}>
       <SearchBar
         placeholder="搜索游记标题或作者"
         value={searchValue}
         onChange={(value) => setSearchValue(value)}
         onSearch={handleSearch}
         className="search-bar"
+        style={{
+          '--background': theme === 'dark' ? 'var(--adm-color-box)' : '#fff',
+          '--border-radius': '8px'
+        }}
       />
 
       {list.length === 0 && !loading ? (

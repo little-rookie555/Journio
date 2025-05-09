@@ -2,12 +2,14 @@ import { TabBar } from 'antd-mobile';
 import { AddOutline, AppOutline, UserOutline } from 'antd-mobile-icons';
 import React from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useTheme } from '@/contexts/ThemeContext';
 import './index.scss';
 
 const Layout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { pathname } = location;
+  const { theme } = useTheme();
 
   const tabs = [
     {
@@ -20,14 +22,14 @@ const Layout: React.FC = () => {
       icon: (
         <div
           style={{
-            backgroundColor: '#4a90e2', // 浅蓝色
+            backgroundColor: '#4a90e2',
             borderRadius: '12px',
-            width: '52px', // 增加宽度
-            height: '39px', // 降低高度
+            width: '52px',
+            height: '39px',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            marginTop: '-16px', // 减小上浮距离
+            marginTop: '-16px',
             boxShadow: '0 2px 12px rgba(74, 144, 226, 0.3)',
           }}
         >
@@ -47,12 +49,16 @@ const Layout: React.FC = () => {
   };
 
   return (
-    <div className="layout">
+    <div className={`layout ${theme === 'dark' ? 'dark' : ''}`}>
       <div className="content">
         <Outlet />
       </div>
       <div className="tab-bar-container">
-        <TabBar safeArea activeKey={pathname} onChange={(value) => setRouteActive(value)}>
+        <TabBar 
+          safeArea 
+          activeKey={pathname} 
+          onChange={(value) => setRouteActive(value)}
+        >
           {tabs.map((item) => (
             <TabBar.Item key={item.key} icon={item.icon} title={item.title} />
           ))}

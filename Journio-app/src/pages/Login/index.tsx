@@ -2,11 +2,13 @@ import { useUserStore } from '@/store/user';
 import { Button, Form, Input, NavBar, Toast } from 'antd-mobile';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@/contexts/ThemeContext';
 import './index.scss';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const { login, loading } = useUserStore();
+  const { theme } = useTheme();
   // 封装导航逻辑
   const handleNavigation = () => {
     const canGoBack = window.history.state && window.history.state.idx > 0;
@@ -34,8 +36,14 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="login">
-      <NavBar onBack={handleNavigation} className="nav-bar">
+    <div className={`login ${theme === 'dark' ? 'dark' : ''}`}>
+      <NavBar 
+        onBack={handleNavigation} 
+        className="nav-bar"
+        style={{
+          '--border-bottom': theme === 'dark' ? '1px solid var(--adm-border-color)' : '1px solid rgba(0, 0, 0, 0.05)'
+        }}
+      >
         登录账号
       </NavBar>
       <div className="login-form">

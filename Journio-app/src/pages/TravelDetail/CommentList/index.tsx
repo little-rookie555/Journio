@@ -19,7 +19,11 @@ interface CommentListProps {
   comments: Comment[];
 }
 
+import { useTheme } from '@/contexts/ThemeContext';
+
 const CommentList: React.FC<CommentListProps> = ({ visible, onClose, comments }) => {
+  const { theme } = useTheme();
+
   return (
     <Popup
       visible={visible}
@@ -30,9 +34,10 @@ const CommentList: React.FC<CommentListProps> = ({ visible, onClose, comments })
         borderTopRightRadius: '8px',
         minHeight: '60vh',
         maxHeight: '80vh',
+        backgroundColor: theme === 'dark' ? 'var(--adm-color-box)' : '#fff'
       }}
     >
-      <div className="comment-list">
+      <div className={`comment-list ${theme === 'dark' ? 'dark' : ''}`}>
         <div className="comment-header">
           <span className="title">评论 {comments.length}</span>
           <span className="close" onClick={onClose}>关闭</span>

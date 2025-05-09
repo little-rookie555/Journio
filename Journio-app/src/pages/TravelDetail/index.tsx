@@ -14,9 +14,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import ActionBar from './ActionBar';
 import CommentList, { Comment } from './CommentList';
 import './index.scss';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const TravelDetail: React.FC = () => {
   const { id } = useParams();
+  const { theme } = useTheme();
   const [travel, setTravel] = useState<TravelItem | null>(null);
   const [loading, setLoading] = useState(false);
   const [showCommentPopup, setShowCommentPopup] = useState(false);
@@ -166,7 +168,7 @@ const TravelDetail: React.FC = () => {
   };
 
   return (
-    <div className="travel-detail">
+    <div className={`travel-detail ${theme === 'dark' ? 'dark' : ''}`}>
       <NavBar onBack={() => navigator(-1)}>游记详情</NavBar>
 
       <div className="detail-content">

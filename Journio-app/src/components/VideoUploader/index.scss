@@ -1,5 +1,25 @@
 .video-uploader {
   width: 100%;
+  transition: all 0.3s ease;
+
+  &.dark {
+    .video-preview {
+      .preview-video {
+        background: var(--adm-color-box);
+      }
+    }
+
+    .upload-button {
+      .upload-area {
+        background: var(--adm-color-box);
+        border: 1px solid var(--adm-border-color);
+      }
+
+      .upload-tip {
+        color: var(--adm-color-text-secondary);
+      }
+    }
+  }
 
   .video-preview {
     position: relative;
@@ -9,10 +29,11 @@
     .preview-video {
       width: 100%;
       max-width: 100%;
-      max-height: 200px; // 限制最大高度
-      object-fit: contain; // 保持视频比例
+      max-height: 200px;
+      object-fit: contain;
       border-radius: 8px;
       background: #f5f5f5;
+      transition: background-color 0.3s ease;
     }
 
     .remove-btn {
@@ -31,12 +52,14 @@
       background: #f5f5f5;
       border-radius: 8px;
       cursor: pointer;
+      transition: all 0.3s ease;
     }
 
     .upload-tip {
       margin-top: 8px;
       font-size: 12px;
       color: #999;
+      transition: color 0.3s ease;
     }
   }
 }

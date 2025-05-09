@@ -8,6 +8,7 @@ import React, { useEffect, useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.bubble.css'; // 替换 snow 主题
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTheme } from '@/contexts/ThemeContext';
 import './index.scss';
 
 const TravelPublish: React.FC = () => {
@@ -120,8 +121,10 @@ const TravelPublish: React.FC = () => {
     }
   };
 
+  const { theme } = useTheme();
+
   return (
-    <div className="travel-publish">
+    <div className={`travel-publish ${theme === 'dark' ? 'dark' : ''}`}>
       <NavBar onBack={() => navigate(-1)} className="nav-bar">
         {editId ? '编辑游记' : '发布游记'}
       </NavBar>
@@ -240,7 +243,7 @@ const TravelPublish: React.FC = () => {
                           fontSize: '15px',
                           borderRadius: '4px',
                           cursor: 'pointer',
-                          color: value ? '#333' : '#999',
+                          color: theme === 'dark' ? '#f5f5f5' : '#333',
                         }}
                       >
                         {value
@@ -272,7 +275,7 @@ const TravelPublish: React.FC = () => {
               <Form.Item
                 name="location"
                 label="游玩地点"
-                rules={[{ required: true, message: '请选择游玩地点' }]}
+                // rules={[{ required: true, message: '请选择游玩地点' }]}
               >
                 <div className="location-picker">
                   <div className="location-input" onClick={() => setMapVisible(true)}>

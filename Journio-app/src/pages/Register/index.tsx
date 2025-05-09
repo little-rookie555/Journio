@@ -3,11 +3,13 @@ import { uploadFile } from '@/api/upload';
 import { Button, Form, ImageUploader, Input, NavBar, Toast } from 'antd-mobile';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@/contexts/ThemeContext';
 import './index.scss';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const { theme } = useTheme();
 
   const onFinish = async (values: any) => {
     try {
@@ -38,8 +40,14 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="register">
-      <NavBar onBack={() => navigate('/')} className="nav-bar">
+    <div className={`register ${theme === 'dark' ? 'dark' : ''}`}>
+      <NavBar 
+        onBack={() => navigate('/')} 
+        className="nav-bar"
+        style={{
+          '--border-bottom': theme === 'dark' ? '1px solid var(--adm-border-color)' : '1px solid rgba(0, 0, 0, 0.05)'
+        }}
+      >
         注册账号
       </NavBar>
       <div className="register-form">

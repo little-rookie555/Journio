@@ -7,7 +7,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './index.scss';
 import { stripHtml } from '@/components/utils';
-import { AppOutline, CheckOutline, ClockCircleOutline, CloseOutline } from 'antd-mobile-icons';
+import { AppOutline,CheckOutline, ClockCircleOutline, CloseOutline } from 'antd-mobile-icons';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Switch } from 'antd-mobile';
 
 const MyTravels: React.FC = () => {
   const navigate = useNavigate();
@@ -15,7 +17,7 @@ const MyTravels: React.FC = () => {
   const [travels, setTravels] = useState<any[]>([]);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
-
+  const { theme, toggleTheme } = useTheme();
   useEffect(() => {
     const fetchTravels = async () => {
       if (!userInfo) return;
@@ -108,7 +110,21 @@ const MyTravels: React.FC = () => {
       <div className="user-profile">
         <Image src={userInfo?.avatar} className="profile-avatar" />
         <div className="profile-info">
-          <div className="nickname">{userInfo?.nickname}</div>
+          <div className="profile-header">
+            <div className="nickname">{userInfo?.nickname}</div>
+            <Switch
+              className="theme-switch"
+              uncheckedText="☀️"
+              checkedText="🌙"
+              checked={theme === 'dark'}
+              onChange={toggleTheme}
+              style={{
+                '--checked-color': '#4a90e2',
+                '--height': '24px',
+                '--width': '44px'
+              }}
+            />
+          </div>
           <div className="stats">
             <span>游记数: {travels.length}</span>
           </div>
@@ -211,9 +227,11 @@ const MyTravels: React.FC = () => {
         onChange={setActiveTab}
         style={{
           '--title-font-size': '14px',
-          '--active-title-color': '#000',
-          // '--title-color': 'rgba(0,0,0,0.45)', // 非激活状态的颜色
-          '--content-padding': '0'
+          // '--active-title-color': theme === 'dark' ? '#fff' : '#000',
+          // '--title-color': theme === 'dark' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
+          // '--content-padding': '0',
+          // '--background-color': theme === 'dark' ? '#1e1e1e' : '#f5f5f5'
+          
         }}
       >
         <Tabs.Tab title={<><AppOutline /> 全部</>} key="all" />
@@ -224,7 +242,7 @@ const MyTravels: React.FC = () => {
 
       <div className="travel-list">
         {filteredTravels.map((item) => (
-          <div key={item.id} className="travel-card">
+          <div key={item.id} className={`travel-card ${theme === 'dark' ? 'dark' : ''}`}>
             <div className="card-left">
               <Image src={item.coverImage} className="cover-image" />
               <div className="status-tag">{getStatusTag(item.status)}</div>
@@ -235,10 +253,22 @@ const MyTravels: React.FC = () => {
                 <p className="desc">{stripHtml(item.content, 100)}</p>
               </div>
               <div className="actions">
-                <Button size="small" onClick={() => navigate(`/publish?edit=${item.id}`)}>
+                <Button 
+                  size="small" 
+                  style={{
+                    border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'}`,
+                    color: theme === 'dark' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)',
+                    backgroundColor: 'transparent'
+                  }} 
+                  onClick={() => navigate(`/publish?edit=${item.id}`)}
+                >
                   编辑
                 </Button>
-                <Button size="small" color="primary" onClick={() => handleDelete(item.id)}>
+                <Button 
+                  size="small" 
+                  color="primary" 
+                  onClick={() => handleDelete(item.id)}
+                >
                   删除
                 </Button>
               </div>

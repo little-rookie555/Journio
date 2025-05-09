@@ -23,6 +23,8 @@ interface UserState {
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   updateInfo: (params: UserUpdateParams) => Promise<void>;
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
 }
 
 export const useUserStore = create<UserState>()(
@@ -59,7 +61,8 @@ export const useUserStore = create<UserState>()(
 
       logout: () => {
         removeTokenFromLocalStorage();
-        set({ userInfo: null, token: '' });
+        // document.documentElement.setAttribute('data-theme', 'light');
+        set({ userInfo: null, token: '', theme: 'light' });
       },
 
       updateInfo: async (params) => {
@@ -77,11 +80,20 @@ export const useUserStore = create<UserState>()(
           set({ loading: false });
         }
       },
+      theme: 'light',
+
+      toggleTheme: () => {
+        set((state) => {
+          const newTheme = state.theme === 'light' ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', newTheme);
+          return { theme: newTheme };
+        });
+      },
     }),
     {
       name: 'user-storage',
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ userInfo: state.userInfo }),
+      partialize: (state) => ({ userInfo: state.userInfo, theme: state.theme }),
     },
   ),
 );

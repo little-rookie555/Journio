@@ -22,6 +22,47 @@
 
   // 边框颜色
   --adm-border-color: #e8e8e8;
+  --adm-color-border: #e8e8e8;  // 添加这一行
+
+  // 字体大小
+  --adm-font-size-main: 15px;
+
+  // 圆角
+  --adm-radius-s: 4px;
+  --adm-radius-m: 8px;
+  --adm-radius-l: 12px;
+
+  // 字体设置
+  --adm-font-family:
+    'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue',
+    Helvetica, Arial, sans-serif;
+}
+
+// 添加全局字体设置
+* {
+  font-family: var(--adm-font-family);
+}
+
+// 暗黑模式变量
+:root[data-theme='dark'] {
+  // 主色调
+  --adm-color-primary: #64a5e8;
+  --adm-color-success: #5cb3cc;
+  --adm-color-warning: #64b5f6;
+  --adm-color-danger: #ef5350;
+
+  // 文字颜色
+  --adm-color-text: #f5f5f5;         /* 柔和的白色（降低亮度） */
+  --adm-color-text-secondary: #b0b0b0; /* 提高次级文本可读性 */
+  --adm-color-weak: #808080;         /* 更深的灰色，确保弱化效果 */
+
+  // 背景色
+  --adm-color-background: #121212;
+  --adm-color-box: #1e1e1e;
+
+  // 边框颜色
+  --adm-border-color: #333333;
+  --adm-color-border: #333333;  // 添加这一行
 
   // 字体大小
   --adm-font-size-main: 15px;

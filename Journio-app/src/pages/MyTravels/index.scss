@@ -25,20 +25,42 @@
     .profile-info {
       flex: 1;
 
-      .nickname {
-        font-size: 18px;
-        font-weight: 500;
+      .profile-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         margin-bottom: 8px;
-      }
+    
+        .nickname {
+          font-size: 18px;
+          font-weight: 500;
+          color: #fff;
+        }
 
-      .stats {
-        font-size: 14px;
-        color: #666;
+        .theme-switch {
+          :global {
+            .adm-switch-checkbox {
+              background: rgba(255, 255, 255, 0.2);
+            }
+            
+            .adm-switch-handle {
+              width: 20px;
+              height: 20px;
+            }
+    
+            .adm-switch-unchecked-text,
+            .adm-switch-checked-text {
+              font-size: 14px;
+              color: #fff;
+            }
+          }
+        }
       }
       .profile-actions {
         display: flex;
-        gap: 8px;
+        align-items: center;
         margin-top: 8px;
+        gap: 8px;
       }
     }
   }
@@ -56,15 +78,34 @@
 
   .travel-list {
     padding: 12px;
+    background-color: var(--adm-color-background);
 
     .travel-card {
       display: flex;
-      background: #fff;
+      background: var(--adm-color-box);
       border-radius: 8px;
       margin-bottom: 12px;
       overflow: hidden;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-      height: 150px; // 限制卡片高度
+      height: 150px;
+      transition: all 0.3s ease;
+
+      &.dark {
+        background: var(--adm-color-box);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+        .card-right {
+          .content {
+            .title {
+              color: var(--adm-color-text);
+            }
+
+            .desc {
+              color: var(--adm-color-text-secondary);
+            }
+          }
+        }
+      }
 
       .card-left {
         position: relative;
@@ -125,6 +166,46 @@
           flex-shrink: 0; // 防止按钮被压缩
         }
       }
+    }
+  }
+
+  .edit-profile-popup {
+    background-color: var(--adm-color-box);
+    color: var(--adm-color-text);
+
+    .adm-form {
+      --text-color: var(--adm-color-text);
+      --label-color: var(--adm-color-text);
+      
+      .adm-list-item {
+        background-color: var(--adm-color-box);
+      }
+    }
+  }
+}
+
+// 添加深色模式的全局样式
+:root[data-theme='dark'] {
+  .my-travels {
+    .header-container {
+      background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
+                  url('@/assets/image/bg_userinfo.jpg') center/cover no-repeat;
+    }
+
+    .user-profile {
+      background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
+                  url('@/assets/image/bg_userinfo.jpg') center/cover no-repeat;
+    }
+
+    .adm-button {
+      &[color='primary'] {
+        --background-color: var(--adm-color-primary);
+      }
+    }
+
+    .adm-tabs {
+      background-color: var(--adm-color-box);
+      border-color: var(--adm-border-color);
     }
   }
 }
