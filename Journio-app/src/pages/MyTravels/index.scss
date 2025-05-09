@@ -1,84 +1,8 @@
 .my-travels {
-  .header-container {
-    position: relative;
-    background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)),
-                url('@/assets/image/bg_userinfo.jpg') center/cover no-repeat;
-    padding-top: 45px; // 为NavBar留出空间
-  }
-  .user-profile {
-    position: relative;
-    display: flex;
-    padding: 16px;
-    background: 
-      linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)),
-      url('@/assets/image/bg_userinfo.jpg') center/cover no-repeat;
-    margin-bottom: 8px;
-    overflow: hidden;
-    
-    .profile-avatar {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      margin-right: 16px;
-    }
-
-    .profile-info {
-      flex: 1;
-
-      .profile-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 8px;
-    
-        .nickname {
-          font-size: 18px;
-          font-weight: 500;
-          color: #fff;
-        }
-
-        .theme-switch {
-          :global {
-            .adm-switch-checkbox {
-              background: rgba(255, 255, 255, 0.2);
-            }
-            
-            .adm-switch-handle {
-              width: 20px;
-              height: 20px;
-            }
-    
-            .adm-switch-unchecked-text,
-            .adm-switch-checked-text {
-              font-size: 14px;
-              color: #fff;
-            }
-          }
-        }
-      }
-      .profile-actions {
-        display: flex;
-        align-items: center;
-        margin-top: 8px;
-        gap: 8px;
-      }
-    }
-  }
-  .edit-profile-popup {
-    padding: 16px;
-    
-    .adm-form {
-      --prefix-width: 60px;
-
-      .adm-image-uploader {
-        --cell-size: 80px;
-      }
-    }
-  }
-
   .travel-list {
     padding: 12px;
     background-color: var(--adm-color-background);
+    min-height: auto;
 
     .travel-card {
       display: flex;
@@ -176,7 +100,7 @@
     .adm-form {
       --text-color: var(--adm-color-text);
       --label-color: var(--adm-color-text);
-      
+
       .adm-list-item {
         background-color: var(--adm-color-box);
       }
@@ -187,16 +111,6 @@
 // 添加深色模式的全局样式
 :root[data-theme='dark'] {
   .my-travels {
-    .header-container {
-      background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
-                  url('@/assets/image/bg_userinfo.jpg') center/cover no-repeat;
-    }
-
-    .user-profile {
-      background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
-                  url('@/assets/image/bg_userinfo.jpg') center/cover no-repeat;
-    }
-
     .adm-button {
       &[color='primary'] {
         --background-color: var(--adm-color-primary);

@@ -1,0 +1,182 @@
+.header-container {
+  position: relative;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+    url('@/assets/image/bg_userinfo.jpg') center/cover no-repeat;
+  padding-top: 45px;
+}
+
+.user-profile {
+  padding: 12px;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+    url('@/assets/image/bg_userinfo.jpg') center/cover no-repeat;
+  color: #fff;
+
+  .profile-main {
+    position: relative;
+    padding: 8px;
+
+    .user-info {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+
+      .profile-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.5);
+      }
+
+      .user-detail {
+        margin-top: 8px;
+        margin-left: 8px;
+        .nickname {
+          font-size: 18px;
+          font-weight: 500;
+          margin-bottom: 8px;
+        }
+      }
+    }
+
+    .bio {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .user-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      .stats {
+        display: flex;
+        gap: 24px;
+
+        .stat-item {
+          text-align: center;
+
+          .stat-value {
+            font-size: 16px;
+            font-weight: 400;
+            margin-bottom: 4px;
+          }
+
+          .stat-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+          }
+        }
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 24x;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 12px;
+    }
+  }
+}
+
+.edit-profile-popup {
+  padding: 16px;
+
+  .adm-form {
+    --prefix-width: 60px;
+
+    .adm-image-uploader {
+      --cell-size: 80px;
+    }
+  }
+}
+
+:root[data-theme='dark'] {
+  .header-container {
+    background:
+      linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+      url('@/assets/image/bg_userinfo.jpg') center/cover no-repeat;
+  }
+
+  .user-profile {
+    background:
+      linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+      url('@/assets/image/bg_userinfo.jpg') center/cover no-repeat;
+
+    .profile-main {
+      .user-info {
+        .profile-avatar {
+          border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .user-detail {
+          .nickname {
+            color: rgba(255, 255, 255, 0.9);
+          }
+        }
+      }
+
+      .bio {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .user-actions {
+        .stats {
+          .stat-item {
+            .stat-value {
+              color: rgba(255, 255, 255, 0.9);
+            }
+            .stat-label {
+              color: rgba(255, 255, 255, 0.7);
+            }
+          }
+        }
+
+        .action-buttons {
+          .adm-button {
+            background: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.9);
+
+            &:active {
+              background: rgba(255, 255, 255, 0.2);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .edit-profile-popup {
+    background-color: var(--adm-color-background);
+    color: var(--adm-color-text);
+
+    .adm-form {
+      --text-color: var(--adm-color-text);
+      --label-color: var(--adm-color-text);
+
+      .adm-list-item {
+        background-color: var(--adm-color-box);
+      }
+    }
+  }
+
+  .settings-popup {
+    background-color: var(--adm-color-background);
+
+    .adm-list-item {
+      --adm-color-text: var(--adm-color-text);
+      --adm-color-border: var(--adm-color-border);
+      background-color: var(--adm-color-box);
+    }
+  }
+}
