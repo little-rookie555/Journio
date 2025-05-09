@@ -1,9 +1,10 @@
 import { getTravelList } from '@/api/travel';
 import { TravelItem } from '@/mock/travel';
 import { create } from 'zustand';
+import { likeTravel } from '@/api/travel';
 
 interface TravelState {
-  list: TravelItem[];
+  list: (TravelItem & { isLiked?: boolean })[];
   total: number;
   loading: boolean;
   keyword: string;
@@ -12,6 +13,7 @@ interface TravelState {
   setKeyword: (keyword: string) => void;
   fetchList: () => Promise<void>;
   loadMore: () => Promise<void>;
+  updateLikeStatus: (travelId: number, isLiked: boolean, likeCount: number) => void; // 添加更新点赞状态的方法
 }
 
 export const useTravelStore = create<TravelState>((set, get) => ({
@@ -24,8 +26,6 @@ export const useTravelStore = create<TravelState>((set, get) => ({
 
   setKeyword: (keyword) => {
     set({ keyword, page: 1, list: [] });
-    // 移除这里的自动查询
-    // get().fetchList();
   },
 
   fetchList: async () => {
@@ -33,9 +33,32 @@ export const useTravelStore = create<TravelState>((set, get) => ({
     set({ loading: true });
     try {
       const response = await getTravelList({ page, pageSize, keyword });
-      console.log('response', response.data.list);
+      const listWithLikeStatus = await Promise.all(
+        response.data.list.map(async (item) => {
+          // 如果用户已登录，获取点赞状态
+          const {state:{userInfo}} = JSON.parse(localStorage.getItem('user-storage') || '{}');
+          if (userInfo.id) {
+            try {
+              const likeRes = await likeTravel({
+                travelId: item.id,
+                userId: userInfo.id,
+              });
+              return {
+                ...item,
+                isLiked: likeRes.data.liked,
+                likeCount: likeRes.data.likeCount,
+              };
+            } catch (error) {
+              console.error('获取点赞状态失败:', error);
+              return { ...item, isLiked: false };
+            }
+          }
+          return { ...item, isLiked: false };
+        })
+      );
+
       set({
-        list: page === 1 ? response.data.list : [...get().list, ...response.data.list],
+        list: page === 1 ? listWithLikeStatus : [...get().list, ...listWithLikeStatus],
         total: response.data.total,
       });
     } catch (error) {
@@ -53,4 +76,24 @@ export const useTravelStore = create<TravelState>((set, get) => ({
     set({ page: page + 1 });
     await get().fetchList();
   },
+    // 添加更新点赞状态的方法
+    updateLikeStatus: (travelId: number, isLiked: boolean, likeCount: number) => {
+      // console.log('updateLikeStatus', travelId, isLiked, likeCount);
+      const { list } = get();
+      const newList = list.map((travel) =>
+        travel.id === travelId
+          ? {
+              ...travel,
+              isLiked,
+              likeCount,
+            }
+          : travel
+      );
+      // console.log('newList', newList);
+      set({ list: newList });
+      // setTimeout(() => {
+      //   const updatedList = get().list;
+      //   console.log('更新后的列表:', updatedList);
+      // }, 0);
+    },
 }));
