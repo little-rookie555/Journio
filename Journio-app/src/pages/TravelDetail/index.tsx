@@ -15,6 +15,7 @@ import ActionBar from './ActionBar';
 import CommentList, { Comment } from './CommentList';
 import './index.scss';
 import { useTheme } from '@/contexts/ThemeContext';
+import Header from './Header';
 
 const TravelDetail: React.FC = () => {
   const { id } = useParams();
@@ -30,6 +31,7 @@ const TravelDetail: React.FC = () => {
   const { userInfo } = useUserStore();
   const navigator = useNavigate();
   const [likeCount, setLikeCount] = useState(0); // 添加点赞数状态
+  const [isFollowed, setIsFollowed] = useState(false);
   useEffect(() => {
     const fetchDetail = async () => {
       try {
@@ -167,19 +169,39 @@ const TravelDetail: React.FC = () => {
     setLikeCount(count);
   };
 
+  // 添加关注处理函数
+  const handleFollow = () => {
+    if (!checkLogin()) return;
+    // TODO: 调用关注 API
+    setIsFollowed(!isFollowed);
+    Toast.show({
+      content: !isFollowed ? '关注成功' : '已取消关注',
+      icon: 'success',
+    });
+  };
+
+  // 添加分享处理函数
+  const handleShare = () => {
+    // TODO: 实现分享功能
+    Toast.show({
+      content: '分享功能开发中',
+    });
+  };
+
   return (
     <div className={`travel-detail ${theme === 'dark' ? 'dark' : ''}`}>
-      <NavBar onBack={() => navigator(-1)}>游记详情</NavBar>
+      
+      <Header 
+        avatar={travel.author.avatar}
+        nickname={travel.author.nickname}
+        theme={theme}
+        onBack={() => navigator(-1)}
+        onFollow={handleFollow}
+        onShare={handleShare}
+        isFollowed={isFollowed}
+      />
 
       <div className="detail-content">
-        <h1 className="title">{travel.title}</h1>
-
-        <div className="author-info">
-          <Image src={travel.author.avatar} className="avatar" />
-          <span className="name">{travel.author.nickname}</span>
-          <span className="time">{travel.createTime}</span>
-        </div>
-
         {travel.images.length > 0 && (
           <div className="swiper-container">
             <Swiper>
@@ -191,6 +213,9 @@ const TravelDetail: React.FC = () => {
             </Swiper>
           </div>
         )}
+
+        <h1 className="title">{travel.title}</h1>
+
         {/* 添加游玩信息卡片 */}
         <div className="travel-info-card">
           <div className="info-item">
@@ -212,6 +237,10 @@ const TravelDetail: React.FC = () => {
           </div>
         </div>
         <div className="content" dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
+        
+        <div className="create-time">
+          发布于 {travel.createTime}
+        </div>
       </div>
 
       {/* 新增底部固定栏 */}

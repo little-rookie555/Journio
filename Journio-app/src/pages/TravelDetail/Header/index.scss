@@ -1,0 +1,52 @@
+.travel-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--adm-color-box);
+  border-bottom: 1px solid var(--adm-color-border);
+  transition: all 0.3s ease;
+
+  &.dark {
+    background: var(--adm-color-background);
+    border-color: var(--adm-color-border);
+  }
+
+  :global(.adm-nav-bar) {
+    background: transparent;
+  }
+
+  .author-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .name {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--adm-color-text);
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .follow-btn {
+      font-size: 14px;
+      padding: 4px 12px;
+      border-radius: 15px;
+    }
+
+    :global(.antd-mobile-icon) {
+      color: var(--adm-color-text);
+    }
+  }
+}
