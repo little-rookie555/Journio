@@ -47,7 +47,7 @@ exports.getAllAdmins = async (req, res) => {
       status: user.status, // 默认为激活状态
     }));
 
-    console.log('formattedData', formattedData); // 打印 formattedData 以查看其内容
+    // console.log('formattedData', formattedData); // 打印 formattedData 以查看其内容
 
     res.status(200).json({
       code: 200,
@@ -106,7 +106,7 @@ exports.getAllUsers = async (req, res) => {
       status: user.status, // 默认为激活状态
     }));
 
-    console.log('formattedData', formattedData); // 打印 formattedData 以查看其内容
+    // console.log('formattedData', formattedData); // 打印 formattedData 以查看其内容
 
     res.status(200).json({
       code: 200,

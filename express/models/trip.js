@@ -96,6 +96,22 @@ const Trip = sequelize.define(
       field: 'update_time',
       comment: '更新时间',
     },
+    travelData: {
+      type: DataTypes.STRING(24),
+      allowNull: false,
+      field: 'travel_data',
+      comment: '旅行出发日期',
+    },
+    duration: {
+      type: DataTypes.INTEGER.UNSIGNED,
+      allowNull: false,
+      comment: '旅游天数',
+    },
+    cost: {
+      type: DataTypes.DECIMAL(10, 2).UNSIGNED,
+      allowNull: false,
+      comment: '人均消费',
+    },
   },
   {
     tableName: 'tb_blog',

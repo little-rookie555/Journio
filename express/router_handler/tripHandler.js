@@ -74,7 +74,15 @@ exports.createTrip = async (req, res) => {
   try {
     const userId = req.id;
 
-    console.log('创建游记的内容:', req.body.content);
+    console.log('创建游记的内容:', req.body.travelDate);
+
+    // 添加验证
+    if (!req.body.travelDate) {
+      return res.status(400).json({
+        code: 400,
+        message: '旅行日期不能为空',
+      });
+    }
 
     // 如果有视频，先处理视频截图
     let coverImage = req.body.coverImage;
@@ -82,6 +90,7 @@ exports.createTrip = async (req, res) => {
       coverImage = await extractVideoThumbnail(req.body.video);
     }
 
+    // 在 createTrip 函数中
     const tripData = {
       user_id: userId,
       title: req.body.title,
@@ -93,6 +102,9 @@ exports.createTrip = async (req, res) => {
       liked: 0,
       is_deleted: 0,
       comments: 0,
+      travelData: req.body.travelDate, // Changed from travel_data to travelData
+      duration: req.body.duration,
+      cost: req.body.cost,
     };
 
     const newTrip = await Trip.create(tripData);
@@ -113,6 +125,9 @@ exports.createTrip = async (req, res) => {
         images: newTrip.images,
         status: newTrip.status,
         createTime: newTrip.create_time,
+        travelDate: newTrip.travelData, // 修改字段名
+        duration: newTrip.duration,
+        cost: newTrip.cost,
         author: {
           id: user.id,
           nickname: user.nick_name,
@@ -131,7 +146,6 @@ exports.createTrip = async (req, res) => {
 // 更新游记
 exports.updateTrip = async (req, res) => {
   try {
-    // 判断用户是否有权限修改游记，即判断游记的作者是否为当前用户
     const userId = req.id;
     const trip = await Trip.findByPk(req.params.id);
 
@@ -148,13 +162,17 @@ exports.updateTrip = async (req, res) => {
     }
 
     // 更新游记内容
+    // 在 updateTrip 函数中
     const updateData = {
       title: req.body.title,
       content: req.body.content,
-      coverImage: req.body.coverImage,
       images: req.body.images,
+      video_url: req.body.video_url,
       status: 0, // 修改后重新设为待审核状态
       update_time: new Date(),
+      travelData: new Date(req.body.travelDate).toISOString().split('T')[0], // 修改字段名从travel_data为travelData
+      duration: req.body.duration,
+      cost: req.body.cost,
     };
 
     await trip.update(updateData);
@@ -164,7 +182,6 @@ exports.updateTrip = async (req, res) => {
       attributes: ['id', 'nick_name', 'icon'],
     });
 
-    // 返回格式与前端一致
     return res.status(200).json({
       code: 200,
       data: {
@@ -175,6 +192,9 @@ exports.updateTrip = async (req, res) => {
         images: trip.images,
         status: trip.status,
         createTime: trip.create_time,
+        travelDate: trip.travelData, // 修改字段名从travel_date为travelData
+        duration: trip.duration,
+        cost: trip.cost,
         author: {
           id: user.id,
           nickname: user.nick_name,
@@ -183,7 +203,6 @@ exports.updateTrip = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log('updateTrip error:', error);
     return res.status(500).json({
       code: 500,
       message: error.message,
@@ -231,10 +250,10 @@ exports.deleteTrip = async (req, res) => {
   }
 };
 
-// 获取所有游记
+// 获取游记列表
 exports.getAllTrips = async (req, res) => {
   try {
-    const { Op } = require('sequelize'); // 操作符 - 复杂查询（Or.like - 模糊查询）
+    const { Op, col } = require('sequelize'); // 操作符 - 复杂查询（Or.like - 模糊查询）
     const page = parseInt(req.query.pageNum) || 1;
     const limit = parseInt(req.query.pageSize) || 20;
     const keyword = req.query.keyword || '';
@@ -266,26 +285,37 @@ exports.getAllTrips = async (req, res) => {
       ],
       attributes: {
         exclude: ['password'],
-        include: ['coverImage'],
+        include: [
+          'id',
+          'title',
+          'content',
+          'coverImage',
+          'images',
+          'status',
+          'create_time',
+          'travel_data',
+          'duration',
+          'cost',
+          'liked',
+          'video_url',
+        ],
       },
     });
-
-    if (offset >= count && count !== 0) {
-      return res.status(404).json({
-        code: 404,
-        message: '页码超出范围',
-      });
-    }
 
     // 格式化返回数据
     const formattedTrips = trips.map((trip) => ({
       id: trip.id,
       title: trip.title,
+      content: trip.content,
       coverImage: trip.coverImage,
       images: trip.images,
+      video: trip.video_url,
       status: trip.status,
       createTime: trip.create_time,
-      content: trip.content,
+      travelDate: trip.travel_data,
+      duration: trip.duration,
+      cost: trip.cost,
+      likeCount: trip.liked,
       author: {
         id: trip.user.id,
         nickname: trip.user.nick_name,
@@ -293,9 +323,7 @@ exports.getAllTrips = async (req, res) => {
       },
     }));
 
-    // console.log("formattedTrips:", formattedTrips);
-
-    res.status(200).json({
+    return res.status(200).json({
       code: 200,
       data: {
         list: formattedTrips,
@@ -303,9 +331,10 @@ exports.getAllTrips = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error('获取游记列表失败:', error);
     return res.status(500).json({
       code: 500,
-      message: error.message,
+      message: '获取游记列表失败',
     });
   }
 };
@@ -324,6 +353,8 @@ exports.getTripDetail = async (req, res) => {
     });
 
     if (trip) {
+      // 格式化日期为中文格式
+      // console.log('trip.travel_data:', trip.travelData);
       res.status(200).json({
         code: 200,
         data: {
@@ -335,6 +366,10 @@ exports.getTripDetail = async (req, res) => {
           video: trip.video_url,
           status: trip.status,
           createTime: trip.create_time,
+          travelDate: trip.travelData, // 使用格式化后的日期
+          duration: trip.duration,
+          cost: trip.cost,
+          likeCount: trip.liked,
           author: {
             id: trip.user.id,
             nickname: trip.user.nick_name,
@@ -343,10 +378,11 @@ exports.getTripDetail = async (req, res) => {
         },
       });
     } else {
-      return {
+      return res.status(404).json({
+        // 修正返回404状态码
         code: 404,
         message: '游记不存在',
-      };
+      });
     }
   } catch (error) {
     return res.status(500).json({

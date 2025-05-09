@@ -35,5 +35,8 @@
     "**/*.{json,css,scss,md}": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "@amap/amap-react": "^0.1.5"
   }
 }
