@@ -7,7 +7,7 @@ import {
 } from '@/api/travel';
 import { TravelItem } from '@/mock/travel';
 import { useUserStore } from '@/store/user';
-import { Button, Image, NavBar, Popup, Swiper, TextArea, Toast } from 'antd-mobile';
+import { ImageViewer, Button, Image, Popup, Swiper, TextArea, Toast } from 'antd-mobile';
 import DOMPurify from 'dompurify';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -190,8 +190,7 @@ const TravelDetail: React.FC = () => {
 
   return (
     <div className={`travel-detail ${theme === 'dark' ? 'dark' : ''}`}>
-      
-      <Header 
+      <Header
         avatar={travel.author.avatar}
         nickname={travel.author.nickname}
         theme={theme}
@@ -207,7 +206,16 @@ const TravelDetail: React.FC = () => {
             <Swiper>
               {travel.images.map((img, index) => (
                 <Swiper.Item key={index}>
-                  <Image src={img} className="swiper-image" />
+                  <Image
+                    src={img}
+                    className="swiper-image"
+                    onClick={() => {
+                      ImageViewer.Multi.show({
+                        images: travel.images,
+                        defaultIndex: index,
+                      });
+                    }}
+                  />
                 </Swiper.Item>
               ))}
             </Swiper>
@@ -237,10 +245,8 @@ const TravelDetail: React.FC = () => {
           </div>
         </div>
         <div className="content" dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
-        
-        <div className="create-time">
-          发布于 {travel.createTime}
-        </div>
+
+        <div className="create-time">发布于 {travel.createTime}</div>
       </div>
 
       {/* 新增底部固定栏 */}
