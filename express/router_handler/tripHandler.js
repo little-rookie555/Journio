@@ -820,3 +820,31 @@ exports.uploadTripMediaMultiple = (req, res) => {
     return res.status(500).json({ message: '文件上传过程发生异常' });
   }
 };
+
+// 更新浏览量
+exports.updateViews = async (req, res) => {
+  try {
+    const tripId = req.params.id;
+    const trip = await Trip.findByPk(tripId);
+
+    if (!trip || trip.is_deleted === 1) {
+      return res.status(404).json({
+        code: 404,
+        message: '游记不存在',
+      });
+    }
+
+    // 更新浏览量
+    await trip.increment('views', { by: 1 });
+
+    return res.status(200).json({
+      code: 200,
+      message: '更新成功',
+    });
+  } catch (error) {
+    return res.status(500).json({
+      code: 500,
+      message: error.message,
+    });
+  }
+};

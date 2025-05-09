@@ -112,3 +112,8 @@ export const likeTravel = (
 export const starTravel = (params: StarParams): Promise<ApiResponse<{ starred: boolean }>> => {
   return request.post('/travel/star', params);
 };
+
+// 更新浏览量
+export const updateViews = (travelId: number) => {
+  return request.post(`/trips/${travelId}/views`);
+};

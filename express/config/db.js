@@ -1,23 +1,37 @@
 const { Sequelize } = require('sequelize');
 
-const sequelize = new Sequelize('journio', 'root', 'abc123', {
-  host: '127.0.0.1',
+// const sequelize = new Sequelize('journio', 'root', 'abc123', {
+//   host: '127.0.0.1',
+//   dialect: 'mysql',
+//   logging: false, // 设置为true可以在控制台看到SQL查询
+//   define: {
+//     // 全局设置表名与模型名相同，不会自动加s
+//     freezeTableName: false,
+//     // 全局设置不自动添加时间戳字段
+//     timestamps: false
+//   }
+// });
+
+const sequelize = new Sequelize('journio', 'root', '', {
+  host: '',
+  port: 1, // 添加端口配置
   dialect: 'mysql',
   logging: false, // 设置为true可以在控制台看到SQL查询
   define: {
     // 全局设置表名与模型名相同，不会自动加s
     freezeTableName: false,
     // 全局设置不自动添加时间戳字段
-    timestamps: false
-  }
+    timestamps: false,
+  },
 });
 
 // 测试数据库连接
-sequelize.authenticate()
+sequelize
+  .authenticate()
   .then(() => {
     console.log('数据库连接成功');
   })
-  .catch(err => {
+  .catch((err) => {
     console.error('数据库连接失败:', err);
   });
 

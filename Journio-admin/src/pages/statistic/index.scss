@@ -1,0 +1,89 @@
+// 统计页面样式
+.statistic-page {
+  padding: 16px;
+
+  // 顶部标题和日期选择器
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+
+    .dashboard-title {
+      margin: 0;
+    }
+
+    .ant-card {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      border-radius: 8px;
+      transition: all 0.3s;
+
+      &:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    // 顶部卡片样式
+    .statistic-card {
+      text-align: center;
+
+      .statistic-title {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 8px;
+      }
+
+      .statistic-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .statistic-value {
+        font-size: 24px;
+        font-weight: bold;
+      }
+
+      .anticon {
+        font-size: 20px;
+        margin-right: 8px;
+      }
+    }
+
+    // 待处理卡片样式
+    .pending-card {
+      .pending-title {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 8px;
+      }
+
+      .pending-content {
+        .pending-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .pending-label {
+          font-size: 14px;
+        }
+
+        .pending-value {
+          font-size: 20px;
+          font-weight: bold;
+        }
+
+        .pending-value {
+          font-size: 30px;
+          font-weight: bold;
+        }
+      }
+    }
+
+    // 图表样式
+    .chart-container {
+      height: 400px;
+    }
+  }
+}

@@ -8,6 +8,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import PendingAudit from '@/pages/audit/pending';
 import ApprovedAudit from '@/pages/audit/approved';
 import RejectedAudit from '@/pages/audit/rejected';
+import StatisticPage from '@/pages/statistic';
 
 export const router = createBrowserRouter([
   {
@@ -27,6 +28,14 @@ export const router = createBrowserRouter([
         element: (
           <AuthRoute>
             <Navigate to="/audit" replace />
+          </AuthRoute>
+        ),
+      },
+      {
+        path: 'statistic',
+        element: (
+          <AuthRoute>
+            <StatisticPage />
           </AuthRoute>
         ),
       },

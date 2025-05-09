@@ -49,5 +49,5 @@ router.get('/comment/list/:travelId', tripHandler.getCommentList);
 router.post('/upload', tripHandler.uploadTripMedia); // 使用POST方法
 // 上传一组游记图片
 router.post('/upload/images', checkAuth, tripHandler.uploadTripMediaMultiple);
-
+router.post('/trips/:id/views', tripHandler.updateViews);
 module.exports = router;
