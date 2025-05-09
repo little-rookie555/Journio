@@ -1,5 +1,11 @@
 import { create } from 'zustand';
-import { getAuditList, approveAudit as apiApproveAudit, rejectAudit as apiRejectAudit, deleteAudit as apiDeleteAudit } from '@/api/audit';
+import {
+  getAuditList,
+  getAuditListByStatus,
+  approveAudit as apiApproveAudit,
+  rejectAudit as apiRejectAudit,
+  deleteAudit as apiDeleteAudit,
+} from '@/api/audit';
 import { message } from 'antd';
 
 /**
@@ -39,12 +45,14 @@ export interface AuditItem {
   createTime: string;
   updateTime: string;
   content: string;
+  rejectReason: string;
 }
 
 interface AuditStore {
   auditList: AuditItem[];
   loading: boolean;
   fetchAuditList: () => Promise<void>; // 获取列表方法
+  fetchAuditListByStatus: (status: AuditStatus) => Promise<void>; // 获取列表方法
   approveAudit: (key: string) => Promise<void>;
   rejectAudit: (key: string, reson: string) => Promise<void>;
   deleteAudit: (key: string) => Promise<void>;
@@ -57,6 +65,22 @@ export const useAuditStore = create<AuditStore>((set, get) => ({
     set({ loading: true });
     try {
       const res = await getAuditList();
+      if (res.code === 200) {
+        set({ auditList: res.data });
+      } else {
+        message.error(res.message || '获取游记列表失败');
+      }
+    } catch (error) {
+      console.error('获取游记列表失败:', error);
+      message.error('获取游记列表失败');
+    } finally {
+      set({ loading: false });
+    }
+  },
+  fetchAuditListByStatus: async (status: AuditStatus) => {
+    set({ loading: true });
+    try {
+      const res = await getAuditListByStatus(status);
       if (res.code === 200) {
         set({ auditList: res.data });
       } else {

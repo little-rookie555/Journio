@@ -26,16 +26,61 @@ export interface AdminUserParams {
   message?: string;
 }
 
+interface LoginParams {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  code: number;
+  data: {
+    token: string;
+    role: string;
+    userInfo: {
+      id: number;
+      username: string;
+    };
+  };
+}
+
+/**
+ * 登录
+ */
+export const login = (data: LoginParams): Promise<LoginResponse> => {
+  return request.post('/audit/login', data);
+};
+
 /**
  * 获取管理员用户列表
  */
-export const getAdminList = (page: number = 1, pageSize: number = 10, search: string = ''): Promise<AdminUserResponse> => {
+export const getAdminList = (
+  page: number = 1,
+  pageSize: number = 10,
+  search: string = '',
+): Promise<AdminUserResponse> => {
   return request.get('/admin', {
     params: {
       page,
       pageSize,
-      search
-    }
+      search,
+    },
+  });
+};
+
+/**
+ * 获取用户列表
+ */
+export const getUserList = (
+  page: number = 1,
+  pageSize: number = 10,
+  search: string = '',
+): Promise<AdminUserResponse> => {
+  return request.get('/admin/user', {
+    params: {
+      page,
+      pageSize,
+      search,
+    },
   });
 };
 
@@ -45,7 +90,11 @@ export const getAdminList = (page: number = 1, pageSize: number = 10, search: st
  * @param password 密码
  * @param role 角色
  */
-export const createAdmin = (username: string, password: string, role: string): Promise<AdminUserParams> => {
+export const createAdmin = (
+  username: string,
+  password: string,
+  role: string,
+): Promise<AdminUserParams> => {
   return request.post('/admin/create', { username, password, role });
 };
 

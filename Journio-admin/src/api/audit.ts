@@ -1,5 +1,5 @@
 import request from '@/utils/request';
-import { AuditItem } from '@/store/audit';
+import { AuditItem, AuditStatus } from '@/store/audit';
 
 export interface TripStore {
   code: number;
@@ -56,4 +56,12 @@ export const rejectAudit = (id: string, reason: string): Promise<TripParams> => 
  */
 export const deleteAudit = (id: string): Promise<TripParams> => {
   return request.put(`/audit/delete/${id}`);
+};
+
+/**
+ * 根据状态获取游记审核列表
+ * @param status 审核状态
+ */
+export const getAuditListByStatus = (status: AuditStatus): Promise<TripStore> => {
+  return request.get(`/audit/list/${status}`);
 };

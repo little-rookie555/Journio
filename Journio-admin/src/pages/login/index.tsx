@@ -1,4 +1,4 @@
-import { login } from '@/api/user';
+import { login } from '@/api/admin';
 import { Button, Card, Form, Input, message } from 'antd';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';

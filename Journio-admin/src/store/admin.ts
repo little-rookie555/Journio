@@ -1,6 +1,12 @@
 import { create } from 'zustand';
 import { AdminUser } from '@/api/admin';
-import { getAdminList, createAdmin, deleteAdmin, resetAdminPassword } from '@/api/admin';
+import {
+  getAdminList,
+  createAdmin,
+  deleteAdmin,
+  resetAdminPassword,
+  getUserList,
+} from '@/api/admin';
 import { message } from 'antd';
 
 /**
@@ -8,7 +14,7 @@ import { message } from 'antd';
  */
 export enum AdminRole {
   SuperAdmin = 3,
-  Admin = 2
+  Admin = 2,
 }
 
 /**
@@ -16,7 +22,7 @@ export enum AdminRole {
  */
 export enum AdminStatus {
   Active = 1,
-  Inactive = 0
+  Inactive = 0,
 }
 
 export const getAdminRoleText = (role: number) => {
@@ -26,7 +32,7 @@ export const getAdminRoleText = (role: number) => {
     case AdminRole.Admin:
       return '审核员';
     default:
-      return '未知';
+      return '用户';
   }
 };
 
@@ -37,7 +43,7 @@ export const getAdminStatusText = (status: number) => {
     case AdminStatus.Inactive:
       return '禁用';
     default:
-      return '未知';
+      return '用户';
   }
 };
 
@@ -46,6 +52,7 @@ export interface AdminStore {
   loading: boolean;
   total: number;
   fetchAdminList: (page?: number, pageSize?: number, search?: string) => Promise<void>;
+  fetchUserList: (page?: number, pageSize?: number, search?: string) => Promise<void>;
   createNewAdmin: (username: string, password: string, role: string) => Promise<void>;
   removeAdmin: (id: string) => Promise<void>;
   resetPassword: (id: string, password: string) => Promise<void>;
@@ -65,6 +72,19 @@ export const useAdminStore = create<AdminStore>((set) => ({
     } catch (error) {
       console.error('获取管理员列表失败:', error);
       message.error('获取管理员列表失败');
+    } finally {
+      set({ loading: false });
+    }
+  },
+  fetchUserList: async (page = 1, pageSize = 10, search = '') => {
+    set({ loading: true });
+    try {
+      const response = await getUserList(page, pageSize, search);
+      console.log('response', response);
+      set({ adminList: response.data, total: response.total || 0 });
+    } catch (error) {
+      console.error('获取用户列表失败:', error);
+      message.error('获取用户列表失败');
     } finally {
       set({ loading: false });
     }

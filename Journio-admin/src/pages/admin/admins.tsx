@@ -1,11 +1,18 @@
-import { AdminRole, AdminStatus, getAdminRoleText, getAdminStatusText, useAdminStore } from '@/store/admin';
+import {
+  AdminRole,
+  AdminStatus,
+  getAdminRoleText,
+  getAdminStatusText,
+  useAdminStore,
+} from '@/store/admin';
 import { AdminUser } from '@/api/admin';
-import { Button, Modal, Popconfirm, Space, Table, Tag, message, Spin, Input, Form, Select } from 'antd';
+import { Button, Modal, Popconfirm, Space, Table, Tag, Spin, Input, Form, Select } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useEffect, useState } from 'react';
 
 const AdminList: React.FC = () => {
-  const { adminList, loading, fetchAdminList, createNewAdmin, removeAdmin, resetPassword } = useAdminStore();
+  const { adminList, loading, fetchAdminList, createNewAdmin, removeAdmin, resetPassword } =
+    useAdminStore();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [resetPasswordForm] = Form.useForm();
@@ -41,15 +48,14 @@ const AdminList: React.FC = () => {
       dataIndex: 'role',
       key: 'role',
       render: (role: number) => (
-        <Tag color={role === AdminRole.SuperAdmin ? 'gold' : 'blue'}>
-          {getAdminRoleText(role)}
-        </Tag>
+        <Tag color={role === AdminRole.SuperAdmin ? 'gold' : 'blue'}>{getAdminRoleText(role)}</Tag>
       ),
     },
     {
       title: '修改时间',
       dataIndex: 'updateTime',
       key: 'updateTime',
+      render: (time: string) => new Date(time).toLocaleString(),
     },
     // {
     //   title: '最后登录时间',
@@ -110,15 +116,15 @@ const AdminList: React.FC = () => {
           allowClear
           onSearch={(value) => {
             setSearchText(value);
-            setPagination(prev => ({ ...prev, current: 1 }));
+            setPagination((prev) => ({ ...prev, current: 1 }));
           }}
           style={{ width: 200, marginBottom: 16 }}
         />
       </div>
 
       <Spin spinning={loading}>
-        <Table 
-          columns={columns} 
+        <Table
+          columns={columns}
           dataSource={adminList}
           pagination={{
             ...pagination,
@@ -126,12 +132,12 @@ const AdminList: React.FC = () => {
             showQuickJumper: true,
             showTotal: (total) => `共 ${total} 条记录`,
             onChange: (page, pageSize) => {
-              setPagination(prev => ({
+              setPagination((prev) => ({
                 ...prev,
                 current: page,
-                pageSize: pageSize || 10
+                pageSize: pageSize || 10,
               }));
-            }
+            },
           }}
         />
       </Spin>
@@ -160,11 +166,7 @@ const AdminList: React.FC = () => {
           >
             <Input.Password placeholder="请输入密码" />
           </Form.Item>
-          <Form.Item
-            name="role"
-            label="角色"
-            rules={[{ required: true, message: '请选择角色' }]}
-          >
+          <Form.Item name="role" label="角色" rules={[{ required: true, message: '请选择角色' }]}>
             <Select placeholder="请选择角色">
               <Select.Option value={AdminRole.Admin}>审核人员</Select.Option>
               <Select.Option value={AdminRole.SuperAdmin}>管理员</Select.Option>
@@ -175,10 +177,12 @@ const AdminList: React.FC = () => {
               <Button type="primary" htmlType="submit">
                 确定
               </Button>
-              <Button onClick={() => {
-                setIsModalVisible(false);
-                form.resetFields();
-              }}>
+              <Button
+                onClick={() => {
+                  setIsModalVisible(false);
+                  form.resetFields();
+                }}
+              >
                 取消
               </Button>
             </Space>
@@ -208,10 +212,12 @@ const AdminList: React.FC = () => {
               <Button type="primary" htmlType="submit">
                 确定
               </Button>
-              <Button onClick={() => {
-                setResetModalVisible(false);
-                resetPasswordForm.resetFields();
-              }}>
+              <Button
+                onClick={() => {
+                  setResetModalVisible(false);
+                  resetPasswordForm.resetFields();
+                }}
+              >
                 取消
               </Button>
             </Space>

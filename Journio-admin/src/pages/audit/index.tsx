@@ -5,24 +5,23 @@ import React, { useEffect, useState, useRef } from 'react';
 import { getAuditDetail } from '@/api/audit';
 
 const AuditList: React.FC = () => {
-  const { auditList, loading, fetchAuditList, approveAudit, rejectAudit, deleteAudit } = useAuditStore();
+  const { auditList, loading, fetchAuditList, approveAudit, rejectAudit, deleteAudit } =
+    useAuditStore();
   const role = localStorage.getItem('role');
   const [detailLoading, setDetailLoading] = useState(false);
-  const [rejectReason, setRejectReason] = useState('');
-  const rejectReasonRef = useRef(''); // 添加这行声明
-  
+  const rejectReasonRef = useRef('');
+
   useEffect(() => {
     fetchAuditList();
   }, [fetchAuditList]);
 
   const handleView = async (record: AuditItem) => {
     setDetailLoading(true);
-    setRejectReason(''); // 新增这行，每次打开详情时重置拒绝原因
     try {
       // 获取详细信息
       const res = await getAuditDetail(record.key);
       const detailData = res.data || res;
-      
+
       Modal.info({
         title: '游记详情',
         width: 600,
@@ -68,7 +67,7 @@ const AuditList: React.FC = () => {
                   description={
                     <div>
                       <p>{`确定要拒绝"${detailData.title}"吗？`}</p>
-                      <Input.TextArea 
+                      <Input.TextArea
                         placeholder="请输入拒绝原因"
                         onChange={(e) => {
                           rejectReasonRef.current = e.target.value;
@@ -82,7 +81,7 @@ const AuditList: React.FC = () => {
                       await rejectAudit(detailData.key, rejectReasonRef.current);
                       Modal.destroyAll();
                       message.error('已拒绝该游记');
-                      setRejectReason(''); // 清空拒绝原因
+                      // setRejectReason(''); // 清空拒绝原因
                     } catch (error) {
                       console.error('拒绝失败:', error);
                     }
@@ -126,6 +125,7 @@ const AuditList: React.FC = () => {
       title: '修改时间',
       dataIndex: 'updateTime',
       key: 'updateTime',
+      render: (time: string) => new Date(time).toLocaleString(),
     },
     {
       title: '内容',

@@ -1,9 +1,13 @@
 import AuthRoute from '@/components/AuthRoute';
 import MainLayout from '@/pages/Layout';
 import AuditList from '@/pages/audit';
-import AdminList from '@/pages/admin';
+import AdminList from '@/pages/admin/admins';
+import UserList from '@/pages/admin/users';
 import Login from '@/pages/login';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
+import PendingAudit from '@/pages/audit/pending';
+import ApprovedAudit from '@/pages/audit/approved';
+import RejectedAudit from '@/pages/audit/rejected';
 
 export const router = createBrowserRouter([
   {
@@ -35,10 +39,42 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'admin',
+        path: 'audit/pending',
+        element: (
+          <AuthRoute>
+            <PendingAudit />
+          </AuthRoute>
+        ),
+      },
+      {
+        path: 'audit/approved',
+        element: (
+          <AuthRoute>
+            <ApprovedAudit />
+          </AuthRoute>
+        ),
+      },
+      {
+        path: 'audit/rejected',
+        element: (
+          <AuthRoute>
+            <RejectedAudit />
+          </AuthRoute>
+        ),
+      },
+      {
+        path: 'admin/admins',
         element: (
           <AuthRoute>
             <AdminList />
+          </AuthRoute>
+        ),
+      },
+      {
+        path: 'admin/users',
+        element: (
+          <AuthRoute>
+            <UserList />
           </AuthRoute>
         ),
       },

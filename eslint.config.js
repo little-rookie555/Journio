@@ -23,6 +23,11 @@ module.exports = [
         ...globals.node,
       },
     },
+    settings: {
+      react: {
+        version: 'detect', // 自动检测已安装的 React 版本
+      },
+    },
     plugins: {
       react: reactPlugin,
       'react-hooks': reactHooks,
