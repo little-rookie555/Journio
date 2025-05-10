@@ -256,6 +256,7 @@ const TravelDetail: React.FC = () => {
                 setShowCommentPopup(true);
               }
             }}
+            authorId={travel.author.id} // 传入作者ID
           />
         </div>
       </div>

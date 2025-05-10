@@ -1,6 +1,6 @@
 import { useTheme } from '@/contexts/ThemeContext';
 import { useUserStore } from '@/store/user';
-import { Image, List } from 'antd-mobile';
+import { Image, List, Tag } from 'antd-mobile';
 import React from 'react';
 import './index.scss';
 
@@ -18,9 +18,10 @@ export interface Comment {
 interface CommentListProps {
   comments: Comment[];
   onShowPopup: () => void;
+  authorId?: number; // 添加作者ID属性
 }
 
-const CommentList: React.FC<CommentListProps> = ({ comments, onShowPopup }) => {
+const CommentList: React.FC<CommentListProps> = ({ comments, onShowPopup, authorId }) => {
   const { theme } = useTheme();
   const { userInfo } = useUserStore();
 
@@ -58,7 +59,14 @@ const CommentList: React.FC<CommentListProps> = ({ comments, onShowPopup }) => {
                 description={comment.createTime}
               >
                 <div className="comment-content">
-                  <span className="nickname">{comment.author.nickname}</span>
+                  <div className="nickname-container">
+                    <span className="nickname">{comment.author.nickname}</span>
+                    {comment.author.id === authorId && (
+                      <Tag color="primary" className="author-tag">
+                        作者
+                      </Tag>
+                    )}
+                  </div>
                   <p className="text">{comment.content}</p>
                 </div>
               </List.Item>
