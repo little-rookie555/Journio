@@ -1,4 +1,4 @@
-import { getTravelList, likeTravel } from '@/api/travel';
+import { getTravelList } from '@/api/travel';
 import { TravelItem } from '@/mock/travel';
 import { create } from 'zustand';
 
@@ -31,34 +31,15 @@ export const useTravelStore = create<TravelState>((set, get) => ({
     const { keyword, page, pageSize } = get();
     set({ loading: true });
     try {
-      const response = await getTravelList({ page, pageSize, keyword });
-      const listWithLikeStatus = await Promise.all(
-        response.data.list.map(async (item) => {
-          // 如果用户已登录，获取点赞状态
-          const userStorage = JSON.parse(localStorage.getItem('user-storage') || '{}');
-          if (userStorage && userStorage.state && userStorage.state.userInfo) {
-            const userInfo = userStorage.state.userInfo;
-            try {
-              const likeRes = await likeTravel({
-                travelId: item.id,
-                userId: userInfo.id,
-              });
-              return {
-                ...item,
-                isLiked: likeRes.data.liked,
-                likeCount: likeRes.data.likeCount,
-              };
-            } catch (error) {
-              console.error('获取点赞状态失败:', error);
-              return { ...item, isLiked: false };
-            }
-          }
-          return { ...item, isLiked: false };
-        }),
-      );
+      const response = await getTravelList({
+        page,
+        pageSize,
+        keyword,
+        userId: JSON.parse(localStorage.getItem('user-storage') || '{}')?.state?.userInfo?.id,
+      });
 
       set({
-        list: page === 1 ? listWithLikeStatus : [...get().list, ...listWithLikeStatus],
+        list: page === 1 ? response.data.list : [...get().list, ...response.data.list],
         total: response.data.total,
       });
     } catch (error) {

@@ -253,12 +253,15 @@ exports.deleteTrip = async (req, res) => {
 // 获取游记列表
 exports.getAllTrips = async (req, res) => {
   try {
+    // console.log('开始获取游记列表：', req.query);
+
     const { Op, col } = require('sequelize'); // 操作符 - 复杂查询（Or.like - 模糊查询）
     const page = parseInt(req.query.pageNum) || 1;
     const limit = parseInt(req.query.pageSize) || 20;
     const keyword = req.query.keyword || '';
     const offset = (page - 1) * limit;
 
+    // 1. 查询所有已审核通过的游记
     const { count, rows: trips } = await Trip.findAndCountAll({
       where: {
         [Op.and]: [
@@ -302,7 +305,7 @@ exports.getAllTrips = async (req, res) => {
       },
     });
 
-    // 格式化返回数据
+    // 2. 格式化数据
     const formattedTrips = trips.map((trip) => ({
       id: trip.id,
       title: trip.title,
@@ -316,12 +319,35 @@ exports.getAllTrips = async (req, res) => {
       duration: trip.duration,
       cost: trip.cost,
       likeCount: trip.liked,
+      isLiked: false,
       author: {
         id: trip.user.id,
         nickname: trip.user.nick_name,
         avatar: trip.user.icon,
       },
     }));
+
+    // 3. 若传入userid
+    if (req.query.userId) {
+      // 批量查询当前用户点赞的所有游记ID
+      const likedTripIds = (
+        await TripLike.findAll({
+          where: {
+            user_id: req.query.userId,
+            travel_id: {
+              [Op.in]: trips.map((trip) => trip.id),
+            },
+          },
+          attributes: ['travel_id'],
+          raw: true,
+        })
+      ).map((like) => like.travel_id);
+
+      // 为每个游记添加isLiked字段
+      formattedTrips.forEach((trip) => {
+        trip.isLiked = likedTripIds.includes(trip.id);
+      });
+    }
 
     return res.status(200).json({
       code: 200,
@@ -456,8 +482,16 @@ exports.getTripsByUser = async (req, res) => {
 
     console.log('查询到的游记数量:', trips.length);
 
-    if (offset >= count && count !== 0) {
-      return res.status(404).json({ message: '页码超出范围' });
+    // 优化分页处理
+    if (page > 1 && offset >= count) {
+      return res.status(400).json({
+        code: 400,
+        message: '页码超出范围',
+        data: {
+          total: count,
+          maxPage: Math.ceil(count / limit),
+        },
+      });
     }
 
     // 格式化数据以匹配前端期望的格式

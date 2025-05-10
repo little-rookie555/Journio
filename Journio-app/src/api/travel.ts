@@ -12,6 +12,7 @@ interface TravelListParams {
   page: number;
   pageSize: number;
   keyword?: string;
+  userId?: number;
 }
 
 interface TravelListResponse {
@@ -19,12 +20,18 @@ interface TravelListResponse {
   total: number;
 }
 
-// 获取游记列表
+/**
+ * 获取所有游记列表
+ * @param page, pageSize, keyword, userId
+ * @returns
+ */
 export const getTravelList = (
   params: TravelListParams,
 ): Promise<ApiResponse<TravelListResponse>> => {
-  const { page, pageSize, keyword = '' } = params;
-  return request.get(`/travel/list?page=${page}&pageSize=${pageSize}&keyword=${keyword}`);
+  const { page, pageSize, keyword = '', userId } = params;
+  return request.get(
+    `/travel/list?page=${page}&pageSize=${pageSize}&keyword=${keyword}&userId=${userId}`,
+  );
 };
 
 // 发布游记
