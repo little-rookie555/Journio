@@ -7,12 +7,6 @@ interface Location {
   location: [number, number];
 }
 
-interface FormLocation {
-  name: string;
-  address: string;
-  coordinates: [number, number];
-}
-
 export const useLocationManagement = (form: ReturnType<typeof Form.useForm>[0]) => {
   const [mapVisible, setMapVisible] = useState(false);
   const [selectedLocations, setSelectedLocations] = useState<Location[]>([]);

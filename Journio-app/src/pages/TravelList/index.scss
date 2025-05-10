@@ -66,8 +66,8 @@
 
     .travel-image {
       width: 100%;
-      aspect-ratio: 3/4;
-      object-fit: cover;
+      height: auto;
+      object-fit: contain;
     }
 
     .travel-info {
@@ -96,7 +96,7 @@
           display: flex;
           align-items: center;
           gap: 8px;
-          
+
           .author-name {
             font-size: 14px;
             color: var(--adm-color-text);
@@ -110,22 +110,22 @@
           padding: 4px 8px;
           border-radius: 15px;
           transition: all 0.3s ease;
-      
+
           &:active {
             opacity: 0.8;
           }
-      
+
           .icon-liked {
             color: #ff4d4f;
             transform: scale(1.2);
             transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             animation: heartBeat 0.5s ease-in-out;
           }
-      
+
           .icon-default {
             color: var(--adm-color-text);
           }
-      
+
           span {
             font-size: 14px;
             color: var(--adm-color-text);
