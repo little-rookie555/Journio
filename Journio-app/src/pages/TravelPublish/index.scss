@@ -14,7 +14,7 @@
     .publish-form {
       :global(.adm-form-item) {
         background: var(--adm-color-box);
-        
+
         :global(.adm-form-item-label) {
           color: var(--adm-color-text);
         }
@@ -29,7 +29,7 @@
       .quill {
         .ql-container {
           color: var(--adm-color-text);
-          
+
           .ql-editor {
             color: var(--adm-color-text);
 
@@ -42,7 +42,7 @@
         .ql-bubble {
           .ql-toolbar {
             background-color: var(--adm-color-box);
-            
+
             .ql-formats button {
               color: var(--adm-color-text);
             }
@@ -140,6 +140,12 @@
   margin-bottom: 12px;
   transition: all 0.3s ease;
 
+  .template {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
   .travel-info-container {
     display: flex;
     flex-direction: column;
@@ -184,6 +190,31 @@
       background-color: var(--adm-color-box);
       cursor: pointer;
       transition: all 0.3s ease;
+    }
+  }
+
+  .template-button {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    transform: translateY(-50%);
+    font-size: 12px;
+    padding: 4px 8px;
+    background-color: #f0f0f0;
+    border-radius: 12px;
+    color: #666;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+
+    &::before {
+      content: '📖';
+      margin-right: 4px;
+      font-size: 12px;
+    }
+
+    &:hover {
+      background-color: #e0e0e0;
     }
   }
 }

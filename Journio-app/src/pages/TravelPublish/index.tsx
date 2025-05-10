@@ -9,19 +9,21 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.bubble.css'; // 替换 snow 主题
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTheme } from '@/contexts/ThemeContext';
+import TemplateList from './TemplateList';
 import './index.scss';
 
 const TravelPublish: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const { userInfo } = useUserStore();
-  const [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams(); //
   const [form] = Form.useForm();
   const editId = searchParams.get('edit');
   const [content, setContent] = useState('');
-  const [dateVisible, setDateVisible] = useState(false); // 添加状态控制日期选择器显示
-  // const [location, setLocation] = useState<{ name: string; lat: number; lng: number } | null>(null);
+  const [dateVisible, setDateVisible] = useState(false);
   const [mapVisible, setMapVisible] = useState(false);
+  const [templateVisible, setTemplateVisible] = useState(false); // 模板是否可见
+
   const modules = {
     toolbar: [
       [
@@ -65,6 +67,18 @@ const TravelPublish: React.FC = () => {
 
     fetchTravelDetail();
   }, [editId, form]);
+
+  const handleTemplateClick = (template: string) => {
+    // 写入文字模板
+    const templateLines = template.split('\n').map((line) => {
+      const title = line.split('：')[0];
+      return title + '：';
+    });
+
+    const processedTemplates = templateLines.join('<br>');
+    setContent((prevContent) => prevContent + processedTemplates);
+    setTemplateVisible(false);
+  };
 
   const onFinish = async (values: any) => {
     try {
@@ -315,7 +329,14 @@ const TravelPublish: React.FC = () => {
               </Form.Item>
             </div>
           </Form.Item>
-          <Form.Item label="游记内容" className="travel-info-card">
+          <Form.Item label="游记内容" className="travel-info-card" style={{ position: 'relative' }}>
+            <Button
+              onClick={() => setTemplateVisible(true)}
+              className="template-button"
+              size="mini"
+            >
+              📄选择模板{'>'}
+            </Button>
             <Form.Item name="title" rules={[{ required: true, message: '请输入标题' }]}>
               <Input placeholder="请输入游记标题" />
             </Form.Item>
@@ -332,6 +353,13 @@ const TravelPublish: React.FC = () => {
               />
             </Form.Item>
           </Form.Item>
+
+          {/* 评论列表弹出框 */}
+          <TemplateList
+            visible={templateVisible}
+            onClose={() => setTemplateVisible(false)}
+            onTemplateSelect={handleTemplateClick}
+          />
         </Form>
       </div>
     </div>

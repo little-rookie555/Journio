@@ -1,0 +1,89 @@
+.template-list {
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; // 添加平滑滚动效果
+
+  .template-items {
+    padding: 12px;
+    max-height: calc(80vh - 56px); // 设置最大高度，减去header高度
+    overflow-y: auto; // 启用滚动
+
+    .template-item {
+      margin-bottom: 12px;
+      padding: 16px;
+      font-size: 13px;
+      line-height: 1.8;
+      white-space: pre-line;
+      color: var(--adm-color-text);
+      background-color: rgba(87, 159, 218, 0.1);
+      border-radius: 8px;
+      position: relative;
+
+      &:active {
+        background-color: rgba(64, 169, 255, 0.2);
+      }
+
+      &::after {
+        display: none;
+      }
+
+      // 添加模板描述的样式
+      .template-description {
+        opacity: 0.5;
+        font-size: 12px;
+        margin-left: 4px;
+      }
+    }
+  }
+
+  .template-header {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    text-align: center;
+    border-bottom: 1px solid var(--adm-border-color);
+
+    .title {
+      flex: 1;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .close {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 24px;
+      color: var(--adm-color-weak);
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+
+      &:active {
+        opacity: 0.7;
+      }
+    }
+  }
+}
+
+// 暗色主题适配
+// .dark {
+//   .template-list {
+//     background-color: var(--adm-color-background);
+
+//     .template-header {
+//       border-bottom-color: var(--adm-color-border);
+//     }
+
+//     .template-items {
+//       .template-item {
+//         &:active {
+//           background-color: var(--adm-color-box);
+//         }
+//       }
+//     }
+//   }
+// }
