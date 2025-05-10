@@ -3,8 +3,8 @@ import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 
 
 // 创建axios实例
 const service: AxiosInstance = axios.create({
-  baseURL: '/api',
-  // baseURL: 'http://localhost:5107/api',
+  // baseURL: '/api',
+  baseURL: 'http://localhost:5107/api',
   timeout: 10000,
 });
 

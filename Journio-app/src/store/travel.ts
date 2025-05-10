@@ -1,7 +1,6 @@
-import { getTravelList } from '@/api/travel';
+import { getTravelList, likeTravel } from '@/api/travel';
 import { TravelItem } from '@/mock/travel';
 import { create } from 'zustand';
-import { likeTravel } from '@/api/travel';
 
 interface TravelState {
   list: (TravelItem & { isLiked?: boolean })[];
@@ -36,8 +35,9 @@ export const useTravelStore = create<TravelState>((set, get) => ({
       const listWithLikeStatus = await Promise.all(
         response.data.list.map(async (item) => {
           // 如果用户已登录，获取点赞状态
-          const {state:{userInfo}} = JSON.parse(localStorage.getItem('user-storage') || '{}');
-          if (userInfo.id) {
+          const userStorage = JSON.parse(localStorage.getItem('user-storage') || '{}');
+          if (userStorage && userStorage.state && userStorage.state.userInfo) {
+            const userInfo = userStorage.state.userInfo;
             try {
               const likeRes = await likeTravel({
                 travelId: item.id,
@@ -54,7 +54,7 @@ export const useTravelStore = create<TravelState>((set, get) => ({
             }
           }
           return { ...item, isLiked: false };
-        })
+        }),
       );
 
       set({
@@ -76,24 +76,24 @@ export const useTravelStore = create<TravelState>((set, get) => ({
     set({ page: page + 1 });
     await get().fetchList();
   },
-    // 添加更新点赞状态的方法
-    updateLikeStatus: (travelId: number, isLiked: boolean, likeCount: number) => {
-      // console.log('updateLikeStatus', travelId, isLiked, likeCount);
-      const { list } = get();
-      const newList = list.map((travel) =>
-        travel.id === travelId
-          ? {
-              ...travel,
-              isLiked,
-              likeCount,
-            }
-          : travel
-      );
-      // console.log('newList', newList);
-      set({ list: newList });
-      // setTimeout(() => {
-      //   const updatedList = get().list;
-      //   console.log('更新后的列表:', updatedList);
-      // }, 0);
-    },
+  // 添加更新点赞状态的方法
+  updateLikeStatus: (travelId: number, isLiked: boolean, likeCount: number) => {
+    // console.log('updateLikeStatus', travelId, isLiked, likeCount);
+    const { list } = get();
+    const newList = list.map((travel) =>
+      travel.id === travelId
+        ? {
+            ...travel,
+            isLiked,
+            likeCount,
+          }
+        : travel,
+    );
+    // console.log('newList', newList);
+    set({ list: newList });
+    // setTimeout(() => {
+    //   const updatedList = get().list;
+    //   console.log('更新后的列表:', updatedList);
+    // }, 0);
+  },
 }));

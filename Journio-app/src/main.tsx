@@ -1,5 +1,5 @@
-import '@/mock/travel';
-import '@/mock/user';
+// import '@/mock/travel';
+// import '@/mock/user';
 import { config as AmapConfig } from '@amap/amap-react';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';

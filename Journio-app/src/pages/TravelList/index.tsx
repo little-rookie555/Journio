@@ -1,24 +1,24 @@
+import { likeTravel } from '@/api/travel';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useTravelStore } from '@/store/travel';
+import { useUserStore } from '@/store/user';
 import { Avatar, DotLoading, Image, InfiniteScroll, Result, SearchBar, Toast } from 'antd-mobile';
 import { HeartFill, HeartOutline } from 'antd-mobile-icons';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './index.scss';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useUserStore } from '@/store/user';
-import { likeTravel } from '@/api/travel';
 
 const TravelList: React.FC = () => {
   const navigate = useNavigate();
   const { theme } = useTheme();
-  const { list, loading, total, keyword, setKeyword, fetchList, loadMore,updateLikeStatus } = useTravelStore();
+  const { list, loading, total, keyword, setKeyword, fetchList, loadMore, updateLikeStatus } =
+    useTravelStore();
   const [searchValue, setSearchValue] = useState(keyword);
   const { userInfo } = useUserStore();
 
   useEffect(() => {
-    console.log('list',list);
+    console.log('list', list);
     fetchList();
-    
   }, [fetchList]);
 
   const handleSearch = (value: string) => {
@@ -56,7 +56,7 @@ const TravelList: React.FC = () => {
         userId: userInfo!.id,
         liked: !item.isLiked,
       });
-      console.log('res',res);
+      // console.log('res',res);
       if (res.code === 200) {
         // 更新列表中的点赞状态和数量
         updateLikeStatus(item.id, res.data.liked, res.data.likeCount);
@@ -102,7 +102,7 @@ const TravelList: React.FC = () => {
         className="search-bar"
         style={{
           '--background': theme === 'dark' ? 'var(--adm-color-box)' : '#fff',
-          '--border-radius': '8px'
+          '--border-radius': '8px',
         }}
       />
 
