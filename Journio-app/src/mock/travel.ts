@@ -1,5 +1,5 @@
-import Mock from 'mockjs';
 import { Comment, CommentParams } from '@/api/travel';
+import Mock from 'mockjs';
 
 export interface TravelItem {
   id: number;

@@ -1,29 +1,43 @@
-import { getTravelDetail, publishTravel, updateTravel } from '@/api/travel';
-import { uploadFile } from '@/api/upload';
+import { getTravelDetail } from '@/api/travel';
+import DeletableTag from '@/components/DeletableTag';
+import MapPicker from '@/components/MapPicker';
 import { VideoUploader } from '@/components/VideoUploader';
-import { useUserStore } from '@/store/user';
-import { Amap } from '@amap/amap-react';
-import { Button, DatePicker, Form, ImageUploader, Input, NavBar, Popup, Toast } from 'antd-mobile';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Button, DatePicker, Form, ImageUploader, Input, NavBar, Toast } from 'antd-mobile';
 import React, { useEffect, useState } from 'react';
 import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.bubble.css'; // 替换 snow 主题
+import 'react-quill/dist/quill.bubble.css';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useTheme } from '@/contexts/ThemeContext';
-import TemplateList from './TemplateList';
+import { useDatePicker } from './hooks/useDatePicker';
+import { useFileUpload } from './hooks/useFileUpload';
+import { useLocationManagement } from './hooks/useLocationManagement';
+import { useTravelForm } from './hooks/useTravelForm';
 import './index.scss';
+import TemplateList from './TemplateList';
 
 const TravelPublish: React.FC = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const { userInfo } = useUserStore();
-  const [searchParams] = useSearchParams(); //
+  const [searchParams] = useSearchParams();
   const [form] = Form.useForm();
   const editId = searchParams.get('edit');
   const [content, setContent] = useState('');
-  const [dateVisible, setDateVisible] = useState(false);
-  const [mapVisible, setMapVisible] = useState(false);
-  const [templateVisible, setTemplateVisible] = useState(false); // 模板是否可见
+  const [templateVisible, setTemplateVisible] = useState(false);
+  const { theme } = useTheme();
 
+  // 使用自定义hooks
+  const { dateVisible, setDateVisible, handleDateConfirm } = useDatePicker(form);
+  const { handleUpload } = useFileUpload();
+  const {
+    mapVisible,
+    setMapVisible,
+    selectedLocations,
+    handleLocationSelect,
+    handleLocationChange,
+    handleRemoveLocation,
+  } = useLocationManagement(form);
+  const { loading, onFinish } = useTravelForm(editId, content);
+
+  // 富文本编辑器配置
   const modules = {
     toolbar: [
       [
@@ -33,16 +47,27 @@ const TravelPublish: React.FC = () => {
         'underline',
         { list: 'ordered' },
         { list: 'bullet' },
-      ], // 直接配置 h1, h2 标题按钮
+      ],
     ],
   };
 
+  // 处理模板选择
+  const handleTemplateClick = (template: string) => {
+    const templateLines = template.split('\n').map((line) => {
+      const title = line.split('：')[0];
+      return title + '：';
+    });
+    const processedTemplates = templateLines.join('<br>');
+    setContent((prevContent) => prevContent + processedTemplates);
+    setTemplateVisible(false);
+  };
+
+  // 获取游记详情
   useEffect(() => {
     const fetchTravelDetail = async () => {
       if (!editId) return;
 
       try {
-        setLoading(true);
         const res = await getTravelDetail(Number(editId));
         if (res.code === 200) {
           form.setFieldsValue({
@@ -52,6 +77,7 @@ const TravelPublish: React.FC = () => {
             travelDate: new Date(res.data.travelDate),
             duration: res.data.duration,
             cost: res.data.cost,
+            locations: res.data.locations || [],
           });
           setContent(res.data.content);
         }
@@ -60,82 +86,11 @@ const TravelPublish: React.FC = () => {
           icon: 'fail',
           content: '获取游记详情失败',
         });
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchTravelDetail();
   }, [editId, form]);
-
-  const handleTemplateClick = (template: string) => {
-    // 写入文字模板
-    const templateLines = template.split('\n').map((line) => {
-      const title = line.split('：')[0];
-      return title + '：';
-    });
-
-    const processedTemplates = templateLines.join('<br>');
-    setContent((prevContent) => prevContent + processedTemplates);
-    setTemplateVisible(false);
-  };
-
-  const onFinish = async (values: any) => {
-    try {
-      if (!userInfo) {
-        Toast.show({
-          icon: 'fail',
-          content: '请先登录',
-        });
-        navigate('/login');
-        return;
-      }
-
-      setLoading(true);
-      const travelData = {
-        ...values,
-        content: content,
-        images: values.images.map((item: any) => item.url),
-        coverImage: values.images[0]?.url || '',
-        video: values.video?.url || '',
-        travelDate: values.travelDate.toISOString().split('T')[0], // 格式化日期
-        duration: Number(values.duration),
-        cost: Number(values.cost),
-        authorId: userInfo?.id,
-        authorNickname: userInfo?.nickname,
-        authorAvatar: userInfo?.avatar,
-      };
-
-      let res;
-      if (editId) {
-        // 编辑模式
-        res = await updateTravel(Number(editId), travelData);
-      } else {
-        // 发布模式
-        res = await publishTravel(travelData);
-      }
-
-      if (res.code === 200) {
-        Toast.show({
-          icon: 'success',
-          content: editId ? '更新成功' : '发布成功',
-        });
-        navigate('/');
-      }
-    } catch (error: any) {
-      Toast.show({
-        icon: 'fail',
-        content:
-          error?.response?.data?.message ||
-          error?.message ||
-          (editId ? '更新失败，请稍后重试' : '发布失败，请稍后重试'),
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const { theme } = useTheme();
 
   return (
     <div className={`travel-publish ${theme === 'dark' ? 'dark' : ''}`}>
@@ -159,77 +114,15 @@ const TravelPublish: React.FC = () => {
         >
           <Form.Item label="上传图片视频" className="travel-info-card">
             <Form.Item name="images" rules={[{ required: true, message: '请上传至少一张图片' }]}>
-              <ImageUploader
-                multiple
-                maxCount={9}
-                upload={async (file) => {
-                  try {
-                    const res = await uploadFile(file);
-                    if (res.code === 200) {
-                      return {
-                        url: res.data.url,
-                      };
-                    } else {
-                      Toast.show({
-                        icon: 'fail',
-                        content: '上传失败',
-                      });
-                      return {
-                        url: URL.createObjectURL(file),
-                      };
-                    }
-                  } catch (error) {
-                    console.error('上传失败:', error);
-                    Toast.show({
-                      icon: 'fail',
-                      content: '上传失败，请稍后重试',
-                    });
-                    // 上传失败时，仍然返回本地预览URL
-                    return {
-                      url: URL.createObjectURL(file),
-                    };
-                  }
-                }}
-              />
+              <ImageUploader multiple maxCount={9} upload={handleUpload} />
             </Form.Item>
             <Form.Item name="video">
-              <VideoUploader
-                maxSize={50}
-                upload={async (file) => {
-                  // 上传视频，逻辑与照片一样
-                  try {
-                    const res = await uploadFile(file);
-                    if (res.code === 200) {
-                      return {
-                        url: res.data.url,
-                      };
-                    } else {
-                      Toast.show({
-                        icon: 'fail',
-                        content: '上传失败',
-                      });
-                      return {
-                        url: URL.createObjectURL(file),
-                      };
-                    }
-                  } catch (error) {
-                    console.error('上传失败:', error);
-                    Toast.show({
-                      icon: 'fail',
-                      content: '上传失败，请稍后重试',
-                    });
-                    return {
-                      url: URL.createObjectURL(file),
-                    };
-                  }
-                }}
-              />
+              <VideoUploader maxSize={50} upload={handleUpload} />
             </Form.Item>
           </Form.Item>
-          {/* 添加新的表单项组 */}
+
           <Form.Item label="游玩信息" className="travel-info-card">
             <div className="travel-info-container">
-              {/* 第一行：出发日期和游玩时长 */}
               <div className="travel-info-row">
                 <Form.Item
                   name="travelDate"
@@ -240,9 +133,7 @@ const TravelPublish: React.FC = () => {
                   <DatePicker
                     visible={dateVisible}
                     onClose={() => setDateVisible(false)}
-                    onConfirm={(val) => {
-                      form.setFieldValue('travelDate', val);
-                    }}
+                    onConfirm={handleDateConfirm}
                     max={new Date()}
                     precision="month"
                   >
@@ -257,7 +148,7 @@ const TravelPublish: React.FC = () => {
                           fontSize: '15px',
                           borderRadius: '4px',
                           cursor: 'pointer',
-                          color: theme === 'dark' ? '#f5f5f5' : '#333',
+                          color: theme === 'dark' ? '#f5f5f5' : '#666',
                         }}
                       >
                         {value
@@ -276,7 +167,7 @@ const TravelPublish: React.FC = () => {
                   <Input type="number" placeholder="请输入" />
                 </Form.Item>
               </div>
-              {/* 第二行：人均消费 */}
+
               <Form.Item
                 name="cost"
                 label="人均消费（元）"
@@ -285,50 +176,34 @@ const TravelPublish: React.FC = () => {
               >
                 <Input type="number" placeholder="请输入人均消费金额" />
               </Form.Item>
-              {/* 添加地点选择 */}
-              <Form.Item
-                name="location"
-                label="游玩地点"
-                // rules={[{ required: true, message: '请选择游玩地点' }]}
-              >
+
+              <Form.Item name="locations" label="游玩地点">
                 <div className="location-picker">
-                  <div className="location-input" onClick={() => setMapVisible(true)}>
-                    {'点击选择地点'}
-                  </div>
-                  <Popup
-                    visible={mapVisible}
-                    onMaskClick={() => setMapVisible(false)}
-                    bodyStyle={{
-                      height: '80vh',
-                      borderTopLeftRadius: '8px',
-                      borderTopRightRadius: '8px',
-                    }}
-                  >
-                    <div style={{ height: '400px', width: '100%' }}>
-                      <Amap zoom={15}>
-                        {/* <Marker
-                          position={[116.473179, 39.993169]}
-                          label={{
-                            content: 'Hello, AMap-React!',
-                            direction: 'bottom',
-                          }}
-                          draggable
-                        /> */}
-                      </Amap>
-                      <Button
-                        block
+                  <div className="location-tags">
+                    {(form.getFieldValue('locations') || []).map((loc: any, index: number) => (
+                      <DeletableTag
+                        key={index}
+                        text={loc.name}
+                        onDelete={() => handleRemoveLocation(loc.name)}
                         color="primary"
-                        onClick={() => setMapVisible(false)}
-                        style={{ marginTop: '12px' }}
-                      >
-                        确定
-                      </Button>
-                    </div>
-                  </Popup>
+                      />
+                    ))}
+                  </div>
+                  <div className="location-input" onClick={() => setMapVisible(true)}>
+                    点击选择地点
+                  </div>
+                  <MapPicker
+                    visible={mapVisible}
+                    onClose={() => setMapVisible(false)}
+                    onSelect={handleLocationSelect}
+                    value={selectedLocations}
+                    onChange={handleLocationChange}
+                  />
                 </div>
               </Form.Item>
             </div>
           </Form.Item>
+
           <Form.Item label="游记内容" className="travel-info-card" style={{ position: 'relative' }}>
             <Button
               onClick={() => setTemplateVisible(true)}
@@ -340,10 +215,7 @@ const TravelPublish: React.FC = () => {
             <Form.Item name="title" rules={[{ required: true, message: '请输入标题' }]}>
               <Input placeholder="请输入游记标题" />
             </Form.Item>
-            <Form.Item
-              rules={[{ required: true, message: '请输入正文' }]}
-              style={{ padding: 0 }} // 添加 padding: 0
-            >
+            <Form.Item rules={[{ required: true, message: '请输入正文' }]} style={{ padding: 0 }}>
               <ReactQuill
                 theme="bubble"
                 value={content}
@@ -354,7 +226,6 @@ const TravelPublish: React.FC = () => {
             </Form.Item>
           </Form.Item>
 
-          {/* 评论列表弹出框 */}
           <TemplateList
             visible={templateVisible}
             onClose={() => setTemplateVisible(false)}

@@ -7,7 +7,7 @@ import App from './App';
 import './index.css';
 import './styles/theme.scss';
 AmapConfig.version = '2.0';
-AmapConfig.key = '3477c4685fdd891b46c5824e4653ecdb';
+AmapConfig.key = '7c1a41248f5e3a3c3e3da5cde9b7df24';
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Failed to find the root element');
 

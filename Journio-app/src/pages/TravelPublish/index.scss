@@ -182,14 +182,27 @@
   }
 
   .location-picker {
+    .location-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+
+      .location-tag {
+        font-size: 14px;
+      }
+    }
+
     .location-input {
-      border: 1px solid var(--adm-border-color);
-      border-radius: 8px;
       padding: 8px 12px;
-      color: var(--adm-color-text);
       background-color: var(--adm-color-box);
+      border-radius: 4px;
+      color: var(--adm-color-text);
       cursor: pointer;
-      transition: all 0.3s ease;
+
+      &:active {
+        opacity: 0.8;
+      }
     }
   }
 

@@ -1,0 +1,48 @@
+.custom-tag {
+  display: inline-block;
+  margin: 6px;
+  cursor: pointer;
+
+  .location-tag {
+    position: relative;
+    padding: 6px 24px 6px 12px;
+    transition: all 0.3s;
+    font-size: 14px;
+
+    &:hover {
+      opacity: 0.9;
+
+      .delete-icon {
+        opacity: 1;
+      }
+    }
+
+    &.selected {
+      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .delete-icon {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 1;
+    transition: all 0.3s;
+    font-size: 14px;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--adm-color-text-secondary); // 使用antd-mobile的变量
+    z-index: 1; // 添加z-index确保删除图标在最上层
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+      color: var(--adm-color-text); // 使用antd-mobile的变量
+    }
+  }
+}
