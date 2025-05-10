@@ -1,4 +1,5 @@
 import { likeTravel, starTravel } from '@/api/travel';
+import { useTheme } from '@/contexts/ThemeContext';
 import { Toast } from 'antd-mobile';
 import {
   EditSOutline,
@@ -11,7 +12,6 @@ import {
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './index.scss';
-import { useTheme } from '@/contexts/ThemeContext';
 
 interface ActionBarProps {
   onComment: () => void;

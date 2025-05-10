@@ -1,8 +1,8 @@
-import { Form, Toast } from 'antd-mobile';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { publishTravel, updateTravel } from '@/api/travel';
 import { useUserStore } from '@/store/user';
+import { Toast } from 'antd-mobile';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const useTravelForm = (editId: string | null, content: string) => {
   const [loading, setLoading] = useState(false);

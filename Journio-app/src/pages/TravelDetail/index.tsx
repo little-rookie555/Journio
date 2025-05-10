@@ -5,17 +5,17 @@ import {
   likeTravel,
   starTravel,
 } from '@/api/travel';
+import { useTheme } from '@/contexts/ThemeContext';
 import { TravelItem } from '@/mock/travel';
 import { useUserStore } from '@/store/user';
-import { ImageViewer, Button, Image, Popup, Swiper, TextArea, Toast } from 'antd-mobile';
+import { Button, Image, ImageViewer, Popup, Swiper, TextArea, Toast } from 'antd-mobile';
 import DOMPurify from 'dompurify';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ActionBar from './ActionBar';
 import CommentList, { Comment } from './CommentList';
-import './index.scss';
-import { useTheme } from '@/contexts/ThemeContext';
 import Header from './Header';
+import './index.scss';
 
 const TravelDetail: React.FC = () => {
   const { id } = useParams();
@@ -26,7 +26,6 @@ const TravelDetail: React.FC = () => {
   const [commentText, setCommentText] = useState('');
   const [isLiked, setIsLiked] = useState(false);
   const [isStarred, setIsStarred] = useState(false);
-  const [showCommentList, setShowCommentList] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]); // 添加评论列表状态
   const { userInfo } = useUserStore();
   const navigator = useNavigate();
@@ -247,6 +246,18 @@ const TravelDetail: React.FC = () => {
         <div className="content" dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
 
         <div className="create-time">发布于 {travel.createTime}</div>
+
+        {/* 评论列表 */}
+        <div id="comments-section">
+          <CommentList
+            comments={comments}
+            onShowPopup={() => {
+              if (checkLogin()) {
+                setShowCommentPopup(true);
+              }
+            }}
+          />
+        </div>
       </div>
 
       {/* 新增底部固定栏 */}
@@ -256,7 +267,12 @@ const TravelDetail: React.FC = () => {
             setShowCommentPopup(true);
           }
         }}
-        onCommentList={() => setShowCommentList(true)}
+        onCommentList={() => {
+          const commentsSection = document.getElementById('comments-section');
+          if (commentsSection) {
+            commentsSection.scrollIntoView({ behavior: 'smooth' });
+          }
+        }}
         commentCount={comments.length}
         likeCount={likeCount}
         isLiked={isLiked}
@@ -266,13 +282,6 @@ const TravelDetail: React.FC = () => {
         onLikeChange={handleLikeChange}
         onStarChange={handleStarChange}
         onLikeCountChange={handleLikeCountChange} // 添加点赞数更新处理
-      />
-
-      {/* 评论列表弹出框 */}
-      <CommentList
-        visible={showCommentList}
-        onClose={() => setShowCommentList(false)}
-        comments={comments}
       />
 
       {/* 评论弹出框 */}

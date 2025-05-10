@@ -1,5 +1,7 @@
+import { useTheme } from '@/contexts/ThemeContext';
+import { useUserStore } from '@/store/user';
+import { Image, List } from 'antd-mobile';
 import React from 'react';
-import { Image, List, Popup } from 'antd-mobile';
 import './index.scss';
 
 export interface Comment {
@@ -14,46 +16,45 @@ export interface Comment {
 }
 
 interface CommentListProps {
-  visible: boolean;
-  onClose: () => void;
   comments: Comment[];
+  onShowPopup: () => void;
 }
 
-import { useTheme } from '@/contexts/ThemeContext';
-
-const CommentList: React.FC<CommentListProps> = ({ visible, onClose, comments }) => {
+const CommentList: React.FC<CommentListProps> = ({ comments, onShowPopup }) => {
   const { theme } = useTheme();
+  const { userInfo } = useUserStore();
 
   return (
-    <Popup
-      visible={visible}
-      onMaskClick={onClose}
-      position="bottom"
-      bodyStyle={{
-        borderTopLeftRadius: '8px',
-        borderTopRightRadius: '8px',
-        minHeight: '60vh',
-        maxHeight: '80vh',
-        backgroundColor: theme === 'dark' ? 'var(--adm-color-box)' : '#fff'
-      }}
-    >
-      <div className={`comment-list ${theme === 'dark' ? 'dark' : ''}`}>
-        <div className="comment-header">
-          <span className="title">评论 {comments.length}</span>
-          <span className="close" onClick={onClose}>关闭</span>
-        </div>
-        
-        <div className="comment-container">
-          <List className="comment-items">
-            {comments.map((comment) => (
+    <div className={`comment-list ${theme === 'dark' ? 'dark' : ''}`}>
+      <div className="comment-header">
+        <span className="comment-title">共 {comments.length} 条评论</span>
+      </div>
+
+      {/* 移动评论输入框到标题下方 */}
+      <div className="comment-input-box" onClick={onShowPopup}>
+        <Image src={userInfo?.avatar || '/default-avatar.png'} className="user-avatar" />
+        <div className="input-placeholder">说点什么...</div>
+      </div>
+
+      <div className="comment-container">
+        <List
+          className="comment-items"
+          style={{
+            '--border-bottom': 'none',
+            '--border-top': 'none',
+            '--border-inner': 'none',
+          }}
+        >
+          {comments.length === 0 ? (
+            <div className="no-comments">暂无评论，快来抢沙发吧~</div>
+          ) : (
+            comments.map((comment) => (
               <List.Item
+                style={{
+                  '--align-items': 'flex-start',
+                }}
                 key={comment.id}
-                prefix={
-                  <Image
-                    src={comment.author.avatar}
-                    className="avatar"
-                  />
-                }
+                prefix={<Image src={comment.author.avatar} className="avatar" />}
                 description={comment.createTime}
               >
                 <div className="comment-content">
@@ -61,11 +62,11 @@ const CommentList: React.FC<CommentListProps> = ({ visible, onClose, comments })
                   <p className="text">{comment.content}</p>
                 </div>
               </List.Item>
-            ))}
-          </List>
-        </div>
+            ))
+          )}
+        </List>
       </div>
-    </Popup>
+    </div>
   );
 };
 

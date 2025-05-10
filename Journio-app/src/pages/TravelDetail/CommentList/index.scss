@@ -1,10 +1,7 @@
 .comment-list {
-  min-height: 60vh;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
   background-color: var(--adm-color-box);
+  border-radius: 12px;
+  margin: 16px 0;
   transition: all 0.3s ease;
 
   &.dark {
@@ -14,9 +11,9 @@
       .title {
         color: var(--adm-color-text);
       }
-
-      .close {
-        color: var(--adm-color-text-secondary);
+      .comment-input-box {
+        background-color: var(--adm-color-background);
+        border: 1px solid var(--adm-border-color);
       }
     }
 
@@ -39,7 +36,7 @@
 
   .comment-header {
     height: 40px;
-    padding: 16px;
+    padding: 4px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -47,30 +44,64 @@
     flex-shrink: 0;
     transition: all 0.3s ease;
 
-    .title {
-      font-size: 16px;
-      font-weight: 500;
-    }
-
-    .close {
-      color: #999;
+    .comment-title {
       font-size: 14px;
+      color: #333;
+      font-weight: 600;
     }
   }
 
-  .comment-container {
-    flex: 1;
-    overflow-y: scroll;
-    padding: 0 16px;
+  .comment-input-box {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    margin: 0 32px 0 16px;
+    background-color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 12px;
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 12px;
+    }
+
+    .input-placeholder {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      background: #f5f5f5;
+      border-radius: 20px;
+      color: #999;
+      transition: all 0.3s ease;
+      color: var(--adm-color-text-secondary);
+
+      font-size: 16px;
+      font-weight: 500;
+      flex: 1;
+    }
+
+    &:active {
+      opacity: 0.8;
+    }
+  }
+
+  .no-comments {
+    text-align: center;
+    color: var(--adm-color-text-secondary);
+    padding: 24px 0;
+    font-size: 14px;
   }
 
   .comment-items {
     .avatar {
-      width: 32px;
-      height: 32px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       align-self: flex-start;
-      margin-top: 4px;
+      // margin-top: 4px;
     }
 
     .comment-content {
@@ -96,5 +127,14 @@
       align-items: flex-start;
       transition: background-color 0.3s ease;
     }
+
+    :global(.adm-list-item-description) {
+      font-size: 12px;
+      color: #999;
+      margin-top: 4px;
+    }
   }
+}
+.adm-list-item-content-prefix {
+  padding-top: 16px;
 }
