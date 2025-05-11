@@ -149,6 +149,7 @@ exports.registerUser = async (req, res) => {
       username: userinfo.username,
       nick_name: userinfo.nickname,
       password: hashedPassword,
+      desc: userinfo.desc || '这个人很懒，还没有填写简介',
       icon:
         avatarUrl ||
         'https://journio.oss-cn-beijing.aliyuncs.com/public/image/d7f25286eae11c9b6d5efec97508f18d.png',

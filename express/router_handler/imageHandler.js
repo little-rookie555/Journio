@@ -549,7 +549,6 @@ exports.uploadAndProcessImage = async (req, res) => {
 // From video中提取缩略图
 const extractVideoThumbnailService = async (videoUrl) => {
   try {
-    // 存储临时文件地址
     const timestamp = Date.now();
     const thumbnailPath = path.join(__dirname, `../public/thumbnails/thumbnail_${timestamp}.jpg`);
     const dir = path.dirname(thumbnailPath);
@@ -557,7 +556,18 @@ const extractVideoThumbnailService = async (videoUrl) => {
       fs.mkdirSync(dir, { recursive: true });
     }
 
-    // 使用ffmpeg截取第一帧
+    // 获取视频信息以获取原始尺寸
+    const videoInfo = await new Promise((resolve, reject) => {
+      ffmpeg.ffprobe(videoUrl, (err, metadata) => {
+        if (err) reject(err);
+        else resolve(metadata);
+      });
+    });
+
+    const originalWidth = videoInfo.streams[0].width;
+    const originalHeight = videoInfo.streams[0].height;
+
+    // 使用ffmpeg截取第一帧，保持原始尺寸
     await new Promise((resolve, reject) => {
       ffmpeg(videoUrl)
         .on('end', () => {
@@ -571,15 +581,30 @@ const extractVideoThumbnailService = async (videoUrl) => {
           timestamps: ['00:00:01'],
           filename: `thumbnail_${timestamp}.jpg`,
           folder: path.join(__dirname, '../public/thumbnails'),
-          size: '1280x720',
+          size: `${originalWidth}x${originalHeight}`,
         });
     });
 
     // 读取生成的截图文件
     const imageBuffer = await fs.promises.readFile(thumbnailPath);
 
-    // 使用sharp处理图片
-    const processedImageBuffer = await sharp(imageBuffer).jpeg().toBuffer();
+    // 使用sharp添加播放按钮
+    const processedImageBuffer = await sharp(imageBuffer)
+      .composite([
+        {
+          input: Buffer.from(`
+            <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="40" cy="40" r="38" fill="rgba(0, 0, 0, 0.5)" stroke="white" stroke-width="2"/>
+              <path d="M32 25L55 40L32 55V25Z" fill="white"/>
+            </svg>
+          `),
+          gravity: 'southeast',
+          top: originalHeight - 100,
+          left: originalWidth - 100,
+        },
+      ])
+      .jpeg()
+      .toBuffer();
 
     // 上传到OSS
     const ossPath = `public/image/thumbnail_${timestamp}.jpg`;
