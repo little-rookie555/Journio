@@ -1,4 +1,4 @@
-const { User } = require('../models');
+const { User, TripFollow, TripStar, Trip } = require('../models');
 const { Op } = require('sequelize');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -6,18 +6,62 @@ const config = require('../config/config');
 
 // 获取用户基本信息
 exports.getUserInfo = async (req, res) => {
-  const query = req.query;
+  const userId = req.query.id;
   try {
-    const user = await User.findByPk(query.id, {
-      attributes: ['id', 'username', 'nick_name', 'phone', 'icon'],
+    // 查询用户基本信息
+    const user = await User.findByPk(userId, {
+      attributes: ['id', 'nick_name', 'icon', 'desc'],
     });
 
     if (!user) return res.cc('获取用户信息失败！');
 
+    // 查询关注数
+    const followingCount = await TripFollow.count({
+      where: { user_id: userId },
+    });
+
+    // 查询粉丝数
+    const fanCount = await TripFollow.count({
+      where: { follow_user_id: userId },
+    });
+
+    // 查询获赞数（通过用户发布的所有游记获得的点赞总数）
+    const likedCount =
+      (await Trip.sum('liked', {
+        where: { user_id: userId },
+      })) || 0;
+
+    // 查询收藏数（用户收藏的游记数量）
+    const starredCount = await TripStar.count({
+      where: {
+        user_id: userId,
+        is_starred: 1,
+      },
+    });
+
+    // 查询已通过游记数
+    const approvedTripCount = await Trip.count({
+      where: {
+        user_id: userId,
+        status: 1, // 1表示已通过
+        is_deleted: 0,
+      },
+    });
+
     res.send({
-      status: 0,
+      code: 200,
       message: '获取用户信息成功！',
-      data: user,
+      data: {
+        id: user.id,
+        nickname: user.nick_name,
+        avatar: user.icon,
+        desc: user.desc,
+        followingCount, // 关注数
+        fanCount, // 粉丝数
+        likedCount, // 获赞数
+        starredCount, // 收藏数
+        approvedTripCount, // 已通过游记数
+      },
     });
   } catch (error) {
     res.cc(error);

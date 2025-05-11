@@ -190,10 +190,7 @@ exports.deleteTrip = async (req, res) => {
 exports.getAllTrips = async (req, res) => {
   try {
     const { Op, col } = require('sequelize'); // 操作符 - 复杂查询（Or.like - 模糊查询）
-    const page = parseInt(req.query.pageNum) || 1;
-    const limit = parseInt(req.query.pageSize) || 20;
     const keyword = req.query.keyword || '';
-    const offset = (page - 1) * limit;
 
     // 1. 查询所有已审核通过的游记
     const { count, rows: trips } = await Trip.findAndCountAll({
@@ -210,8 +207,6 @@ exports.getAllTrips = async (req, res) => {
           { status: 1 }, // 审核通过
         ],
       },
-      limit,
-      offset,
       order: [['create_time', 'DESC']],
       include: [
         {
@@ -394,17 +389,12 @@ exports.getTripsByUser = async (req, res) => {
   try {
     const userId = req.params.userId;
 
-    const page = parseInt(req.query.pageNum) || 1;
-    const limit = parseInt(req.query.pageSize) || 10;
-    const offset = (page - 1) * limit;
     const where = {
       [Op.and]: [{ user_id: userId }, { is_deleted: 0 }],
     };
 
     const { count, rows: trips } = await Trip.findAndCountAll({
       where,
-      limit,
-      offset,
       order: [['create_time', 'DESC']],
       include: [
         {
@@ -414,18 +404,6 @@ exports.getTripsByUser = async (req, res) => {
         },
       ],
     });
-
-    // 优化分页处理
-    if (page > 1 && offset >= count) {
-      return res.status(400).json({
-        code: 400,
-        message: '页码超出范围',
-        data: {
-          total: count,
-          maxPage: Math.ceil(count / limit),
-        },
-      });
-    }
 
     // 格式化数据以匹配前端期望的格式
     const formattedTrips = trips.map((trip) => ({
@@ -437,12 +415,34 @@ exports.getTripsByUser = async (req, res) => {
       status: trip.status,
       createTime: trip.create_time,
       locations: trip.locations ? trip.locations : [], // 新增locations字段，用于存储旅行地点的数组
+      likeCount: trip.liked,
+      isLiked: false,
       author: {
         id: trip.user.id,
         nickname: trip.user.nick_name,
         avatar: trip.user.icon,
       },
     }));
+
+    // 批量查询当前用户是否对游记点过赞
+    const likedTripIds = (
+      await TripLike.findAll({
+        where: {
+          user_id: userId,
+          travel_id: {
+            [Op.in]: formattedTrips.map((trip) => trip.id),
+          },
+          is_liked: 1,
+        },
+        attributes: ['travel_id'],
+        raw: true,
+      })
+    ).map((like) => like.travel_id);
+
+    // 为每个游记添加isLiked字段
+    formattedTrips.forEach((trip) => {
+      trip.isLiked = likedTripIds.includes(trip.id);
+    });
 
     // 使用res.json发送响应
     return res.status(200).json({

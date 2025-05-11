@@ -3,58 +3,67 @@ const sequelize = require('../config/db');
 const joi = require('@hapi/joi');
 
 // 定义Sequelize用户模型
-const User = sequelize.define('User', {
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true
+const User = sequelize.define(
+  'User',
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    username: {
+      type: DataTypes.STRING(32),
+      allowNull: false,
+      unique: true,
+    },
+    nick_name: {
+      type: DataTypes.STRING(32),
+      allowNull: false,
+      unique: true,
+    },
+    password: {
+      type: DataTypes.STRING(128),
+      allowNull: false,
+    },
+    phone: {
+      type: DataTypes.STRING(11),
+      allowNull: true,
+      unique: false,
+    },
+    icon: {
+      type: DataTypes.STRING(2048),
+      allowNull: true,
+      defaultValue: '',
+    },
+    create_time: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+    update_time: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+    status: {
+      type: DataTypes.INTEGER,
+      defaultValue: 1, // 1-正常，0-禁用
+      allowNull: false,
+    },
+    role: {
+      type: DataTypes.INTEGER,
+      defaultValue: 1, // 1-普通用户 2-审核人员 3-管理员
+      allowNull: false,
+    },
+    desc: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      defaultValue: '',
+    },
   },
-  username: {
-    type: DataTypes.STRING(32),
-    allowNull: false,
-    unique: true
+  {
+    tableName: 'tb_user',
+    timestamps: false,
   },
-  nick_name: { 
-    type: DataTypes.STRING(32), 
-    allowNull: false,
-    unique: true
-  },
-  password: { 
-    type: DataTypes.STRING(128), 
-    allowNull: false 
-  },
-  phone: { 
-    type: DataTypes.STRING(11),
-    allowNull: true,
-    unique: false
-  },
-  icon: { 
-    type: DataTypes.STRING(2048),
-    allowNull: true,
-    defaultValue: ''
-  },
-  create_time: { 
-    type: DataTypes.DATE, 
-    defaultValue: DataTypes.NOW 
-  },
-  update_time: { 
-    type: DataTypes.DATE, 
-    defaultValue: DataTypes.NOW 
-  },
-  status: {
-    type: DataTypes.INTEGER,
-    defaultValue: 1, // 1-正常，0-禁用
-    allowNull: false
-  },
-  role: {
-    type: DataTypes.INTEGER,
-    defaultValue: 1, // 1-普通用户 2-审核人员 3-管理员
-    allowNull: false
-  }
-}, {
-  tableName: 'tb_user',
-  timestamps: false
-});
+);
 
 // 定义与Trip模型的关联关系
 // User.associate = (models) => {
@@ -79,7 +88,10 @@ const password = joi
 
 // 定义 id 和 phone 的验证规则
 const id = joi.number().integer().min(1).required();
-const phone = joi.string().pattern(/^1[3-9]\d{9}$/).required();
+const phone = joi
+  .string()
+  .pattern(/^1[3-9]\d{9}$/)
+  .required();
 
 // 定义验证 icon 头像的验证规则
 const icon = joi.string().dataUri().required();
@@ -121,6 +133,6 @@ exports.update_password_schema = {
 // 验证规则对象 - 更新头像
 exports.update_avatar_schema = {
   body: {
-    icon
-  }
+    icon,
+  },
 };
