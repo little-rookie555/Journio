@@ -185,20 +185,21 @@
     .location-tags {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
       margin-bottom: 8px;
 
       .location-tag {
-        font-size: 14px;
+        font-size: 12px;
       }
     }
 
     .location-input {
-      padding: 8px 12px;
-      background-color: var(--adm-color-box);
+      // padding: 8px 12px;
+      background-color: var(--adm-color-background);
       border-radius: 4px;
       color: var(--adm-color-text);
       cursor: pointer;
+      font-size: 14px;
+      // font-weight: 600;
 
       &:active {
         opacity: 0.8;

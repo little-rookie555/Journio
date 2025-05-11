@@ -4,6 +4,7 @@ import MapPicker from '@/components/MapPicker';
 import { VideoUploader } from '@/components/VideoUploader';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Button, DatePicker, Form, ImageUploader, Input, NavBar, Toast } from 'antd-mobile';
+import { LocationFill } from 'antd-mobile-icons';
 import React, { useEffect, useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.bubble.css';
@@ -177,8 +178,14 @@ const TravelPublish: React.FC = () => {
                 <Input type="number" placeholder="请输入人均消费金额" />
               </Form.Item>
 
-              <Form.Item name="locations" label="游玩地点">
+              <Form.Item name="locations">
                 <div className="location-picker">
+                  <div className="location-input" onClick={() => setMapVisible(true)}>
+                    <LocationFill style={{ fontSize: '16px' }} />
+                    {(form.getFieldValue('locations') || []).length > 0
+                      ? `已选择${(form.getFieldValue('locations') || []).length}个地点`
+                      : '点击选择地点'}
+                  </div>
                   <div className="location-tags">
                     {(form.getFieldValue('locations') || []).map((loc: any, index: number) => (
                       <DeletableTag
@@ -188,9 +195,6 @@ const TravelPublish: React.FC = () => {
                         color="primary"
                       />
                     ))}
-                  </div>
-                  <div className="location-input" onClick={() => setMapVisible(true)}>
-                    点击选择地点
                   </div>
                   <MapPicker
                     visible={mapVisible}

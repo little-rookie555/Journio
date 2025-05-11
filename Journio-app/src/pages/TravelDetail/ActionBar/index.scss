@@ -7,7 +7,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 8px 16px;
-  background: var(--adm-color-box);
+  background: var(--adm-color-background);
   border-top: 1px solid var(--adm-border-color);
   z-index: 10;
   transition: all 0.3s ease;
@@ -23,15 +23,15 @@
     .action-buttons {
       .action-item {
         color: var(--adm-color-text-secondary);
-        
+
         .icon-default {
           color: var(--adm-color-text-secondary);
         }
-        
+
         .icon-liked {
           color: #ff4d4f;
         }
-        
+
         .icon-starred {
           color: rgb(255, 215, 0);
         }
@@ -57,7 +57,7 @@
       border-radius: 20px;
       color: #999;
       transition: all 0.3s ease;
-      
+
       span {
         margin-left: 8px;
         font-size: 14px;
@@ -73,19 +73,19 @@
       display: flex;
       align-items: center;
       color: #666;
-      
+
       span {
         margin-left: 4px;
         font-size: 14px;
       }
-      
+
       .icon-liked {
         color: #ff4d4f;
         transform: scale(1.2);
         transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         animation: heartBeat 0.5s ease-in-out;
       }
-      
+
       .icon-starred {
         color: rgb(255, 215, 0);
         transform: scale(1.2);

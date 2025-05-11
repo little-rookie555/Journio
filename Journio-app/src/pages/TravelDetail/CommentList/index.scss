@@ -1,5 +1,5 @@
 .comment-list {
-  background-color: var(--adm-color-box);
+  background-color: var(--adm-color-background);
   border-radius: 12px;
   margin: 16px 0;
   transition: all 0.3s ease;
@@ -56,7 +56,7 @@
     align-items: center;
     padding: 12px 0;
     margin: 0 32px 0 16px;
-    background-color: var(--adm-color-box);
+    background-color: var(--adm-color-background);
     border-radius: 8px;
     cursor: pointer;
     margin-bottom: 12px;
