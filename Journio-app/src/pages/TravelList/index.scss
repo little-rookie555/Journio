@@ -102,35 +102,6 @@
             color: var(--adm-color-text);
           }
         }
-
-        .action-item {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          padding: 4px 8px;
-          border-radius: 15px;
-          transition: all 0.3s ease;
-
-          &:active {
-            opacity: 0.8;
-          }
-
-          .icon-liked {
-            color: #ff4d4f;
-            transform: scale(1.2);
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            animation: heartBeat 0.5s ease-in-out;
-          }
-
-          .icon-default {
-            color: var(--adm-color-text);
-          }
-
-          span {
-            font-size: 14px;
-            color: var(--adm-color-text);
-          }
-        }
       }
     }
   }
@@ -144,18 +115,5 @@
     justify-content: center;
     gap: 8px;
     transition: color 0.3s ease;
-  }
-}
-
-// 添加动画关键帧
-@keyframes heartBeat {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.4);
-  }
-  100% {
-    transform: scale(1.2);
   }
 }

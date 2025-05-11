@@ -1,14 +1,9 @@
 import { likeTravel, starTravel } from '@/api/travel';
+import LikeButton from '@/components/LikeButton';
+import StarButton from '@/components/StarButton';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Toast } from 'antd-mobile';
-import {
-  EditSOutline,
-  HeartFill,
-  HeartOutline,
-  MessageOutline,
-  StarFill,
-  StarOutline,
-} from 'antd-mobile-icons';
+import { EditSOutline, MessageOutline } from 'antd-mobile-icons';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './index.scss';
@@ -67,10 +62,10 @@ const ActionBar: React.FC<ActionBarProps> = ({
       if (res.code === 200) {
         onLikeChange(!isLiked);
         onLikeCountChange(res.data.likeCount); // 更新点赞数
-        Toast.show({
-          icon: 'success',
-          content: !isLiked ? '点赞成功' : '取消点赞',
-        });
+        // Toast.show({
+        //   icon: 'success',
+        //   content: !isLiked ? '点赞成功' : '取消点赞',
+        // });
       }
     } catch (error: any) {
       Toast.show({
@@ -91,10 +86,10 @@ const ActionBar: React.FC<ActionBarProps> = ({
 
       if (res.code === 200) {
         onStarChange(!isStarred);
-        Toast.show({
-          icon: 'success',
-          content: !isStarred ? '收藏成功' : '取消收藏',
-        });
+        // Toast.show({
+        //   icon: 'success',
+        //   content: !isStarred ? '收藏成功' : '取消收藏',
+        // });
       }
     } catch (error: any) {
       Toast.show({
@@ -113,22 +108,8 @@ const ActionBar: React.FC<ActionBarProps> = ({
         </div>
       </div>
       <div className="action-buttons">
-        <div className="action-item" onClick={handleLike}>
-          {isLiked ? (
-            <HeartFill fontSize={24} className="icon-liked" />
-          ) : (
-            <HeartOutline fontSize={24} className="icon-default" />
-          )}
-          <span>{likeCount}</span>
-        </div>
-        <div className="action-item" onClick={handleStar}>
-          {isStarred ? (
-            <StarFill fontSize={24} className="icon-starred" />
-          ) : (
-            <StarOutline fontSize={24} className="icon-default" />
-          )}
-          <span>{isStarred ? '已收藏' : '收藏'}</span>
-        </div>
+        <LikeButton isLiked={isLiked} onChange={handleLike} likeCount={likeCount} />
+        <StarButton isStarred={isStarred} onChange={handleStar} />
         <div className="action-item" onClick={onCommentList}>
           <MessageOutline fontSize={24} />
           <span>{commentCount}</span>

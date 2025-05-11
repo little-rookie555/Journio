@@ -1,0 +1,112 @@
+.like-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  --c: #ff6b81;
+  &.liked #heart {
+    fill: var(--c);
+    stroke-dashoffset: 0;
+  }
+
+  &.animate {
+    svg #heart {
+      animation: drawHeart 0.8s linear forwards;
+    }
+
+    .like-effect {
+      animation: blink 0.5s ease-in-out forwards;
+      animation-delay: 0.5s;
+    }
+
+    svg {
+      animation: beat 0.5s linear forwards;
+    }
+  }
+  svg {
+    width: 24px;
+    height: 24px;
+    position: relative;
+  }
+
+  #heart {
+    fill: #eee;
+    stroke: var(--c);
+    stroke-width: 40px;
+    stroke-dasharray: 2600;
+    stroke-dashoffset: 2600;
+    stroke-linecap: round;
+    transition: all 0.3s ease;
+  }
+
+  .like-effect {
+    display: block;
+    width: 4px;
+    height: 4px;
+    background-color: transparent;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 35%;
+    transform: translate(-50%, -50%) scale(0);
+    box-shadow:
+      0 -20px 0 var(--c),
+      0 20px 0 var(--c),
+      -20px 0 0 var(--c),
+      20px 0 0 var(--c),
+      -15px -15px 0 var(--c),
+      15px -15px 0 var(--c),
+      15px 15px 0 var(--c),
+      -15px 15px 0 var(--c);
+  }
+
+  .like-count {
+    margin-left: 4px;
+    font-size: 14px;
+    color: var(--adm-color-text);
+  }
+}
+
+@keyframes drawHeart {
+  0% {
+    stroke-dashoffset: 2600;
+  }
+  80% {
+    fill: #eee;
+    stroke-dashoffset: 0;
+  }
+  100% {
+    fill: var(--c);
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes blink {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 0;
+  }
+}
+
+@keyframes beat {
+  0% {
+    transform: scale(1);
+  }
+  70% {
+    transform: scale(1);
+  }
+  80% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

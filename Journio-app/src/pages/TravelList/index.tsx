@@ -1,9 +1,9 @@
 import { likeTravel } from '@/api/travel';
+import LikeButton from '@/components/LikeButton';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useTravelStore } from '@/store/travel';
 import { useUserStore } from '@/store/user';
 import { Avatar, DotLoading, Image, InfiniteScroll, Result, SearchBar, Toast } from 'antd-mobile';
-import { HeartFill, HeartOutline } from 'antd-mobile-icons';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './index.scss';
@@ -46,8 +46,7 @@ const TravelList: React.FC = () => {
   };
 
   // 处理点赞
-  const handleLike = async (e: React.MouseEvent, item: any) => {
-    e.stopPropagation(); // 阻止冒泡，避免触发卡片点击
+  const handleLike = async (item: any) => {
     if (!checkLogin()) return;
 
     try {
@@ -56,10 +55,9 @@ const TravelList: React.FC = () => {
         userId: userInfo!.id,
         liked: !item.isLiked,
       });
-      // console.log('res',res);
       if (res.code === 200) {
-        // 更新列表中的点赞状态和数量
         updateLikeStatus(item.id, res.data.liked, res.data.likeCount);
+        console.log('点赞成功');
       }
     } catch (error: any) {
       Toast.show({
@@ -79,13 +77,14 @@ const TravelList: React.FC = () => {
             <Avatar src={item.author.avatar} />
             <span className="author-name">{item.author.nickname}</span>
           </div>
-          <div className="action-item" onClick={(e) => handleLike(e, item)}>
-            {item.isLiked ? (
-              <HeartFill fontSize={20} className="icon-liked" />
-            ) : (
-              <HeartOutline fontSize={20} className="icon-default" />
-            )}
-            <span>{item.likeCount || 0}</span>
+          <div className="action-item" onClick={(e) => e.stopPropagation()}>
+            <LikeButton
+              isLiked={item.isLiked}
+              onChange={() => {
+                handleLike(item);
+              }}
+              likeCount={item.likeCount}
+            />
           </div>
         </div>
       </div>
