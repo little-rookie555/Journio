@@ -12,6 +12,11 @@ export interface TravelItem {
     nickname: string;
     avatar: string;
   };
+  locations: {
+    name: string;
+    address: string;
+    coordinates: [number, number];
+  }[];
   status: number; // 0: 待审核, 1: 已通过, 2: 已拒绝
   createTime: string;
   content: string;
@@ -119,6 +124,7 @@ Mock.mock('/api/travel/publish', 'post', (options: any) => {
     travelDate: params.travelDate,
     duration: params.duration,
     cost: params.cost,
+    locations: [], // 添加位置信息
   };
 
   mockTravelList.unshift(travel);

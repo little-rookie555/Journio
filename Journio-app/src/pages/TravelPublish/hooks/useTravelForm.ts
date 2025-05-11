@@ -10,6 +10,7 @@ export const useTravelForm = (editId: string | null, content: string) => {
   const { userInfo } = useUserStore();
 
   const onFinish = async (values: any) => {
+    console.log('values', values);
     try {
       if (!userInfo) {
         Toast.show({

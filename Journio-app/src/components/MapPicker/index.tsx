@@ -39,7 +39,7 @@ const MapPicker: React.FC<MapPickerProps> = ({
   useEffect(() => {
     if (!AMap || !visible) return;
 
-    districtSearchRef.current = new AMap.DistrictSearch({
+    districtSearchRef.current = new (AMap as any).DistrictSearch({
       level: 'province',
       subdistrict: 2, // 获取下两级行政区
     });
@@ -148,6 +148,7 @@ const MapPicker: React.FC<MapPickerProps> = ({
             options={options}
             value={selectedValue}
             placeholder="请选择省市"
+            onClose={() => setCascaderValue(false)}
             onConfirm={(values, extend) => handleCascaderChange(values as string[], extend.items)}
             onSelect={(values, extend) => handleCascaderChange(values as string[], extend.items)}
           />

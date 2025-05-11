@@ -1,0 +1,63 @@
+.location-section {
+  // margin: 12px 0;
+  // padding: 0 16px;
+  cursor: pointer;
+
+  .location-tags {
+    display: inline-flex; // 改为inline-flex使容器宽度自适应内容
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    background-color: var(--adm-color-box); // 使用主题变量
+    border-radius: 8px;
+    color: var(--adm-color-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); // 添加轻微阴影
+
+    .location-text {
+      font-size: 14px;
+    }
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.map-popup {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+
+  .map-header {
+    margin-bottom: 12px;
+
+    .location-tags {
+      .adm-tag {
+        margin-right: 8px;
+        margin-bottom: 8px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        &:active {
+          opacity: 0.8;
+        }
+        // &.active {
+        //   background: var(--adm-color-primary);
+        //   color: #fff;
+        // }
+      }
+    }
+  }
+
+  .map-container {
+    flex: 1;
+    border-radius: 8px;
+    overflow: hidden;
+
+    .map-display {
+      height: 100%;
+    }
+  }
+}

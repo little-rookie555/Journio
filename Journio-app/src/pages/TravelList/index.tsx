@@ -17,7 +17,7 @@ const TravelList: React.FC = () => {
   const { userInfo } = useUserStore();
 
   useEffect(() => {
-    console.log('list', list);
+    // console.log('list', list);
     fetchList();
   }, [fetchList]);
 
