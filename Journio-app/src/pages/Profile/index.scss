@@ -1,0 +1,251 @@
+.profile-page {
+  min-height: 100vh;
+  background-color: var(--adm-color-background);
+  transition: all 0.3s ease;
+  padding-top: 45px; // 添加顶部内边距，为固定的 NavBar 留出空间
+
+  &.dark {
+    .header-container {
+      background:
+        linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+        url('@/assets/image/bg_userinfo.jpg') center/cover no-repeat;
+    }
+
+    .user-profile {
+      background:
+        linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+        url('@/assets/image/bg_userinfo.jpg') center/cover no-repeat;
+
+      .profile-main {
+        .user-info {
+          .profile-avatar {
+            border-color: rgba(255, 255, 255, 0.3);
+          }
+
+          .user-detail {
+            .nickname {
+              color: rgba(255, 255, 255, 0.9);
+            }
+          }
+        }
+
+        .bio {
+          color: rgba(255, 255, 255, 0.7);
+        }
+
+        .user-actions {
+          .stats {
+            .stat-item {
+              .stat-value {
+                color: rgba(255, 255, 255, 0.9);
+              }
+              .stat-label {
+                color: rgba(255, 255, 255, 0.7);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .travel-list {
+      .travel-card {
+        background: var(--adm-color-box);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+        .travel-info {
+          .travel-title {
+            color: var(--adm-color-text);
+          }
+
+          .author-info {
+            .author-name {
+              color: var(--adm-color-text-secondary);
+            }
+          }
+        }
+      }
+
+      .loading {
+        color: var(--adm-color-text-secondary);
+      }
+    }
+  }
+
+  .header-container {
+    position: fixed; // 改为固定定位
+    top: 0; // 固定在顶部
+    left: 0;
+    right: 0;
+    z-index: 100; // 确保导航栏在其他内容之上
+    background:
+      linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+      url('@/assets/image/bg_userinfo.jpg') center/cover no-repeat;
+    padding-top: 0; // 移除之前的顶部内边距
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      .follow-btn {
+        font-size: 14px;
+        padding: 4px 12px;
+        border-radius: 15px;
+      }
+
+      :global(.antd-mobile-icon) {
+        color: #fff;
+      }
+    }
+  }
+
+  .user-profile {
+    padding: 12px;
+    background:
+      linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+      url('@/assets/image/bg_userinfo.jpg') center/cover no-repeat;
+    color: #fff;
+
+    .profile-main {
+      position: relative;
+      padding: 8px;
+
+      .user-info {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+
+        .profile-avatar {
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .user-detail {
+          margin-top: 8px;
+          margin-left: 8px;
+          .nickname {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+          }
+        }
+      }
+
+      .bio {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 20px;
+        text-align: left;
+      }
+
+      .user-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 16px;
+        .stats {
+          display: flex;
+          gap: 24px;
+
+          .stat-item {
+            text-align: center;
+
+            .stat-value {
+              font-size: 16px;
+              font-weight: 400;
+              margin-bottom: 4px;
+            }
+
+            .stat-label {
+              font-size: 14px;
+              color: rgba(255, 255, 255, 0.8);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .travel-list {
+    padding: 12px;
+    background-color: var(--adm-color-background);
+    min-height: 100vh;
+    transition: all 0.3s ease;
+
+    .masonry-grid {
+      display: flex;
+      gap: 12px;
+    }
+
+    .masonry-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .travel-card {
+      background: var(--adm-color-background);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      break-inside: avoid;
+      transition: all 0.3s ease;
+
+      .travel-image {
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+      }
+
+      .travel-info {
+        padding: 8px;
+
+        .travel-title {
+          margin: 0 0 8px;
+          font-size: 14px;
+          line-height: 1.4;
+          color: var(--adm-color-text);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          transition: color 0.3s ease;
+        }
+
+        .card-bottom {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 8px;
+
+          .author-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            .author-name {
+              font-size: 14px;
+              color: var(--adm-color-text);
+            }
+          }
+        }
+      }
+    }
+
+    .loading {
+      padding: 12px 0;
+      text-align: center;
+      color: var(--adm-color-text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: color 0.3s ease;
+    }
+  }
+}

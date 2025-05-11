@@ -7,12 +7,17 @@ import Register from '@/pages/Register';
 import TravelDetail from '@/pages/TravelDetail';
 import TravelList from '@/pages/TravelList';
 import TravelPublish from '@/pages/TravelPublish';
+import Profile from '@/pages/Profile';
 import { createBrowserRouter } from 'react-router-dom';
 
 export const router = createBrowserRouter([
   {
     path: '/login',
     element: <Login />,
+  },
+  {
+    path: '/profile/:userId',
+    element: <Profile />,
   },
   {
     path: '/register',
