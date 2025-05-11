@@ -3,11 +3,11 @@ import Following from '@/pages/Following';
 import Layout from '@/pages/Layout';
 import Login from '@/pages/Login';
 import MyTravels from '@/pages/MyTravels';
+import Profile from '@/pages/Profile';
 import Register from '@/pages/Register';
 import TravelDetail from '@/pages/TravelDetail';
 import TravelList from '@/pages/TravelList';
 import TravelPublish from '@/pages/TravelPublish';
-import Profile from '@/pages/Profile';
 import { createBrowserRouter } from 'react-router-dom';
 
 export const router = createBrowserRouter([
@@ -32,7 +32,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: 'following',
+    path: 'following/:id',
     element: (
       <AuthRoute>
         <Following />

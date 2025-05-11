@@ -1,75 +1,88 @@
-import { Avatar, List, SearchBar } from 'antd-mobile';
-import React, { useState } from 'react';
+import { getFanList, getFollowList } from '@/api/follow';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useUserStore } from '@/store/user';
+import { Avatar, List, NavBar, Tabs } from 'antd-mobile';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import './index.scss';
 
 const Following: React.FC = () => {
   const { theme } = useTheme();
-  const [searchValue, setSearchValue] = useState('');
+  const { userInfo } = useUserStore();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [followList, setFollowList] = useState<any[]>([]);
+  const [fanList, setFanList] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState(
+    searchParams.get('tab') === 'fans' ? 'fans' : 'following',
+  );
 
-  // 模拟关注列表数据
-  const followingList = [
-    {
-      id: 1,
-      nickname: '+1',
-      avatar: 'https://example.com/avatar1.jpg',
-      articleCount: 5,
-      desc: '5篇笔记未看',
-    },
-    {
-      id: 2,
-      nickname: '云端侧墨',
-      avatar: 'https://example.com/avatar2.jpg',
-      desc: '还没有简介',
-    },
-    {
-      id: 3,
-      nickname: '政治理论',
-      avatar: 'https://example.com/avatar3.jpg',
-      articleCount: 5,
-      desc: '5篇笔记未看',
-    },
-    {
-      id: 4,
-      nickname: '花生十三',
-      avatar: 'https://example.com/avatar4.jpg',
-      articleCount: 10,
-      desc: '10+篇笔记未看',
-    },
-    {
-      id: 5,
-      nickname: '不会编程会摸鱼',
-      avatar: 'https://example.com/avatar5.jpg',
-      desc: '乐乐乐乐乐哈哈',
-    },
-  ];
+  useEffect(() => {
+    if (!userInfo?.id) return;
+
+    const fetchData = async () => {
+      try {
+        // 获取关注列表
+        const followRes = await getFollowList(userInfo.id);
+        if (followRes.code === 200) {
+          setFollowList(followRes.data);
+        }
+
+        // 获取粉丝列表
+        const fanRes = await getFanList(userInfo.id);
+        if (fanRes.code === 200) {
+          setFanList(fanRes.data);
+        }
+      } catch (error) {
+        console.error('获取数据失败:', error);
+      }
+    };
+
+    fetchData();
+  }, [userInfo?.id]);
+
+  const renderUserItem = (user: any) => (
+    <List.Item
+      key={user.id}
+      prefix={<Avatar src={user.avatar} />}
+      description={user.desc || '这个人很懒，还没有简介'}
+      arrow={false}
+      extra={<div className="follow-status">已关注</div>}
+    >
+      {user.username}
+    </List.Item>
+  );
+
+  const handleTabChange = (key: string) => {
+    setActiveTab(key);
+    if (key === 'fans') {
+      navigate('/following?tab=fans');
+    } else {
+      navigate('/following');
+    }
+  };
 
   return (
     <div className={`following-page ${theme === 'dark' ? 'dark' : ''}`}>
-      <SearchBar
-        placeholder="搜索已关注的人"
-        value={searchValue}
-        onChange={setSearchValue}
-        className="search-bar"
-        style={{
-          '--background': theme === 'dark' ? 'var(--adm-color-box)' : '#fff',
-          '--border-radius': '8px',
-        }}
-      />
+      <NavBar onBack={() => navigate(-1)} style={{ borderBottom: 'none' }}>
+        <Tabs
+          activeKey={activeTab}
+          onChange={handleTabChange}
+          style={{
+            '--title-font-size': '14px',
+            '--active-title-color': 'var(--adm-color-primary)',
+            '--content-padding': '0',
+          }}
+        >
+          <Tabs.Tab title={`关注 ${followList.length}`} key="following" />
+          <Tabs.Tab title={`粉丝 ${fanList.length}`} key="fans" />
+        </Tabs>
+      </NavBar>
 
-      <List className="following-list">
-        {followingList.map((user) => (
-          <List.Item
-            key={user.id}
-            prefix={<Avatar src={user.avatar} />}
-            description={user.desc}
-            arrow={false}
-            extra={<div className="follow-status">已关注</div>}
-          >
-            {user.nickname}
-          </List.Item>
-        ))}
-      </List>
+      {activeTab === 'following' && (
+        <List className="following-list">{followList.map(renderUserItem)}</List>
+      )}
+      {activeTab === 'fans' && <List className="fan-list">{fanList.map(renderUserItem)}</List>}
     </div>
   );
 };

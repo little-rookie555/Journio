@@ -1,43 +1,53 @@
 .following-page {
   min-height: 100vh;
-  padding: 12px;
   background-color: var(--adm-color-background);
-
+  .adm-tabs-header {
+    border-bottom: none;
+  }
   &.dark {
     background-color: var(--adm-color-background-dark);
+
+    .adm-nav-bar {
+      --adm-color-text: rgba(255, 255, 255, 0.9);
+      background-color: var(--adm-color-background-dark);
+    }
   }
 
-  .search-bar {
-    margin-bottom: 12px;
-    --border-radius: 8px;
+  .adm-nav-bar {
+    background-color: var(--adm-color-background);
+    border-bottom: solid 1px var(--adm-color-border);
   }
 
-  .following-list {
+  .following-list,
+  .fan-list,
+  .star-list {
     --border-inner: none;
     --border-top: none;
     --border-bottom: none;
-    background: transparent;
+    margin-top: 8px;
+  }
 
-    .adm-list-item {
-      background: var(--adm-color-box);
-      border-radius: 8px;
-      margin-bottom: 8px;
-      padding: 12px;
+  .follow-status {
+    font-size: 13px;
+    color: var(--adm-color-primary);
+  }
 
-      .adm-list-item-content-main {
-        font-size: 15px;
-        font-weight: 500;
-      }
+  .travel-cover {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    overflow: hidden;
 
-      .adm-list-item-description {
-        font-size: 13px;
-        color: var(--adm-color-text-secondary);
-      }
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
 
-      .follow-status {
-        font-size: 13px;
-        color: var(--adm-color-primary);
-      }
+  :global {
+    .adm-list-item-content-main {
+      padding: 8px 0;
     }
   }
 }
