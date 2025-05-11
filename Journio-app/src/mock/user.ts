@@ -31,6 +31,7 @@ export interface UserLoginParams {
 export interface UserUpdateParams {
   nickname: string;
   avatar?: string;
+  desc: string;
 }
 
 // 注册接口

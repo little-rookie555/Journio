@@ -10,6 +10,7 @@ import {
   NavBar,
   Popup,
   Switch,
+  TextArea,
   Toast,
 } from 'antd-mobile';
 import { SetOutline } from 'antd-mobile-icons';
@@ -22,12 +23,17 @@ interface UserInfo {
   avatar?: string;
   nickname?: string;
   id: number;
+  followingCount?: number; // 添加关注数
+  fanCount?: number; // 添加粉丝数
+  likedCount?: number; // 添加获赞数
+  starredCount?: number; // 添加收藏数
+  desc?: string; // 添加简介
 }
 
 interface UserHeaderProps {
   onLogout: () => void;
   userInfo: UserInfo;
-  onUpdateInfo: (info: { nickname: string; avatar: string }) => Promise<void>;
+  onUpdateInfo: (info: { nickname: string; avatar: string; desc: string }) => Promise<void>;
 }
 
 const UserHeader: React.FC<UserHeaderProps> = ({ onLogout, userInfo, onUpdateInfo }) => {
@@ -36,11 +42,16 @@ const UserHeader: React.FC<UserHeaderProps> = ({ onLogout, userInfo, onUpdateInf
   const [showSettings, setShowSettings] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
-  const handleEditProfile = async (values: { nickname: string; avatar: ImageUploadItem[] }) => {
+  const handleEditProfile = async (values: {
+    nickname: string;
+    avatar: ImageUploadItem[];
+    desc: string;
+  }) => {
     try {
       await onUpdateInfo({
         nickname: values.nickname,
         avatar: values.avatar[0].url,
+        desc: values.desc,
       });
       setShowEditProfile(false);
       Toast.show('更新成功');
@@ -83,7 +94,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ onLogout, userInfo, onUpdateInf
             <div className="user-detail">
               <div className="nickname">{userInfo?.nickname}</div>
               <div className="bio" onClick={() => setShowEditProfile(true)}>
-                点击这里，填写简介
+                {userInfo?.desc || '点击这里，填写简介'}
               </div>
             </div>
           </div>
@@ -91,15 +102,17 @@ const UserHeader: React.FC<UserHeaderProps> = ({ onLogout, userInfo, onUpdateInf
           <div className="user-actions">
             <div className="stats">
               <div className="stat-item">
-                <div className="stat-value">26</div>
+                <div className="stat-value">{userInfo?.followingCount || 0}</div>
                 <div className="stat-label">关注</div>
               </div>
               <div className="stat-item">
-                <div className="stat-value">6</div>
+                <div className="stat-value">{userInfo?.fanCount || 0}</div>
                 <div className="stat-label">粉丝</div>
               </div>
               <div className="stat-item">
-                <div className="stat-value">5</div>
+                <div className="stat-value">
+                  {(userInfo?.likedCount || 0) + (userInfo?.starredCount || 0)}
+                </div>
                 <div className="stat-label">获赞与收藏</div>
               </div>
             </div>
@@ -160,6 +173,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ onLogout, userInfo, onUpdateInf
             initialValues={{
               nickname: userInfo?.nickname,
               avatar: userInfo?.avatar ? [{ url: userInfo.avatar }] : [],
+              desc: userInfo?.desc,
             }}
             footer={
               <Button block type="submit" color="primary">
@@ -207,6 +221,9 @@ const UserHeader: React.FC<UserHeaderProps> = ({ onLogout, userInfo, onUpdateInf
               rules={[{ required: true, message: '请输入昵称' }]}
             >
               <Input placeholder="请输入昵称" />
+            </Form.Item>
+            <Form.Item name="desc" label="简介">
+              <TextArea placeholder="介绍一下自己吧" maxLength={50} showCount />
             </Form.Item>
           </Form>
         </div>

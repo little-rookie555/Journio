@@ -1,35 +1,44 @@
 import { deleteTravel, getUserTravels } from '@/api/travel';
+import { getUserInfo } from '@/api/user';
+import { stripHtml } from '@/components/utils';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useUserStore } from '@/store/user';
 import { Button, Image, Tabs, Tag, Toast } from 'antd-mobile';
+import { AppOutline, CheckOutline, ClockCircleOutline, CloseOutline } from 'antd-mobile-icons';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './index.scss';
-import { stripHtml } from '@/components/utils';
-import { AppOutline, CheckOutline, ClockCircleOutline, CloseOutline } from 'antd-mobile-icons';
-import { useTheme } from '@/contexts/ThemeContext';
 import Head from './Header';
+import './index.scss';
 const MyTravels: React.FC = () => {
   const navigate = useNavigate();
   const { userInfo, logout, updateInfo } = useUserStore();
   const [travels, setTravels] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState('all');
   const { theme } = useTheme();
+  const [profileInfo, setProfileInfo] = useState<any>(null);
 
   useEffect(() => {
-    const fetchTravels = async () => {
+    const fetchUserData = async () => {
       if (!userInfo) return;
 
       try {
-        const res = await getUserTravels(userInfo.id);
-        if (res.code === 200) {
-          setTravels(res.data);
+        // 获取用户详细信息
+        const userRes = await getUserInfo(userInfo.id);
+        if (userRes.code === 200) {
+          setProfileInfo(userRes.data);
+        }
+
+        // 获取用户游记列表
+        const travelRes = await getUserTravels(userInfo.id);
+        if (travelRes.code === 200) {
+          setTravels(travelRes.data);
         }
       } catch {
-        Toast.show('获取游记失败');
+        Toast.show('获取数据失败');
       }
     };
 
-    fetchTravels();
+    fetchUserData();
   }, [userInfo]);
 
   const filteredTravels = travels.filter((item) => {
@@ -70,7 +79,19 @@ const MyTravels: React.FC = () => {
   };
   return (
     <div className="my-travels">
-      <Head onLogout={handleLogout} userInfo={userInfo!} onUpdateInfo={updateInfo} />
+      <Head
+        onLogout={handleLogout}
+        userInfo={{
+          ...userInfo!,
+          ...profileInfo,
+          followingCount: profileInfo?.followingCount || 0,
+          fanCount: profileInfo?.fanCount || 0,
+          likedCount: profileInfo?.likedCount || 0,
+          starredCount: profileInfo?.starredCount || 0,
+          desc: profileInfo?.desc,
+        }}
+        onUpdateInfo={updateInfo}
+      />
       <Tabs
         activeKey={activeTab}
         onChange={setActiveTab}

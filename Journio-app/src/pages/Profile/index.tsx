@@ -33,7 +33,8 @@ const Profile = () => {
             ...res.data,
             followingCount: res.data.followingCount,
             followerCount: res.data.fanCount,
-            likeCount: res.data.likedCount + res.data.starredCount,
+            likeCount: res.data.likedCount,
+            startCount: res.data.starredCount,
             bio: res.data.desc,
           });
         }
@@ -184,7 +185,9 @@ const Profile = () => {
                 <div className="stat-label">粉丝</div>
               </div>
               <div className="stat-item">
-                <div className="stat-value">{profileUser?.likeCount || 0}</div>
+                <div className="stat-value">
+                  {profileUser?.likeCount + profileUser?.starredCount || 0}
+                </div>
                 <div className="stat-label">获赞与收藏</div>
               </div>
             </div>
