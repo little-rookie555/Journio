@@ -22,3 +22,14 @@ export const updateUserInfo = (
 ): Promise<{ code: number; data: UserInfo; message?: string }> => {
   return request.put('/user/update', params);
 };
+
+// 获取用户信息
+export const getUserInfo = (
+  id: number,
+): Promise<{
+  code: number;
+  data: UserInfo;
+  message?: string;
+}> => {
+  return request.get('/user/getInfo', { params: { id } });
+};

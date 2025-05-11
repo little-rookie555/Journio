@@ -9,10 +9,14 @@ export interface UserRegisterParams {
 
 export interface UserInfo {
   id: number;
-  username: string;
   nickname: string;
   avatar: string;
-  createTime: string;
+  desc: string;
+  followingCount: number;
+  fanCount: number;
+  likedCount: number;
+  starredCount: number;
+  approvedTripCount: number;
 }
 
 export interface image {
@@ -81,7 +85,7 @@ Mock.mock('/api/user/login', 'post', (options: any) => {
 // 更新用户信息接口
 Mock.mock('/api/user/update', 'put', (options: any) => {
   const params = JSON.parse(options.body) as UserUpdateParams;
-  
+
   return {
     code: 200,
     data: {

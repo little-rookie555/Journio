@@ -1,4 +1,5 @@
-import { getUserTravels } from '@/api/travel';
+import { getUserTravels, likeTravel } from '@/api/travel';
+import { getUserInfo } from '@/api/user';
 import LikeButton from '@/components/LikeButton';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useTravelStore } from '@/store/travel';
@@ -15,13 +16,35 @@ const Profile = () => {
   const { theme } = useTheme();
   const { userInfo } = useUserStore();
   const { updateLikeStatus } = useTravelStore();
-  const [profileUser] = useState<any>(null);
+  const [profileUser, setProfileUser] = useState<any>(null);
   const [isFollowed, setIsFollowed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [travelList, setTravelList] = useState<any[]>([]);
   const isOwnProfile = userInfo?.id === Number(userId);
 
   useEffect(() => {
+    const fetchUserInfo = async () => {
+      if (!userId) return;
+
+      try {
+        const res = await getUserInfo(Number(userId));
+        if (res.code === 200) {
+          setProfileUser({
+            ...res.data,
+            followingCount: res.data.followingCount,
+            followerCount: res.data.fanCount,
+            likeCount: res.data.likedCount + res.data.starredCount,
+            bio: res.data.desc,
+          });
+        }
+      } catch (error: any) {
+        Toast.show({
+          icon: 'fail',
+          content: error?.message || '获取用户信息失败',
+        });
+      }
+    };
+
     const fetchUserTravels = async () => {
       if (!userId) return;
 
@@ -30,7 +53,7 @@ const Profile = () => {
         const res = await getUserTravels(Number(userId));
         if (res.code === 200) {
           // 只显示已通过的游记
-          console.log(res.data);
+          // console.log(res.data);
           const approvedTravels = res.data.filter((item) => item.status === 1);
           setTravelList(approvedTravels);
         }
@@ -44,6 +67,7 @@ const Profile = () => {
       }
     };
 
+    fetchUserInfo();
     fetchUserTravels();
   }, [userId]);
 
@@ -77,8 +101,24 @@ const Profile = () => {
     }
 
     try {
-      // TODO: 处理点赞
-      updateLikeStatus(item.id, !item.isLiked, item.likeCount + (item.isLiked ? -1 : 1));
+      const res = await likeTravel({
+        travelId: item.id,
+        userId: userInfo.id,
+        liked: !item.isLiked,
+      });
+      if (res.code === 200) {
+        // 更新全局状态
+        updateLikeStatus(item.id, res.data.liked, res.data.likeCount);
+
+        // 更新本地状态
+        setTravelList((prevList) =>
+          prevList.map((travel) =>
+            travel.id === item.id
+              ? { ...travel, isLiked: res.data.liked, likeCount: res.data.likeCount }
+              : travel,
+          ),
+        );
+      }
     } catch (error: any) {
       Toast.show({
         icon: 'fail',
@@ -117,24 +157,7 @@ const Profile = () => {
       <div className="header-container">
         <NavBar
           onBack={() => navigate(-1)}
-          right={
-            isOwnProfile ? (
-              <SendOutline fontSize={24} onClick={handleShare} />
-            ) : (
-              <div className="header-actions">
-                <Button
-                  size="small"
-                  color={isFollowed ? 'default' : 'primary'}
-                  fill={isFollowed ? 'outline' : 'solid'}
-                  onClick={handleFollow}
-                  className="follow-btn"
-                >
-                  {isFollowed ? '已关注' : '关注'}
-                </Button>
-                <SendOutline fontSize={24} onClick={handleShare} />
-              </div>
-            )
-          }
+          right={<SendOutline fontSize={24} onClick={handleShare} />}
         >
           {isOwnProfile ? '我的主页' : '用户主页'}
         </NavBar>
@@ -146,7 +169,7 @@ const Profile = () => {
             <Image src={profileUser?.avatar} className="profile-avatar" />
             <div className="user-detail">
               <div className="nickname">{profileUser?.nickname}</div>
-              <div className="bio">{profileUser?.bio || '这个人很懒，还没有填写简介'}</div>
+              <div className="bio">{profileUser?.desc || '这个人很懒，还没有填写简介'}</div>
             </div>
           </div>
 
@@ -165,6 +188,18 @@ const Profile = () => {
                 <div className="stat-label">获赞与收藏</div>
               </div>
             </div>
+            {!isOwnProfile && (
+              <Button
+                size="small"
+                style={{ width: '80px' }}
+                color={isFollowed ? 'default' : 'primary'}
+                fill={isFollowed ? 'outline' : 'solid'}
+                onClick={handleFollow}
+                className="follow-btn"
+              >
+                {isFollowed ? '已关注' : '关注'}
+              </Button>
+            )}
           </div>
         </div>
       </div>

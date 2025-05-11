@@ -1,26 +1,27 @@
-import React, { useState } from 'react';
-import {
-  Switch,
-  List,
-  Button,
-  Image,
-  NavBar,
-  Toast,
-  Popup,
-  Form,
-  Input,
-  ImageUploader,
-} from 'antd-mobile';
-import type { ImageUploadItem } from 'antd-mobile/es/components/image-uploader';
-import { SetOutline } from 'antd-mobile-icons';
-import { useNavigate } from 'react-router-dom';
 import { uploadFile } from '@/api/upload';
 import { useTheme } from '@/contexts/ThemeContext';
+import {
+  Button,
+  Form,
+  Image,
+  ImageUploader,
+  Input,
+  List,
+  NavBar,
+  Popup,
+  Switch,
+  Toast,
+} from 'antd-mobile';
+import { SetOutline } from 'antd-mobile-icons';
+import type { ImageUploadItem } from 'antd-mobile/es/components/image-uploader';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './index.scss';
 
 interface UserInfo {
   avatar?: string;
   nickname?: string;
+  id: number;
 }
 
 interface UserHeaderProps {
@@ -74,7 +75,11 @@ const UserHeader: React.FC<UserHeaderProps> = ({ onLogout, userInfo, onUpdateInf
       <div className={`user-profile ${theme === 'dark' ? 'dark' : ''}`}>
         <div className="profile-main">
           <div className="user-info">
-            <Image src={userInfo?.avatar} className="profile-avatar" />
+            <Image
+              src={userInfo?.avatar}
+              className="profile-avatar"
+              onClick={() => navigate(`/profile/${userInfo?.id}`)}
+            />
             <div className="user-detail">
               <div className="nickname">{userInfo?.nickname}</div>
               <div className="bio" onClick={() => setShowEditProfile(true)}>
