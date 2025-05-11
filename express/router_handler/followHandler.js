@@ -58,7 +58,7 @@ exports.getFollowList = async (req, res) => {
           [Op.in]: followUserIds,
         },
       },
-      attributes: ['id', 'nick_name', 'icon'],
+      attributes: ['id', 'nick_name', 'icon', 'desc'],
     });
 
     // 格式化返回数据
@@ -66,6 +66,7 @@ exports.getFollowList = async (req, res) => {
       id: user.id,
       username: user.nick_name,
       avatar: user.icon,
+      desc: user.desc,
     }));
 
     return res.status(200).json({
@@ -104,7 +105,7 @@ exports.getFanList = async (req, res) => {
           [Op.in]: fanUserIds,
         },
       },
-      attributes: ['id', 'nick_name', 'icon'],
+      attributes: ['id', 'nick_name', 'icon', 'desc'],
     });
 
     // 格式化返回数据
@@ -112,6 +113,7 @@ exports.getFanList = async (req, res) => {
       id: user.id,
       username: user.nick_name,
       avatar: user.icon,
+      desc: user.desc,
     }));
 
     return res.status(200).json({

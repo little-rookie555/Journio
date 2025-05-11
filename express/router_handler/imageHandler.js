@@ -14,12 +14,12 @@ ffmpeg.setFfmpegPath('D:\\softwore\\ffmpeg-7.0.2-essentials_build\\bin\\ffmpeg.e
 // 定义图片样式配置
 const local_style = [
   {
-    name: '经典风格',
-    bgColor: '#ffffff',
+    name: '纯色粉',
+    bgColor: 'rgb(251, 235, 245)',
     fontFamily: 'Arial',
-    fontSize: 30,
+    fontSize: 40,
     fontColor: '#000000',
-    bgStyle: 'solid',
+    bgStyle: 'pink',
   },
   {
     name: '现代风格',

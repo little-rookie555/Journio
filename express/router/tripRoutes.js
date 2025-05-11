@@ -58,7 +58,7 @@ router.get('/follow/check', checkAuth, followHandler.checkIsFollow);
 // 获取关注列表
 router.get('/follow/list', checkAuth, followHandler.getFollowList);
 // 获取粉丝列表
-router.get('/fan/list', followHandler.getFanList);
+router.get('/fan/list', checkAuth, followHandler.getFanList);
 // 获取收藏列表
 router.get('/star/list', checkAuth, followHandler.getStarList);
 

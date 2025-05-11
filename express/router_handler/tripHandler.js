@@ -96,7 +96,7 @@ exports.updateTrip = async (req, res) => {
       coverImage = await extractVideoThumbnail(req.body.video);
     }
     // 更新游记内容
-    console.log('更新的travelDate', req.body.video_url, req.body.video);
+    // console.log('更新的travelDate', req.body.desc, req.body.video);
     const updateData = {
       title: req.body.title,
       content: req.body.content,
@@ -109,6 +109,7 @@ exports.updateTrip = async (req, res) => {
       duration: req.body.duration,
       cost: req.body.cost,
       locations: req.body.locations, // 新增locations字段更新
+      desc: req.body.desc,
     };
 
     await trip.update(updateData);

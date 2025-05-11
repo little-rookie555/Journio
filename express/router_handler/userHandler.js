@@ -73,12 +73,14 @@ exports.updateUserInfo = async (req, res) => {
   try {
     // 获取当前用户ID和客户端提交的数据
     const id = req.id;
-    const userinfo = req.body;
+    const { nickname, avatar, desc } = req.body;
+
+    // console.log(nickname, avatar, desc); // 打印请求参数，用于调试
 
     // 查询昵称是否被占用（排除当前用户）
     const existnick = await User.findOne({
       where: {
-        nick_name: userinfo.nickname,
+        nick_name: nickname,
         id: { [Op.ne]: id }, // 排除当前用户
       },
     });
@@ -90,8 +92,9 @@ exports.updateUserInfo = async (req, res) => {
     // 更新用户信息
     const result = await User.update(
       {
-        nick_name: userinfo.nickname,
-        icon: userinfo.avatar || '',
+        nick_name: nickname,
+        icon: avatar,
+        desc: desc,
         update_time: new Date(),
       },
       { where: { id } },
@@ -101,8 +104,10 @@ exports.updateUserInfo = async (req, res) => {
 
     // 获取更新后的用户信息
     const updatedUser = await User.findByPk(id, {
-      attributes: ['id', 'username', 'nick_name', 'icon', 'create_time'],
+      attributes: ['id', 'username', 'nick_name', 'icon', 'desc', 'create_time'],
     });
+
+    // console.log(updatedUser); // 打印更新后的用户信息，用于调试
 
     res.send({
       code: 200,
@@ -110,6 +115,7 @@ exports.updateUserInfo = async (req, res) => {
       data: {
         id: updatedUser.id,
         username: updatedUser.username,
+        desc: desc,
         nickname: updatedUser.nick_name,
         avatar: updatedUser.icon,
         createTime: updatedUser.create_time,
