@@ -57,7 +57,6 @@ const TravelList: React.FC = () => {
       });
       if (res.code === 200) {
         updateLikeStatus(item.id, res.data.liked, res.data.likeCount);
-        console.log('点赞成功');
       }
     } catch (error: any) {
       Toast.show({

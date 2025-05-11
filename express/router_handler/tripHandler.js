@@ -277,6 +277,7 @@ exports.getAllTrips = async (req, res) => {
             travel_id: {
               [Op.in]: trips.map((trip) => trip.id),
             },
+            is_liked: 1,
           },
           attributes: ['travel_id'],
           raw: true,
@@ -320,7 +321,6 @@ exports.getTripDetail = async (req, res) => {
 
     if (trip) {
       // 格式化日期为中文格式
-      console.log('返回前端的video_url', trip.video_url);
       res.status(200).json({
         code: 200,
         data: {
