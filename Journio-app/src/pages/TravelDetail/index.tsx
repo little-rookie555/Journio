@@ -6,21 +6,10 @@ import {
   starTravel,
 } from '@/api/travel';
 import LocationMap from '@/components/LocationMap';
-import MapDisplay from '@/components/MapDisplay';
 import { useTheme } from '@/contexts/ThemeContext';
 import { TravelItem } from '@/mock/travel';
 import { useUserStore } from '@/store/user';
-import {
-  Button,
-  Image,
-  ImageViewer,
-  Popup,
-  Space,
-  Swiper,
-  Tag,
-  TextArea,
-  Toast,
-} from 'antd-mobile';
+import { Button, Image, ImageViewer, Popup, Swiper, TextArea, Toast } from 'antd-mobile';
 import DOMPurify from 'dompurify';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -43,7 +32,6 @@ const TravelDetail: React.FC = () => {
   const navigator = useNavigate();
   const [likeCount, setLikeCount] = useState(0); // 添加点赞数状态
   const [isFollowed, setIsFollowed] = useState(false);
-  const [mapVisible, setMapVisible] = useState(false);
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -324,42 +312,6 @@ const TravelDetail: React.FC = () => {
             <Button block color="primary" onClick={handleComment} disabled={!commentText.trim()}>
               发送
             </Button>
-          </div>
-        </div>
-      </Popup>
-
-      {/* 添加地图弹窗 */}
-      <Popup
-        visible={mapVisible}
-        onMaskClick={() => setMapVisible(false)}
-        bodyStyle={{
-          height: '60vh',
-          borderTopLeftRadius: '8px',
-          borderTopRightRadius: '8px',
-        }}
-      >
-        <div className="map-popup">
-          <div className="map-header">
-            <div className="location-tags">
-              <Space wrap>
-                {travel.locations.map((loc, index) => (
-                  <Tag key={index} color="primary">
-                    {loc.name}
-                  </Tag>
-                ))}
-              </Space>
-            </div>
-          </div>
-          <div className="map-container">
-            <MapDisplay
-              center={travel.locations[0].coordinates}
-              locations={travel.locations.map((loc) => ({
-                name: loc.name,
-                address: loc.address,
-                location: loc.coordinates,
-              }))}
-              zoom={12}
-            />
           </div>
         </div>
       </Popup>
