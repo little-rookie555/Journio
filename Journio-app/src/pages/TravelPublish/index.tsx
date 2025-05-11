@@ -1,4 +1,4 @@
-import { getTravelDetail } from '@/api/travel';
+import { generateImages, getTravelDetail } from '@/api/travel';
 import DeletableTag from '@/components/DeletableTag';
 import MapPicker from '@/components/MapPicker';
 import { VideoUploader } from '@/components/VideoUploader';
@@ -15,6 +15,8 @@ import { useLocationManagement } from './hooks/useLocationManagement';
 import { useTravelForm } from './hooks/useTravelForm';
 import './index.scss';
 import TemplateList from './TemplateList';
+import ImagePreviewModal from './ImagePreview';
+import { ImageData } from '../../api/travel';
 
 const TravelPublish: React.FC = () => {
   const navigate = useNavigate();
@@ -24,6 +26,11 @@ const TravelPublish: React.FC = () => {
   const [content, setContent] = useState('');
   const [templateVisible, setTemplateVisible] = useState(false);
   const { theme } = useTheme();
+
+  // 生成图片相关状态
+  const [generatedImages, setGeneratedImages] = useState<ImageData[]>([]);
+  const [imagePreviewVisible, setImagePreviewVisible] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   // 使用自定义hooks
   const { dateVisible, setDateVisible, handleDateConfirm } = useDatePicker(form);
@@ -92,6 +99,34 @@ const TravelPublish: React.FC = () => {
 
     fetchTravelDetail();
   }, [editId, form]);
+
+  // 生成图片
+  const handleGenerateImages = async () => {
+    const title = form.getFieldValue('title');
+
+    try {
+      setGenerating(true);
+      console.log('传入后端的文本', title);
+      const res = await generateImages(title);
+      if (res.code === 200) {
+        setGeneratedImages(res.data);
+        setImagePreviewVisible(true);
+      } else {
+        Toast.show({
+          icon: 'fail',
+          content: '生成图片失败',
+        });
+      }
+    } catch (error) {
+      Toast.show({
+        icon: 'fail',
+        content: '生成图片失败',
+      });
+      console.error('生成图片失败:', error); // 确保error变量被使用
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   return (
     <div className={`travel-publish ${theme === 'dark' ? 'dark' : ''}`}>
@@ -209,13 +244,23 @@ const TravelPublish: React.FC = () => {
           </Form.Item>
 
           <Form.Item label="游记内容" className="travel-info-card" style={{ position: 'relative' }}>
-            <Button
-              onClick={() => setTemplateVisible(true)}
-              className="template-button"
-              size="mini"
-            >
-              📄选择模板{'>'}
-            </Button>
+            <div className="template-buttons">
+              <Button
+                onClick={() => setTemplateVisible(true)}
+                className="template-button"
+                size="mini"
+              >
+                📄选择模板{'>'}
+              </Button>
+              <Button
+                onClick={handleGenerateImages}
+                className="image-button"
+                size="mini"
+                loading={generating}
+              >
+                🖼️生成图片{'>'}
+              </Button>
+            </div>
             <Form.Item name="title" rules={[{ required: true, message: '请输入标题' }]}>
               <Input placeholder="请输入游记标题" />
             </Form.Item>
@@ -234,6 +279,21 @@ const TravelPublish: React.FC = () => {
             visible={templateVisible}
             onClose={() => setTemplateVisible(false)}
             onTemplateSelect={handleTemplateClick}
+          />
+
+          {/* 图片预览弹窗 */}
+          <ImagePreviewModal
+            visible={imagePreviewVisible}
+            onClose={() => setImagePreviewVisible(false)}
+            images={generatedImages}
+            handleUpload={handleUpload}
+            onUploadSuccess={(url) => {
+              // 将上传后的URL添加到表单中
+              const currentImages = form.getFieldValue('images') || [];
+              form.setFieldsValue({
+                images: [...currentImages, { url }],
+              });
+            }}
           />
         </Form>
       </div>

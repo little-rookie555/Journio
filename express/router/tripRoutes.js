@@ -47,7 +47,7 @@ router.get('/comment/list/:travelId', tripHandler.getCommentList);
 
 // 上传游记图片列表或视频
 router.post('/upload', tripHandler.uploadTripMedia); // 使用POST方法
-// 上传一组游记图片
-router.post('/upload/images', checkAuth, tripHandler.uploadTripMediaMultiple);
+// TODO：更新游记的浏览量
 router.post('/trips/:id/views', tripHandler.updateViews);
+
 module.exports = router;

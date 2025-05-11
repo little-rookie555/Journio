@@ -231,4 +231,29 @@
       background-color: #e0e0e0;
     }
   }
+
+  .image-button {
+    position: absolute;
+    left: 120px;
+    bottom: 12px;
+    transform: translateY(-50%);
+    font-size: 12px;
+    padding: 4px 8px;
+    background-color: #f0f0f0;
+    border-radius: 12px;
+    color: #666;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+
+    &::before {
+      content: '📖';
+      margin-right: 4px;
+      font-size: 12px;
+    }
+
+    &:hover {
+      background-color: #e0e0e0;
+    }
+  }
 }

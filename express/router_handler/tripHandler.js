@@ -9,64 +9,7 @@ const fs = require('fs');
 const db = require('../config/db');
 const sharp = require('sharp');
 const Op = require('sequelize').Op;
-
-// 视频截图函数
-const extractVideoThumbnail = async (videoUrl) => {
-  try {
-    // 存储临时文件地址
-    const timestamp = Date.now();
-    const thumbnailPath = path.join(__dirname, `../public/thumbnails/thumbnail_${timestamp}.jpg`);
-    const dir = path.dirname(thumbnailPath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-
-    // 使用ffmpeg截取第一帧
-    await new Promise((resolve, reject) => {
-      ffmpeg(videoUrl)
-        .on('end', () => {
-          resolve();
-        })
-        .on('error', (err) => {
-          console.error('视频截图失败:', err);
-          reject(err);
-        })
-        .screenshots({
-          timestamps: ['00:00:01'],
-          filename: `thumbnail_${timestamp}.jpg`,
-          folder: path.join(__dirname, '../public/thumbnails'),
-          size: '1280x720',
-        });
-    });
-
-    // 读取生成的截图文件
-    const imageBuffer = await fs.promises.readFile(thumbnailPath);
-
-    // 使用sharp处理图片
-    const processedImageBuffer = await sharp(imageBuffer).jpeg().toBuffer();
-
-    // 创建一个临时文件对象用于上传
-    const formData = new FormData();
-    formData.append(
-      'file',
-      new Blob([processedImageBuffer], { type: 'image/jpeg' }),
-      `thumbnail_${timestamp}.jpg`,
-    );
-
-    // 上传到OSS
-    const ossPath = `public/image/thumbnail_${timestamp}.jpg`;
-
-    const result = await uploadToOSS(ossConfig, ossPath, processedImageBuffer);
-
-    // 删除本地临时文件
-    await fs.promises.unlink(thumbnailPath);
-
-    return result;
-  } catch (error) {
-    console.error('视频截图失败:', error);
-    return null;
-  }
-};
+const { extractVideoThumbnail } = require('./imageHandler');
 
 // 创建游记
 exports.createTrip = async (req, res) => {
@@ -814,35 +757,6 @@ exports.uploadTripMedia = (req, res) => {
       code: 500,
       message: '文件上传过程发生异常',
     });
-  }
-};
-
-exports.uploadTripMediaMultiple = (req, res) => {
-  try {
-    upload.array('images', 9)(req, res, function (err) {
-      console.log('开始处理多文件上传');
-
-      if (err) {
-        console.log('上传错误:', err);
-        return res.status(500).json({
-          message: err instanceof multer.MulterError ? err.message : '文件上传失败',
-        });
-      }
-
-      if (!req.files || req.files.length === 0) {
-        console.log('没有文件被上传');
-        return res.status(400).json({ message: '没有文件被上传' });
-      }
-
-      console.log('上传的文件信息:', req.files);
-      const urls = req.files.map((file) => file.url);
-      console.log('生成的URL列表:', urls);
-
-      return res.status(200).json({ urls, message: '上传成功' });
-    });
-  } catch (error) {
-    console.log('捕获到异常:', error);
-    return res.status(500).json({ message: '文件上传过程发生异常' });
   }
 };
 

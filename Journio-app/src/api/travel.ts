@@ -20,11 +20,7 @@ interface TravelListResponse {
   total: number;
 }
 
-/**
- * 获取所有游记列表
- * @param page, pageSize, keyword, userId
- * @returns
- */
+// 获取所有游记列表
 export const getTravelList = (
   params: TravelListParams,
 ): Promise<ApiResponse<TravelListResponse>> => {
@@ -70,7 +66,6 @@ export interface CommentParams {
   parentId?: number; // 可选的父评论ID，用于回复功能
 }
 
-// 评论数据类型定义
 export interface Comment {
   id: number;
   content: string;
@@ -123,4 +118,24 @@ export const starTravel = (params: StarParams): Promise<ApiResponse<{ starred: b
 // 更新浏览量
 export const updateViews = (travelId: number) => {
   return request.post(`/trips/${travelId}/views`);
+};
+
+interface ImageParams {
+  test: string;
+  userId: number | undefined;
+  starred?: boolean;
+}
+export interface ImageData {
+  styleIndex: number;
+  url: string;
+}
+interface ImageResponse {
+  code: number;
+  data: ImageData[];
+  message?: string;
+}
+
+// 根据content生成图片
+export const generateImages = (content: string): Promise<ImageResponse> => {
+  return request.post('/image/generate', { content });
 };
