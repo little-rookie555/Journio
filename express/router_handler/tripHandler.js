@@ -25,7 +25,6 @@ const extractVideoThumbnail = async (videoUrl) => {
     await new Promise((resolve, reject) => {
       ffmpeg(videoUrl)
         .on('end', () => {
-          console.log('视频截图成功');
           resolve();
         })
         .on('error', (err) => {
@@ -74,16 +73,6 @@ exports.createTrip = async (req, res) => {
   try {
     const userId = req.id;
 
-    console.log('创建游记的内容:', req.body.travelDate);
-
-    // 添加验证
-    if (!req.body.travelDate) {
-      return res.status(400).json({
-        code: 400,
-        message: '旅行日期不能为空',
-      });
-    }
-
     // 如果有视频，先处理视频截图
     let coverImage = req.body.coverImage;
     if (req.body.video) {
@@ -105,6 +94,7 @@ exports.createTrip = async (req, res) => {
       travelData: req.body.travelDate, // Changed from travel_data to travelData
       duration: req.body.duration,
       cost: req.body.cost,
+      locations: req.body.locations,
     };
 
     const newTrip = await Trip.create(tripData);
@@ -161,18 +151,25 @@ exports.updateTrip = async (req, res) => {
       });
     }
 
+    // 如果有视频，先处理视频截图
+    let coverImage = req.body.coverImage;
+    if (req.body.video) {
+      coverImage = await extractVideoThumbnail(req.body.video);
+    }
     // 更新游记内容
-    // 在 updateTrip 函数中
+    console.log('更新的travelDate', req.body.video_url, req.body.video);
     const updateData = {
       title: req.body.title,
       content: req.body.content,
       images: req.body.images,
-      video_url: req.body.video_url,
+      coverImage: coverImage,
+      video_url: req.body.video,
       status: 0, // 修改后重新设为待审核状态
       update_time: new Date(),
-      travelData: new Date(req.body.travelDate).toISOString().split('T')[0], // 修改字段名从travel_data为travelData
+      travelData: req.body.travelDate,
       duration: req.body.duration,
       cost: req.body.cost,
+      locations: req.body.locations, // 新增locations字段更新
     };
 
     await trip.update(updateData);
@@ -192,9 +189,10 @@ exports.updateTrip = async (req, res) => {
         images: trip.images,
         status: trip.status,
         createTime: trip.create_time,
-        travelDate: trip.travelData, // 修改字段名从travel_date为travelData
+        travelDate: trip.travelData,
         duration: trip.duration,
         cost: trip.cost,
+        locaitonsa: trip.locations,
         author: {
           id: user.id,
           nickname: user.nick_name,
@@ -234,7 +232,6 @@ exports.deleteTrip = async (req, res) => {
     }
 
     // 执行逻辑删除
-    console.log('deleteTrip trip:');
     await trip.update({ is_deleted: 1 });
 
     return res.status(200).json({
@@ -253,8 +250,6 @@ exports.deleteTrip = async (req, res) => {
 // 获取游记列表
 exports.getAllTrips = async (req, res) => {
   try {
-    // console.log('开始获取游记列表：', req.query);
-
     const { Op, col } = require('sequelize'); // 操作符 - 复杂查询（Or.like - 模糊查询）
     const page = parseInt(req.query.pageNum) || 1;
     const limit = parseInt(req.query.pageSize) || 20;
@@ -301,6 +296,7 @@ exports.getAllTrips = async (req, res) => {
           'cost',
           'liked',
           'video_url',
+          'locations',
         ],
       },
     });
@@ -320,6 +316,7 @@ exports.getAllTrips = async (req, res) => {
       cost: trip.cost,
       likeCount: trip.liked,
       isLiked: false,
+      locations: trip.locations ? trip.locations : [], // 新增locations字段，用于存储旅行地点的数组
       author: {
         id: trip.user.id,
         nickname: trip.user.nick_name,
@@ -380,7 +377,7 @@ exports.getTripDetail = async (req, res) => {
 
     if (trip) {
       // 格式化日期为中文格式
-      // console.log('trip.travel_data:', trip.travelData);
+      console.log('返回前端的video_url', trip.video_url);
       res.status(200).json({
         code: 200,
         data: {
@@ -396,6 +393,7 @@ exports.getTripDetail = async (req, res) => {
           duration: trip.duration,
           cost: trip.cost,
           likeCount: trip.liked,
+          locations: trip.locations ? trip.locations : [], // 新增locations字段，用于存储旅行地点的数组
           author: {
             id: trip.user.id,
             nickname: trip.user.nick_name,
@@ -423,7 +421,6 @@ exports.searchTrip = async (req, res) => {
   try {
     const keyword = req.query.keyword;
     const { Op } = require('sequelize'); // 操作符 - 复杂查询（Or.like - 模糊查询）
-    // console.log("req.query.keyword:", req.query.keyword);
 
     const trips = await Trip.findAll({
       where: {
@@ -457,7 +454,6 @@ exports.searchTrip = async (req, res) => {
 exports.getTripsByUser = async (req, res) => {
   try {
     const userId = req.params.userId;
-    console.log('获取用户游记，用户ID:', userId);
 
     const page = parseInt(req.query.pageNum) || 1;
     const limit = parseInt(req.query.pageSize) || 10;
@@ -480,8 +476,6 @@ exports.getTripsByUser = async (req, res) => {
       ],
     });
 
-    console.log('查询到的游记数量:', trips.length);
-
     // 优化分页处理
     if (page > 1 && offset >= count) {
       return res.status(400).json({
@@ -503,6 +497,7 @@ exports.getTripsByUser = async (req, res) => {
       images: trip.images,
       status: trip.status,
       createTime: trip.create_time,
+      locations: trip.locations ? trip.locations : [], // 新增locations字段，用于存储旅行地点的数组
       author: {
         id: trip.user.id,
         nickname: trip.user.nick_name,
@@ -527,7 +522,6 @@ exports.getTripsByUser = async (req, res) => {
 // 点赞/取消点赞
 exports.likeTrip = async (req, res) => {
   try {
-    console.log('likeTrip req.body:', req.body);
     const { travelId, userId, liked } = req.body;
 
     // 开启事务
@@ -557,7 +551,6 @@ exports.likeTrip = async (req, res) => {
         // 若likeRecord.is_liked为1，则返回true，否则返回false
         const is_liked = likeRecord && likeRecord.is_liked === 1 ? true : false;
         await transaction.commit();
-        console.log('like显示结果:', is_liked, trip.liked);
         return res.status(200).json({
           code: 200,
           data: {
@@ -609,7 +602,6 @@ exports.likeTrip = async (req, res) => {
 // 收藏/取消收藏
 exports.starTrip = async (req, res) => {
   try {
-    console.log('starTrip req.body:', req.body);
     const { travelId, userId, starred } = req.body;
 
     // 开启事务
@@ -810,7 +802,6 @@ exports.uploadTripMedia = (req, res) => {
         });
       }
 
-      console.log('上传的文件信息:', req.file.url);
       return res.status(200).json({
         code: 200,
         data: { url: req.file.url },

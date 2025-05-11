@@ -112,6 +112,11 @@ const Trip = sequelize.define(
       allowNull: false,
       comment: '人均消费',
     },
+    locations: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      comment: '旅游地点',
+    },
   },
   {
     tableName: 'tb_blog',

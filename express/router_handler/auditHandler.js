@@ -9,8 +9,6 @@ const { Op } = require('sequelize'); // 添加 Op 导入
 exports.loginAdmin = async (req, res) => {
   const userinfo = req.body;
 
-  console.log('管理员登录:', userinfo);
-
   try {
     // 根据username查询用户信息
     const user = await User.findOne({
@@ -38,8 +36,6 @@ exports.loginAdmin = async (req, res) => {
     // 对用户的信息进行加密，生成 Token 字符串
     const tokenStr = jwt.sign(userForToken, config.jwtSecretKey, { expiresIn: config.expiresIn });
 
-    // 调用 res.send() 将 Token 响应给客户端
-    console.log('登录用户成功：', tokenStr);
     res.send({
       code: 200,
       message: '登录成功！',
@@ -83,8 +79,6 @@ exports.getTripByStatus = async (req, res) => {
     const page = parseInt(req.query.pageNum) || 1;
     const limit = parseInt(req.query.pageSize) || 10;
     const offset = (page - 1) * limit;
-
-    console.log('status:', status);
 
     const { count, rows: trips } = await Trip.findAndCountAll({
       where: {
@@ -194,7 +188,6 @@ exports.getTripList = async (req, res) => {
 
 // 获取单个游记详情
 exports.getTripDetail = async (req, res) => {
-  console.log('req.params.id:', req.params.id);
   try {
     const trip = await Trip.findByPk(req.params.id, {
       include: [
@@ -235,7 +228,6 @@ exports.getTripDetail = async (req, res) => {
 // 审核通过
 exports.passAuditTrip = async (req, res) => {
   try {
-    console.log('审核通过', req.id, req.body.id, req.role);
     // 校验身份，super和admin才能审核通过
     if (req.role !== 2 && req.role !== 3) {
       return res.status(403).json({
@@ -293,7 +285,6 @@ exports.passAuditTrip = async (req, res) => {
 // 审核拒绝
 exports.rejectAuditTrip = async (req, res) => {
   try {
-    console.log('审核拒绝', req.body.reason);
     if (req.role !== 2 && req.role !== 3) {
       ss;
       return res.status(403).json({
@@ -360,8 +351,6 @@ exports.rejectAuditTrip = async (req, res) => {
 // 删除游记
 exports.deleteAuditTrip = async (req, res) => {
   try {
-    // 校验身份
-    console.log('删除游记', req.params.id, req.id);
     if (req.role != 2 && req.role !== 3) {
       return res.status(403).json({
         code: 403,

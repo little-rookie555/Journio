@@ -47,8 +47,6 @@ exports.getAllAdmins = async (req, res) => {
       status: user.status, // 默认为激活状态
     }));
 
-    // console.log('formattedData', formattedData); // 打印 formattedData 以查看其内容
-
     res.status(200).json({
       code: 200,
       data: formattedData,
@@ -106,8 +104,6 @@ exports.getAllUsers = async (req, res) => {
       status: user.status, // 默认为激活状态
     }));
 
-    // console.log('formattedData', formattedData); // 打印 formattedData 以查看其内容
-
     res.status(200).json({
       code: 200,
       data: formattedData,
@@ -141,7 +137,6 @@ exports.deleteAdmin = async (req, res) => {
 
 // 创建管理员
 exports.createAdmin = async (req, res) => {
-  console.log('req.body', req.body); // 打印 req.body 以查看其内容
   const userRole = req.role;
   if (userRole !== 2 && userRole !== 3) {
     return res.status(403).json({ code: 403, message: '权限不足' });
@@ -177,7 +172,6 @@ exports.createAdmin = async (req, res) => {
 
 // 重置密码
 exports.resetPassword = async (req, res) => {
-  console.log('req.body', req.body); // 打印 req.body 以查看其内容
   const userRole = req.role;
   if (userRole !== 2 && userRole !== 3) {
     return res.status(403).json({ code: 403, message: '权限不足' });
