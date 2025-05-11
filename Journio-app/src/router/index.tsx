@@ -1,4 +1,5 @@
 import { AuthRoute } from '@/components/AuthRoute';
+import Following from '@/pages/Following';
 import Layout from '@/pages/Layout';
 import Login from '@/pages/Login';
 import MyTravels from '@/pages/MyTravels';
@@ -22,6 +23,14 @@ export const router = createBrowserRouter([
     element: (
       <AuthRoute>
         <TravelPublish />
+      </AuthRoute>
+    ),
+  },
+  {
+    path: 'following',
+    element: (
+      <AuthRoute>
+        <Following />
       </AuthRoute>
     ),
   },

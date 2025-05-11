@@ -1,0 +1,43 @@
+.following-page {
+  min-height: 100vh;
+  padding: 12px;
+  background-color: var(--adm-color-background);
+
+  &.dark {
+    background-color: var(--adm-color-background-dark);
+  }
+
+  .search-bar {
+    margin-bottom: 12px;
+    --border-radius: 8px;
+  }
+
+  .following-list {
+    --border-inner: none;
+    --border-top: none;
+    --border-bottom: none;
+    background: transparent;
+
+    .adm-list-item {
+      background: var(--adm-color-box);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      padding: 12px;
+
+      .adm-list-item-content-main {
+        font-size: 15px;
+        font-weight: 500;
+      }
+
+      .adm-list-item-description {
+        font-size: 13px;
+        color: var(--adm-color-text-secondary);
+      }
+
+      .follow-status {
+        font-size: 13px;
+        color: var(--adm-color-primary);
+      }
+    }
+  }
+}
