@@ -41,10 +41,14 @@ exports.followUser = async (req, res) => {
 exports.getFollowList = async (req, res) => {
   try {
     const { userId } = req.query;
-
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.pageSize) || 1000;
+    const offset = (page - 1) * limit;
     // 先获取关注用户的ID列表
     const followList = await TripFollow.findAll({
       where: { user_id: userId },
+      limit,
+      offset,
       attributes: ['follow_user_id'],
     });
 
@@ -85,15 +89,17 @@ exports.getFollowList = async (req, res) => {
 exports.getFanList = async (req, res) => {
   try {
     const { userId } = req.query;
-    console.log(userId);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.pageSize) || 1000;
+    const offset = (page - 1) * limit;
 
     // 先获取关注用户的ID列表
     const fanList = await TripFollow.findAll({
       where: { follow_user_id: userId },
+      limit,
+      offset,
       attributes: ['user_id'],
     });
-
-    console.log(fanList);
 
     // 获取被关注用户的ID数组
     const fanUserIds = fanList.map((item) => item.user_id);
@@ -154,11 +160,17 @@ exports.checkIsFollow = async (req, res) => {
 exports.getStarList = async (req, res) => {
   try {
     const { userId } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.pageSize) || 1000;
+    const offset = (page - 1) * limit;
+
     const starList = await TripStar.findAll({
       where: {
         user_id: userId,
         is_starred: 1,
       },
+      limit,
+      offset,
       include: [
         {
           model: Trip,

@@ -96,7 +96,6 @@ exports.updateTrip = async (req, res) => {
       coverImage = await extractVideoThumbnail(req.body.video);
     }
     // 更新游记内容
-    // console.log('更新的travelDate', req.body.desc, req.body.video);
     const updateData = {
       title: req.body.title,
       content: req.body.content,
@@ -191,7 +190,12 @@ exports.deleteTrip = async (req, res) => {
 exports.getAllTrips = async (req, res) => {
   try {
     const { Op, col } = require('sequelize'); // 操作符 - 复杂查询（Or.like - 模糊查询）
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.pageSize) || 1000;
     const keyword = req.query.keyword || '';
+    const offset = (page - 1) * limit;
+
+    console.log('getAllTrips called', req.query, page, limit, offset);
 
     // 1. 查询所有已审核通过的游记
     const { count, rows: trips } = await Trip.findAndCountAll({
@@ -208,6 +212,8 @@ exports.getAllTrips = async (req, res) => {
           { status: 1 }, // 审核通过
         ],
       },
+      limit,
+      offset,
       order: [['create_time', 'DESC']],
       include: [
         {
@@ -235,6 +241,8 @@ exports.getAllTrips = async (req, res) => {
         ],
       },
     });
+
+    console.log('count', count);
 
     // 2. 格式化数据
     const formattedTrips = trips.map((trip) => ({
@@ -388,7 +396,11 @@ exports.searchTrip = async (req, res) => {
 // 获取访问接口用户的所有游记
 exports.getTripsByUser = async (req, res) => {
   try {
+    console.log('getTripsByUser called', req.params);
     const userId = req.params.userId;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.pageSize) || 1000;
+    const offset = (page - 1) * limit;
 
     const where = {
       [Op.and]: [{ user_id: userId }, { is_deleted: 0 }],
@@ -396,6 +408,8 @@ exports.getTripsByUser = async (req, res) => {
 
     const { count, rows: trips } = await Trip.findAndCountAll({
       where,
+      limit,
+      offset,
       order: [['create_time', 'DESC']],
       include: [
         {
@@ -405,6 +419,18 @@ exports.getTripsByUser = async (req, res) => {
         },
       ],
     });
+
+    // 优化分页处理
+    if (page > 1 && offset >= count) {
+      return res.status(400).json({
+        code: 400,
+        message: '页码超出范围',
+        data: {
+          total: count,
+          maxPage: Math.ceil(count / limit),
+        },
+      });
+    }
 
     // 格式化数据以匹配前端期望的格式
     const formattedTrips = trips.map((trip) => ({
