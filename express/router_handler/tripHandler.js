@@ -1,13 +1,9 @@
 const { Trip, TripLike, TripStar, User, Comment } = require('../models');
 const upload = require('../middlewares/upload');
-const { ossConfig, uploadToOSS } = require('../config/ossClient');
 const multer = require('multer');
 const ffmpeg = require('fluent-ffmpeg');
 ffmpeg.setFfmpegPath('D:\\softwore\\ffmpeg-7.0.2-essentials_build\\bin\\ffmpeg.exe');
-const path = require('path');
-const fs = require('fs');
 const db = require('../config/db');
-const sharp = require('sharp');
 const Op = require('sequelize').Op;
 const { extractVideoThumbnail } = require('./imageHandler');
 

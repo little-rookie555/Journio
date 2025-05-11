@@ -1,6 +1,6 @@
 const sequelize = require('../config/db');
 const User = require('./user');
-const { Trip, TripLike, TripStar } = require('./trip');
+const { Trip, TripLike, TripStar, TripFollow } = require('./trip');
 const TripReviewRecord = require('./tripReviewRecord');
 const Comment = require('./comment');
 
@@ -30,12 +30,15 @@ TripReviewRecord.belongsTo(Trip, {
   as: 'trip',
 });
 
+// 添加TripFollow的关联关系
+TripFollow.belongsTo(User, {
+  foreignKey: 'follow_user_id',
+  as: 'followUser',
+});
+
 // 同步所有模型到数据库
 const syncModels = async () => {
   try {
-    // 根据模型创建表（如果表不存在）
-    // force: true 会先删除表再创建（危险操作，生产环境不建议使用）
-    // alter: true 会根据模型更新表结构
     await sequelize.sync({ alter: true });
     console.log('数据库表同步成功');
   } catch (error) {
@@ -68,5 +71,6 @@ module.exports = {
   TripReviewRecord,
   TripLike,
   TripStar,
+  TripFollow,
   Comment,
 };

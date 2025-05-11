@@ -1,5 +1,6 @@
 const express = require('express');
 const tripHandler = require('../router_handler/tripHandler');
+const followHandler = require('../router_handler/followHandler');
 const multer = require('multer');
 const parseForm = multer().none();
 const checkAuth = require('../middlewares/checkAuth');
@@ -49,5 +50,16 @@ router.get('/comment/list/:travelId', tripHandler.getCommentList);
 router.post('/upload', tripHandler.uploadTripMedia); // 使用POST方法
 // TODO：更新游记的浏览量
 router.post('/trips/:id/views', tripHandler.updateViews);
+
+// 关注用户
+router.post('/follow', checkAuth, followHandler.followUser);
+// 查询是否关注
+router.get('/follow/check', checkAuth, followHandler.checkIsFollow);
+// 获取关注列表
+router.get('/follow/list', checkAuth, followHandler.getFollowList);
+// 获取粉丝列表
+router.get('/fan/list', followHandler.getFanList);
+// 获取收藏列表
+router.get('/star/list', checkAuth, followHandler.getStarList);
 
 module.exports = router;

@@ -217,8 +217,45 @@ const TripStar = sequelize.define(
   },
 );
 
+// 定义关注模型
+const TripFollow = sequelize.define(
+  'TripFollow',
+  {
+    id: {
+      type: DataTypes.BIGINT,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    user_id: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      field: 'user_id',
+      comment: '用户ID',
+    },
+    follow_user_id: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      field: 'follow_user_id',
+      comment: '用户关注的id',
+    },
+    create_time: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+      field: 'create_time',
+      comment: '创建时间',
+    },
+  },
+  {
+    tableName: 'tb_follow',
+    timestamps: true,
+    createdAt: 'create_time',
+    updatedAt: false,
+  },
+);
+
 module.exports = {
   Trip,
   TripLike,
   TripStar,
+  TripFollow,
 };
