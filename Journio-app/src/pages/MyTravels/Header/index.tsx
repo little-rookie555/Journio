@@ -1,5 +1,6 @@
 import { uploadFile } from '@/api/upload';
 import { compressImage } from '@/components/ImageCompressor';
+import ImageCropper from '@/components/ImageCropper';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
   Button,
@@ -39,9 +40,12 @@ interface UserHeaderProps {
 
 const UserHeader: React.FC<UserHeaderProps> = ({ onLogout, userInfo, onUpdateInfo }) => {
   const navigate = useNavigate();
+  const [form] = Form.useForm(); // 添加这行
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const [showCropper, setShowCropper] = useState(false);
+  const [cropperFile, setCropperFile] = useState<File | null>(null);
 
   const handleEditProfile = async (values: {
     nickname: string;
@@ -58,6 +62,38 @@ const UserHeader: React.FC<UserHeaderProps> = ({ onLogout, userInfo, onUpdateInf
       Toast.show('更新成功');
     } catch {
       Toast.show('更新失败');
+    }
+  };
+
+  const handleCropComplete = async (file: File) => {
+    try {
+      const compressedFile = await compressImage(file);
+      const res = await uploadFile(compressedFile);
+      if (res.code === 200) {
+        return {
+          url: res.data.url,
+        };
+      } else {
+        Toast.show({
+          icon: 'fail',
+          content: '上传失败',
+        });
+        return {
+          url: URL.createObjectURL(file),
+        };
+      }
+    } catch (error) {
+      console.error('上传失败:', error);
+      Toast.show({
+        icon: 'fail',
+        content: '上传失败，请稍后重试',
+      });
+      return {
+        url: URL.createObjectURL(file),
+      };
+    } finally {
+      setShowCropper(false);
+      setCropperFile(null);
     }
   };
 
@@ -172,6 +208,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ onLogout, userInfo, onUpdateInf
       >
         <div className="edit-profile-popup">
           <Form
+            form={form} // 添加这个属性
             layout="horizontal"
             onFinish={handleEditProfile}
             initialValues={{
@@ -190,35 +227,14 @@ const UserHeader: React.FC<UserHeaderProps> = ({ onLogout, userInfo, onUpdateInf
               <ImageUploader
                 value={userInfo?.avatar ? [{ url: userInfo.avatar }] : []}
                 maxCount={1}
-                upload={async (file) => {
-                  try {
-                    // console.log('上传文件:', file.size);
-                    file = await compressImage(file);
-                    // console.log('压缩后文件大小:', file.size);
-                    const res = await uploadFile(file);
-                    if (res.code === 200) {
-                      return {
-                        url: res.data.url,
-                      };
-                    } else {
-                      Toast.show({
-                        icon: 'fail',
-                        content: '上传失败',
-                      });
-                      return {
-                        url: URL.createObjectURL(file),
-                      };
-                    }
-                  } catch (error) {
-                    console.error('上传失败:', error);
-                    Toast.show({
-                      icon: 'fail',
-                      content: '上传失败，请稍后重试',
-                    });
-                    return {
-                      url: URL.createObjectURL(file),
-                    };
-                  }
+                beforeUpload={(file) => {
+                  setCropperFile(file);
+                  setShowCropper(true);
+                  return null; // 返回 null 而不是 false
+                }}
+                upload={async () => {
+                  // 这里不需要实际的上传逻辑，因为在裁剪完成后会处理
+                  return { url: '' };
                 }}
               />
             </Form.Item>
@@ -235,6 +251,25 @@ const UserHeader: React.FC<UserHeaderProps> = ({ onLogout, userInfo, onUpdateInf
           </Form>
         </div>
       </Popup>
+
+      <ImageCropper
+        visible={showCropper}
+        file={cropperFile}
+        onClose={() => {
+          setShowCropper(false);
+          setCropperFile(null);
+        }}
+        onCropComplete={async (file) => {
+          const result = await handleCropComplete(file);
+          if (result.url) {
+            // 更新表单值
+            form.setFieldsValue({
+              avatar: [{ url: result.url }],
+            });
+          }
+        }}
+        aspectRatio={1} // 1:1 比例，适合头像
+      />
 
       <Popup
         visible={showSettings}
