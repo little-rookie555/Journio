@@ -1,0 +1,37 @@
+.stats-modal {
+  padding: 12px 0;
+
+  .stats-content {
+    .stats-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--adm-color-border);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .icon {
+        font-size: 24px;
+        margin-right: 16px;
+      }
+
+      .info {
+        flex: 1;
+
+        .label {
+          font-size: 14px;
+          color: var(--adm-color-text-secondary);
+          margin-bottom: 4px;
+        }
+
+        .value {
+          font-size: 20px;
+          font-weight: 500;
+          color: var(--adm-color-text);
+        }
+      }
+    }
+  }
+}

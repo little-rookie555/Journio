@@ -151,11 +151,21 @@ const Profile = () => {
 
           <div className="user-actions">
             <div className="stats">
-              <div className="stat-item">
+              <div
+                className="stat-item"
+                onClick={() => {
+                  navigate(`/following/${userId}`);
+                }}
+              >
                 <div className="stat-value">{profileUser?.followingCount || 0}</div>
                 <div className="stat-label">关注</div>
               </div>
-              <div className="stat-item">
+              <div
+                className="stat-item"
+                onClick={() => {
+                  navigate(`/following/${userId}?tab=fans`);
+                }}
+              >
                 <div className="stat-value">{profileUser?.followerCount || 0}</div>
                 <div className="stat-label">粉丝</div>
               </div>

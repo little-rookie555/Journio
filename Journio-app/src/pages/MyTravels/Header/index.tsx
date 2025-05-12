@@ -1,6 +1,7 @@
 import { uploadFile } from '@/api/upload';
 import { compressImage } from '@/components/ImageCompressor';
 import ImageCropper from '@/components/ImageCropper';
+import StatsModal from '@/components/StatsModal';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
   Button,
@@ -46,6 +47,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ onLogout, userInfo, onUpdateInf
   const { theme, toggleTheme } = useTheme();
   const [showCropper, setShowCropper] = useState(false);
   const [cropperFile, setCropperFile] = useState<File | null>(null);
+  const [showStatsModal, setShowStatsModal] = useState(false);
 
   const handleEditProfile = async (values: {
     nickname: string;
@@ -149,7 +151,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ onLogout, userInfo, onUpdateInf
                 <div className="stat-value">{userInfo?.fanCount || 0}</div>
                 <div className="stat-label">粉丝</div>
               </div>
-              <div className="stat-item">
+              <div className="stat-item" onClick={() => setShowStatsModal(true)}>
                 <div className="stat-value">
                   {(userInfo?.likedCount || 0) + (userInfo?.starredCount || 0)}
                 </div>
@@ -297,6 +299,13 @@ const UserHeader: React.FC<UserHeaderProps> = ({ onLogout, userInfo, onUpdateInf
           </List>
         </div>
       </Popup>
+
+      <StatsModal
+        visible={showStatsModal}
+        onClose={() => setShowStatsModal(false)}
+        likedCount={userInfo?.likedCount}
+        starredCount={userInfo?.starredCount}
+      />
     </>
   );
 };

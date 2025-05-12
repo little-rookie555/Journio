@@ -3,7 +3,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useUserStore } from '@/store/user';
 import { Avatar, List, NavBar, Tabs, Toast } from 'antd-mobile';
 import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import './index.scss';
 import FollowingSkeleton from './Skeleton';
 
@@ -11,6 +11,7 @@ const Following: React.FC = () => {
   const { theme } = useTheme();
   const { userInfo } = useUserStore();
   const navigate = useNavigate();
+  const { id } = useParams();
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const [followList, setFollowList] = useState<any[]>([]);
@@ -28,15 +29,15 @@ const Following: React.FC = () => {
     const currentTab = new URLSearchParams(location.search).get('tab');
     setActiveTab(currentTab === 'fans' ? 'fans' : 'following');
   }, [location.search]);
-
+  // 监听 activeTab 变化来更新 URL
   useEffect(() => {
     if (!userInfo?.id) return;
-
+    // console.log(ob);
     const fetchData = async () => {
       setLoading(true);
       try {
         // 获取关注列表
-        const followRes = await getFollowList(userInfo.id);
+        const followRes = await getFollowList(Number(id));
         if (followRes.code === 200) {
           setFollowList(followRes.data);
           // 设置关注列表中的用户为已关注状态
@@ -48,7 +49,7 @@ const Following: React.FC = () => {
         }
 
         // 获取粉丝列表
-        const fanRes = await getFanList(userInfo.id);
+        const fanRes = await getFanList(Number(id));
         if (fanRes.code === 200) {
           setFanList(fanRes.data);
           // 检查每个粉丝的关注状态
