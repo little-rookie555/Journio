@@ -3,6 +3,7 @@ import LikeButton from '@/components/LikeButton';
 import { Avatar, DotLoading, Image, Result, Toast } from 'antd-mobile';
 import React, { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import TravelCardSkeleton from './CardSkeleton';
 import './index.scss';
 
 interface TravelCardListProps {
@@ -73,11 +74,31 @@ const TravelCardList: React.FC<TravelCardListProps> = memo(
     return (
       <>
         <div className="masonry-grid">
-          <div className="masonry-column">{leftList.map((item) => renderCard(item, 0))}</div>
-          <div className="masonry-column">{rightList.map((item) => renderCard(item, 1))}</div>
+          <div className="masonry-column">
+            {loading && !list.length ? (
+              <>
+                {[1, 2, 3].map((i) => (
+                  <TravelCardSkeleton key={`skeleton-left-${i}`} />
+                ))}
+              </>
+            ) : (
+              leftList.map((item) => renderCard(item, 0))
+            )}
+          </div>
+          <div className="masonry-column">
+            {loading && !list.length ? (
+              <>
+                {[1, 2, 3].map((i) => (
+                  <TravelCardSkeleton key={`skeleton-right-${i}`} />
+                ))}
+              </>
+            ) : (
+              rightList.map((item) => renderCard(item, 1))
+            )}
+          </div>
         </div>
 
-        {loading && (
+        {loading && list.length > 0 && (
           <div className="loading">
             <span>加载中</span>
             <DotLoading />
