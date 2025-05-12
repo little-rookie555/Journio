@@ -1,4 +1,5 @@
 const sequelize = require('../config/db');
+// const redisClient = require('../config/redis');
 const User = require('./user');
 const { Trip, TripLike, TripStar, TripFollow } = require('./trip');
 const TripReviewRecord = require('./tripReviewRecord');
@@ -20,6 +21,16 @@ TripLike.belongsTo(Trip, { foreignKey: 'travel_id' });
 
 Trip.hasMany(TripStar, { foreignKey: 'travel_id' });
 TripStar.belongsTo(Trip, { foreignKey: 'travel_id' });
+
+// 添加User与TripStar的关联关系
+User.hasMany(TripStar, {
+  foreignKey: 'user_id',
+  as: 'userStars',
+});
+TripStar.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user',
+});
 Trip.hasMany(TripReviewRecord, {
   foreignKey: 'travelogue_id',
   as: 'reviewRecords',
