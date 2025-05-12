@@ -5,7 +5,7 @@ import TravelCardList from '@/components/TravelCardList';
 import { stripHtml } from '@/components/utils';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useUserStore } from '@/store/user';
-import { Button, Image, Tabs, Tag, Toast } from 'antd-mobile';
+import { Button, Image, Modal, Tabs, Tag, Toast } from 'antd-mobile';
 import {
   AppOutline,
   CheckOutline,
@@ -176,18 +176,43 @@ const MyTravels: React.FC = () => {
                     <p className="desc">{stripHtml(item.content, 100)}</p>
                   </div>
                   <div className="actions">
+                    {item.status === 2 && (
+                      <Button
+                        size="small"
+                        style={{
+                          border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'}`,
+                          color: theme === 'dark' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)',
+                          backgroundColor: 'transparent',
+                          fontSize: '12px',
+                        }}
+                        onClick={() => {
+                          Modal.show({
+                            content: item.reason || '未提供拒绝原因',
+                            closeOnMaskClick: true,
+                          });
+                        }}
+                      >
+                        拒绝原因
+                      </Button>
+                    )}
                     <Button
                       size="small"
                       style={{
                         border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'}`,
                         color: theme === 'dark' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)',
                         backgroundColor: 'transparent',
+                        fontSize: '12px',
                       }}
                       onClick={() => navigate(`/publish?edit=${item.id}`)}
                     >
                       编辑
                     </Button>
-                    <Button size="small" color="primary" onClick={() => handleDelete(item.id)}>
+                    <Button
+                      style={{ fontSize: '12px' }}
+                      size="small"
+                      color="primary"
+                      onClick={() => handleDelete(item.id)}
+                    >
                       删除
                     </Button>
                   </div>
