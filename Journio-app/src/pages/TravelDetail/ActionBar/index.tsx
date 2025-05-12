@@ -2,6 +2,7 @@ import { likeTravel, starTravel } from '@/api/travel';
 import LikeButton from '@/components/LikeButton';
 import StarButton from '@/components/StarButton';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useTravelStore } from '@/store/travel';
 import { Toast } from 'antd-mobile';
 import { EditSOutline, MessageOutline } from 'antd-mobile-icons';
 import React from 'react';
@@ -37,6 +38,7 @@ const ActionBar: React.FC<ActionBarProps> = ({
 }) => {
   const navigate = useNavigate();
   const { theme } = useTheme();
+  const { updateLikeStatus } = useTravelStore();
   // 添加登录检查工具函数
   const checkLogin = () => {
     if (!userId) {
@@ -62,6 +64,7 @@ const ActionBar: React.FC<ActionBarProps> = ({
       if (res.code === 200) {
         onLikeChange(!isLiked);
         onLikeCountChange(res.data.likeCount); // 更新点赞数
+        updateLikeStatus(travelId, res.data.liked, res.data.likeCount);
         // Toast.show({
         //   icon: 'success',
         //   content: !isLiked ? '点赞成功' : '取消点赞',
