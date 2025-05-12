@@ -1,9 +1,9 @@
-import { getFanList, getFollowList, followUser, checkFollowStatus } from '@/api/follow';
+import { checkFollowStatus, followUser, getFanList, getFollowList } from '@/api/follow';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useUserStore } from '@/store/user';
 import { Avatar, List, NavBar, Tabs, Toast } from 'antd-mobile';
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import './index.scss';
 
 const Following: React.FC = () => {

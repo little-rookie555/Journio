@@ -32,6 +32,7 @@ const TravelDetail: React.FC = () => {
   const navigator = useNavigate();
   const [likeCount, setLikeCount] = useState(0); // 添加点赞数状态
   const [isFollowed, setIsFollowed] = useState(false);
+  const [showVideo, setShowVideo] = useState(false); // 添加视频显示状态
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -190,6 +191,11 @@ const TravelDetail: React.FC = () => {
     });
   };
 
+  // 添加视频弹窗处理函数
+  const handleVideoClick = () => {
+    setShowVideo(true);
+  };
+
   return (
     <div className={`travel-detail ${theme === 'dark' ? 'dark' : ''}`}>
       <Header
@@ -203,23 +209,40 @@ const TravelDetail: React.FC = () => {
       />
 
       <div className="detail-content">
-        {travel.images.length > 0 && (
+        {(travel.images.length > 0 || travel.video) && (
           <div className="swiper-container">
             <Swiper>
-              {travel.images.map((img, index) => (
-                <Swiper.Item key={index}>
-                  <Image
-                    src={img}
-                    className="swiper-image"
-                    onClick={() => {
-                      ImageViewer.Multi.show({
-                        images: travel.images,
-                        defaultIndex: index,
-                      });
-                    }}
-                  />
-                </Swiper.Item>
-              ))}
+              {[
+                // 视频项（条件渲染）
+                ...(travel.video
+                  ? [
+                      <Swiper.Item key="video">
+                        <div className="video-preview" onClick={handleVideoClick}>
+                          <Image src={travel.coverImage} className="swiper-image" />
+                          <div className="play-button">
+                            <i className="play-icon" />
+                          </div>
+                        </div>
+                      </Swiper.Item>,
+                    ]
+                  : []),
+
+                // 图片项（始终渲染）
+                ...travel.images.map((img, index) => (
+                  <Swiper.Item key={index}>
+                    <Image
+                      src={img}
+                      className="swiper-image"
+                      onClick={() => {
+                        ImageViewer.Multi.show({
+                          images: travel.images,
+                          defaultIndex: index,
+                        });
+                      }}
+                    />
+                  </Swiper.Item>
+                )),
+              ]}
             </Swiper>
           </div>
         )}
@@ -313,6 +336,30 @@ const TravelDetail: React.FC = () => {
               发送
             </Button>
           </div>
+        </div>
+      </Popup>
+
+      {/* 添加视频弹窗 */}
+      <Popup
+        visible={showVideo}
+        onMaskClick={() => setShowVideo(false)}
+        bodyStyle={{
+          width: '100vw',
+          height: '100vh',
+          background: '#000',
+        }}
+      >
+        <div className="video-popup">
+          <div className="video-close" onClick={() => setShowVideo(false)}>
+            <span className="close-icon">×</span>
+          </div>
+          <video
+            src={travel.video}
+            controls
+            autoPlay
+            className="fullscreen-video"
+            poster={travel.coverImage}
+          />
         </div>
       </Popup>
     </div>
