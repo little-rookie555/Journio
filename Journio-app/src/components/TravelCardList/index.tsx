@@ -1,6 +1,7 @@
 import LikeButton from '@/components/LikeButton';
+
 import { Avatar, DotLoading, Image, Result, Toast } from 'antd-mobile';
-import React from 'react';
+import React, { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './index.scss';
 
@@ -12,79 +13,79 @@ interface TravelCardListProps {
   userInfo: any;
 }
 
-const TravelCardList: React.FC<TravelCardListProps> = ({
-  list,
-  loading,
-  emptyText = '暂无游记',
-  onLike,
-  userInfo,
-}) => {
-  const navigate = useNavigate();
+const TravelCardList: React.FC<TravelCardListProps> = memo(
+  ({ list, loading, emptyText = '暂无游记', onLike, userInfo }) => {
+    const navigate = useNavigate();
 
-  // 将列表分成左右两列
-  const leftList = list.filter((_, index) => index % 2 === 0);
-  const rightList = list.filter((_, index) => index % 2 === 1);
+    // 将列表分成左右两列
+    const leftList = list.filter((_, index) => index % 2 === 0);
+    const rightList = list.filter((_, index) => index % 2 === 1);
 
-  // 添加登录检查工具函数
-  const checkLogin = () => {
-    if (!userInfo) {
-      Toast.show({
-        content: '请先登录',
-        icon: 'fail',
-      });
-      navigate('/login');
-      return false;
+    // 添加登录检查工具函数
+    const checkLogin = () => {
+      if (!userInfo) {
+        Toast.show({
+          content: '请先登录',
+          icon: 'fail',
+        });
+        navigate('/login');
+        return false;
+      }
+      return true;
+    };
+
+    // 处理点赞
+    const handleLike = async (item: any) => {
+      if (!checkLogin()) return;
+      onLike(item, !item.isLiked);
+    };
+
+    const renderCard = (item: any, columnIndex: number) => (
+      <div
+        key={`${columnIndex}-${item.id}`}
+        className="travel-card"
+        onClick={() => navigate(`/detail/${item.id}`)}
+      >
+        <Image src={item.coverImage} className="travel-image" />
+        <div className="travel-info">
+          <h3 className="travel-title">{item.title}</h3>
+          <div className="card-bottom">
+            <div className="author-info">
+              <Avatar src={item.author.avatar} />
+              <span className="author-name">{item.author.nickname}</span>
+            </div>
+            <div className="action-item" onClick={(e) => e.stopPropagation()}>
+              <LikeButton
+                isLiked={item.isLiked}
+                onChange={() => handleLike(item)}
+                likeCount={item.likeCount}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+
+    if (list.length === 0 && !loading) {
+      return <Result status="info" title="暂无游记" description={emptyText} />;
     }
-    return true;
-  };
 
-  // 处理点赞
-  const handleLike = async (item: any) => {
-    if (!checkLogin()) return;
-    onLike(item, !item.isLiked);
-  };
-
-  const renderCard = (item: any) => (
-    <div key={item.id} className="travel-card" onClick={() => navigate(`/detail/${item.id}`)}>
-      <Image src={item.coverImage} className="travel-image" />
-      <div className="travel-info">
-        <h3 className="travel-title">{item.title}</h3>
-        <div className="card-bottom">
-          <div className="author-info">
-            <Avatar src={item.author.avatar} />
-            <span className="author-name">{item.author.nickname}</span>
-          </div>
-          <div className="action-item" onClick={(e) => e.stopPropagation()}>
-            <LikeButton
-              isLiked={item.isLiked}
-              onChange={() => handleLike(item)}
-              likeCount={item.likeCount}
-            />
-          </div>
+    return (
+      <>
+        <div className="masonry-grid">
+          <div className="masonry-column">{leftList.map((item) => renderCard(item, 0))}</div>
+          <div className="masonry-column">{rightList.map((item) => renderCard(item, 1))}</div>
         </div>
-      </div>
-    </div>
-  );
 
-  if (list.length === 0 && !loading) {
-    return <Result status="info" title="暂无游记" description={emptyText} />;
-  }
-
-  return (
-    <>
-      <div className="masonry-grid">
-        <div className="masonry-column">{leftList.map(renderCard)}</div>
-        <div className="masonry-column">{rightList.map(renderCard)}</div>
-      </div>
-
-      {loading && (
-        <div className="loading">
-          <span>加载中</span>
-          <DotLoading />
-        </div>
-      )}
-    </>
-  );
-};
+        {loading && (
+          <div className="loading">
+            <span>加载中</span>
+            <DotLoading />
+          </div>
+        )}
+      </>
+    );
+  },
+);
 
 export default TravelCardList;

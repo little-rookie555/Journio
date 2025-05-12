@@ -13,6 +13,7 @@ interface TravelState {
   fetchList: () => Promise<void>;
   loadMore: () => Promise<void>;
   updateLikeStatus: (travelId: number, isLiked: boolean, likeCount: number) => void; // 添加更新点赞状态的方法
+  hasInitialized: boolean;
 }
 
 export const useTravelStore = create<TravelState>((set, get) => ({
@@ -22,13 +23,17 @@ export const useTravelStore = create<TravelState>((set, get) => ({
   keyword: '',
   page: 1,
   pageSize: 10,
+  hasInitialized: false,
 
   setKeyword: (keyword) => {
     set({ keyword, page: 1, list: [] });
   },
 
   fetchList: async () => {
-    const { keyword, page, pageSize } = get();
+    const { keyword, page, pageSize, hasInitialized } = get();
+    // 如果已经初始化过且是第一页，直接返回
+    if (hasInitialized && page === 1) return;
+
     set({ loading: true });
     try {
       const response = await getTravelList({
@@ -41,6 +46,7 @@ export const useTravelStore = create<TravelState>((set, get) => ({
       set({
         list: page === 1 ? response.data.list : [...get().list, ...response.data.list],
         total: response.data.total,
+        hasInitialized: true,
       });
     } catch (error) {
       console.error('获取游记列表失败:', error);

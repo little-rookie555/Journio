@@ -1,8 +1,8 @@
 // import '@/mock/travel';
 // import '@/mock/user';
 import { config as AmapConfig } from '@amap/amap-react';
-// import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+
 import App from './App';
 import './index.css';
 import './styles/theme.scss';

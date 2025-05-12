@@ -4,9 +4,8 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useTravelStore } from '@/store/travel';
 import { useUserStore } from '@/store/user';
 import { InfiniteScroll, SearchBar, Toast } from 'antd-mobile';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import './index.scss';
-
 const TravelList: React.FC = () => {
   const { theme } = useTheme();
   const { list, loading, total, keyword, setKeyword, fetchList, loadMore, updateLikeStatus } =
@@ -15,40 +14,49 @@ const TravelList: React.FC = () => {
   const { userInfo } = useUserStore();
 
   useEffect(() => {
-    fetchList();
-  }, [fetchList]);
+    // 只在第一次加载时获取数据
+    if (!list.length) {
+      fetchList();
+    }
+  }, []); // 移除 fetchList 依赖
 
-  const handleSearch = (value: string) => {
-    setKeyword(value);
-    fetchList();
-  };
+  const handleSearch = useCallback(
+    (value: string) => {
+      setKeyword(value);
+      fetchList();
+    },
+    [setKeyword, fetchList],
+  );
 
   const hasMore = list.length < total;
 
-  const handleLike = async (item: any, liked: boolean) => {
-    try {
-      const res = await likeTravel({
-        travelId: item.id,
-        userId: userInfo!.id,
-        liked,
-      });
-      if (res.code === 200) {
-        updateLikeStatus(item.id, res.data.liked, res.data.likeCount);
+  const handleLike = useCallback(
+    async (item: any, liked: boolean) => {
+      try {
+        const res = await likeTravel({
+          travelId: item.id,
+          userId: userInfo!.id,
+          liked,
+        });
+        if (res.code === 200) {
+          updateLikeStatus(item.id, res.data.liked, res.data.likeCount);
+        }
+      } catch (error: any) {
+        Toast.show({
+          icon: 'fail',
+          content: error?.message || '操作失败',
+        });
       }
-    } catch (error: any) {
-      Toast.show({
-        icon: 'fail',
-        content: error?.message || '操作失败',
-      });
-    }
-  };
+    },
+    [userInfo, updateLikeStatus],
+  );
 
   return (
     <div className={`travel-list ${theme === 'dark' ? 'dark' : ''}`}>
       <SearchBar
         placeholder="搜索游记标题或作者"
         value={searchValue}
-        onChange={(value) => setSearchValue(value)}
+        onChange={setSearchValue}
         onSearch={handleSearch}
         className="search-bar"
         style={{
@@ -56,7 +64,6 @@ const TravelList: React.FC = () => {
           '--border-radius': '8px',
         }}
       />
-
       <TravelCardList
         list={list}
         loading={loading}
@@ -65,7 +72,7 @@ const TravelList: React.FC = () => {
         userInfo={userInfo}
       />
 
-      <InfiniteScroll loadMore={loadMore} hasMore={hasMore} />
+      <InfiniteScroll loadMore={loadMore} hasMore={hasMore} threshold={100} />
     </div>
   );
 };
