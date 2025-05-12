@@ -33,7 +33,7 @@ const CommentList: React.FC<CommentListProps> = ({ comments, onShowPopup, author
 
       {/* 移动评论输入框到标题下方 */}
       <div className="comment-input-box" onClick={onShowPopup}>
-        <Image src={userInfo?.avatar || '/default-avatar.png'} className="user-avatar" />
+        <Image lazy src={userInfo?.avatar || '/default-avatar.png'} className="user-avatar" />
         <div className="input-placeholder">说点什么...</div>
       </div>
 

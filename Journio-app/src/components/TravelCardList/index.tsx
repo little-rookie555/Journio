@@ -47,7 +47,7 @@ const TravelCardList: React.FC<TravelCardListProps> = memo(
         className="travel-card"
         onClick={() => navigate(`/detail/${item.id}`)}
       >
-        <Image src={item.coverImage} className="travel-image" />
+        <Image lazy src={item.coverImage} className="travel-image" />
         <div className="travel-info">
           <h3 className="travel-title">{item.title}</h3>
           <div className="card-bottom">

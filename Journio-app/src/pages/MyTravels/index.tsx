@@ -179,7 +179,7 @@ const MyTravels: React.FC = () => {
               filteredTravels.map((item) => (
                 <div key={item.id} className={`travel-card ${theme === 'dark' ? 'dark' : ''}`}>
                   <div className="card-left">
-                    <Image src={item.coverImage} className="cover-image" />
+                    <Image lazy src={item.coverImage} className="cover-image" />
                     <div className="status-tag">{getStatusTag(item.status)}</div>
                   </div>
                   <div className="card-right">

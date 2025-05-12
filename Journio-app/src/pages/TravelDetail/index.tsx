@@ -219,7 +219,7 @@ const TravelDetail: React.FC = () => {
                   ? [
                       <Swiper.Item key="video">
                         <div className="video-preview" onClick={handleVideoClick}>
-                          <Image src={travel.coverImage} className="swiper-image" />
+                          <Image lazy src={travel.coverImage} className="swiper-image" />
                           <div className="play-button">
                             <i className="play-icon" />
                           </div>
@@ -232,6 +232,7 @@ const TravelDetail: React.FC = () => {
                 ...travel.images.map((img, index) => (
                   <Swiper.Item key={index}>
                     <Image
+                      lazy
                       src={img}
                       className="swiper-image"
                       onClick={() => {

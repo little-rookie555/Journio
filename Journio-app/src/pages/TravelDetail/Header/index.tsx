@@ -13,14 +13,14 @@ interface HeaderProps {
   onShare?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ 
-  avatar, 
-  nickname, 
+const Header: React.FC<HeaderProps> = ({
+  avatar,
+  nickname,
   theme,
   onBack,
   isFollowed = false,
   onFollow,
-  onShare 
+  onShare,
 }) => {
   const handleShare = () => {
     if (onShare) {
@@ -48,18 +48,13 @@ const Header: React.FC<HeaderProps> = ({
   );
   const left = (
     <div className="author-info">
-    <Image src={avatar} className="avatar" />
-    <span className="name">{nickname}</span>
-  </div>
+      <Image lazy src={avatar} className="avatar" />
+      <span className="name">{nickname}</span>
+    </div>
   );
   return (
     <div className={`travel-header ${theme === 'dark' ? 'dark' : ''}`}>
-      <NavBar 
-        onBack={onBack}
-        right={right}
-        left={left}
-      >
-      </NavBar>
+      <NavBar onBack={onBack} right={right} left={left}></NavBar>
     </div>
   );
 };
