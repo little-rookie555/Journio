@@ -1,0 +1,62 @@
+.travel-skeleton {
+  padding: 12px;
+
+  .skeleton-card {
+    display: flex;
+    background: var(--adm-color-box);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    height: 150px;
+    padding: 12px;
+
+    .card-left {
+      width: 100px;
+      flex-shrink: 0;
+      margin-right: 12px;
+
+      .cover-skeleton {
+        width: 100%;
+        height: 100px;
+        --background: var(--adm-color-box);
+        --border-radius: 8px;
+      }
+    }
+
+    .card-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+
+      .adm-skeleton-title {
+        height: 24px;
+        margin: 0 0 16px;
+        --width: 60%;
+        --background: var(--adm-color-box);
+        --border-radius: 4px;
+      }
+
+      .adm-skeleton-paragraph {
+        --row-height: 16px;
+        --background: var(--adm-color-box);
+        --border-radius: 4px;
+      }
+
+      .action-skeleton {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 16px;
+
+        .adm-skeleton-button {
+          width: 60px;
+          height: 28px;
+          --background: var(--adm-color-box);
+          --border-radius: 4px;
+        }
+      }
+    }
+  }
+}

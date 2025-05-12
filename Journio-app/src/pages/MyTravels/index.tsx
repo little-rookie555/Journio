@@ -18,6 +18,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Head from './Header';
 import './index.scss';
+import TravelSkeleton from './Skeleton';
+
 const MyTravels: React.FC = () => {
   const navigate = useNavigate();
   const { userInfo, logout, updateInfo } = useUserStore();
@@ -26,11 +28,12 @@ const MyTravels: React.FC = () => {
   const { theme } = useTheme();
   const [profileInfo, setProfileInfo] = useState<any>(null);
   const [starList, setStarList] = useState<any[]>([]); // 添加收藏列表状态
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserData = async () => {
       if (!userInfo) return;
-
+      setLoading(true);
       try {
         // 获取用户详细信息
         const StarRes = await getStarList(userInfo.id);
@@ -49,6 +52,8 @@ const MyTravels: React.FC = () => {
         }
       } catch {
         Toast.show('获取数据失败');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -164,19 +169,44 @@ const MyTravels: React.FC = () => {
             />
           </Tabs>
           <div className="travel-list">
-            {filteredTravels.map((item) => (
-              <div key={item.id} className={`travel-card ${theme === 'dark' ? 'dark' : ''}`}>
-                <div className="card-left">
-                  <Image src={item.coverImage} className="cover-image" />
-                  <div className="status-tag">{getStatusTag(item.status)}</div>
-                </div>
-                <div className="card-right">
-                  <div className="content">
-                    <h3 className="title">{item.title}</h3>
-                    <p className="desc">{stripHtml(item.content, 100)}</p>
+            {loading ? (
+              <>
+                <TravelSkeleton />
+                <TravelSkeleton />
+                <TravelSkeleton />
+              </>
+            ) : (
+              filteredTravels.map((item) => (
+                <div key={item.id} className={`travel-card ${theme === 'dark' ? 'dark' : ''}`}>
+                  <div className="card-left">
+                    <Image src={item.coverImage} className="cover-image" />
+                    <div className="status-tag">{getStatusTag(item.status)}</div>
                   </div>
-                  <div className="actions">
-                    {item.status === 2 && (
+                  <div className="card-right">
+                    <div className="content">
+                      <h3 className="title">{item.title}</h3>
+                      <p className="desc">{stripHtml(item.content, 100)}</p>
+                    </div>
+                    <div className="actions">
+                      {item.status === 2 && (
+                        <Button
+                          size="small"
+                          style={{
+                            border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'}`,
+                            color: theme === 'dark' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)',
+                            backgroundColor: 'transparent',
+                            fontSize: '12px',
+                          }}
+                          onClick={() => {
+                            Modal.show({
+                              content: item.reason || '未提供拒绝原因',
+                              closeOnMaskClick: true,
+                            });
+                          }}
+                        >
+                          拒绝原因
+                        </Button>
+                      )}
                       <Button
                         size="small"
                         style={{
@@ -185,40 +215,23 @@ const MyTravels: React.FC = () => {
                           backgroundColor: 'transparent',
                           fontSize: '12px',
                         }}
-                        onClick={() => {
-                          Modal.show({
-                            content: item.reason || '未提供拒绝原因',
-                            closeOnMaskClick: true,
-                          });
-                        }}
+                        onClick={() => navigate(`/publish?edit=${item.id}`)}
                       >
-                        拒绝原因
+                        编辑
                       </Button>
-                    )}
-                    <Button
-                      size="small"
-                      style={{
-                        border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'}`,
-                        color: theme === 'dark' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)',
-                        backgroundColor: 'transparent',
-                        fontSize: '12px',
-                      }}
-                      onClick={() => navigate(`/publish?edit=${item.id}`)}
-                    >
-                      编辑
-                    </Button>
-                    <Button
-                      style={{ fontSize: '12px' }}
-                      size="small"
-                      color="primary"
-                      onClick={() => handleDelete(item.id)}
-                    >
-                      删除
-                    </Button>
+                      <Button
+                        style={{ fontSize: '12px' }}
+                        size="small"
+                        color="primary"
+                        onClick={() => handleDelete(item.id)}
+                      >
+                        删除
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </Tabs.Tab>
         <Tabs.Tab

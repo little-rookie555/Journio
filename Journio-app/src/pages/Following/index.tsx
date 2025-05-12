@@ -5,6 +5,7 @@ import { Avatar, List, NavBar, Tabs, Toast } from 'antd-mobile';
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import './index.scss';
+import FollowingSkeleton from './Skeleton';
 
 const Following: React.FC = () => {
   const { theme } = useTheme();
@@ -15,6 +16,7 @@ const Following: React.FC = () => {
   const [followList, setFollowList] = useState<any[]>([]);
   const [fanList, setFanList] = useState<any[]>([]);
   const [followStatus, setFollowStatus] = useState<{ [key: number]: boolean }>({});
+  const [loading, setLoading] = useState(true);
 
   // 监听 URL 变化来更新 activeTab
   const [activeTab, setActiveTab] = useState(
@@ -31,6 +33,7 @@ const Following: React.FC = () => {
     if (!userInfo?.id) return;
 
     const fetchData = async () => {
+      setLoading(true);
       try {
         // 获取关注列表
         const followRes = await getFollowList(userInfo.id);
@@ -64,11 +67,17 @@ const Following: React.FC = () => {
         }
       } catch (error) {
         console.error('获取数据失败:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
   }, [userInfo?.id]);
+
+  if (loading) {
+    return <FollowingSkeleton />;
+  }
 
   const handleFollow = async (targetUserId: number) => {
     if (!userInfo) {

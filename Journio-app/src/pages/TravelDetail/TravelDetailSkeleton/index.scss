@@ -1,0 +1,111 @@
+.travel-detail-skeleton {
+  padding: 16px;
+  background: var(--adm-color-background);
+
+  .header-skeleton {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    margin-bottom: 16px;
+
+    .avatar-skeleton {
+      :global(.adm-skeleton-avatar) {
+        width: 40px;
+        height: 40px;
+      }
+    }
+
+    .info-skeleton {
+      flex: 1;
+      :global(.adm-skeleton-title) {
+        width: 100px;
+        height: 20px;
+      }
+    }
+  }
+
+  .cover-skeleton {
+    margin: 16px 0;
+    :global(.adm-skeleton-image) {
+      width: 100%;
+      height: 200px;
+      border-radius: 8px;
+    }
+  }
+
+  .title-skeleton {
+    margin: 16px 0;
+    :global(.adm-skeleton-title) {
+      height: 24px;
+    }
+  }
+
+  .info-card-skeleton {
+    display: flex;
+    justify-content: space-around;
+    margin: 16px 0;
+    padding: 16px;
+    background: var(--adm-color-box);
+    border-radius: 12px;
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+
+      :global(.adm-skeleton-title) {
+        width: 60px;
+        height: 16px;
+
+        &:last-child {
+          width: 40px;
+          height: 20px;
+        }
+      }
+    }
+  }
+
+  .content-skeleton {
+    margin: 16px 0;
+    :global(.adm-skeleton-paragraph) {
+      width: 100%;
+    }
+  }
+
+  .comments-skeleton {
+    margin-top: 24px;
+
+    :global(.adm-skeleton-title) {
+      width: 120px;
+      height: 20px;
+      margin-bottom: 16px;
+    }
+
+    .comment-item {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+
+      :global(.adm-skeleton-avatar) {
+        width: 40px;
+        height: 40px;
+      }
+
+      .comment-content {
+        flex: 1;
+
+        :global(.adm-skeleton-title) {
+          width: 80px;
+          height: 16px;
+          margin-bottom: 8px;
+        }
+
+        :global(.adm-skeleton-paragraph) {
+          width: 100%;
+        }
+      }
+    }
+  }
+}

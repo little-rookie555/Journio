@@ -17,6 +17,7 @@ import ActionBar from './ActionBar';
 import CommentList, { Comment } from './CommentList';
 import Header from './Header';
 import './index.scss';
+import TravelDetailSkeleton from './TravelDetailSkeleton';
 
 const TravelDetail: React.FC = () => {
   const { id } = useParams();
@@ -96,7 +97,7 @@ const TravelDetail: React.FC = () => {
   }, [id, userInfo]); // 添加userInfo作为依赖
 
   if (loading) {
-    return <div className="loading">加载中...</div>;
+    return <TravelDetailSkeleton />;
   }
 
   if (!travel) {
