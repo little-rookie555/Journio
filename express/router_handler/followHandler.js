@@ -1,6 +1,8 @@
 const { Trip, User, TripFollow, TripStar, TripLike } = require('../models');
 const db = require('../config/db');
 const Op = require('sequelize').Op;
+// 引入Redis客户端
+const redisClient = require('../config/redis');
 
 // 关注功能
 exports.followUser = async (req, res) => {
@@ -216,49 +218,56 @@ exports.getStarList = async (req, res) => {
       ],
     });
 
-    // 2. 格式化数据
-    const formattedList = starList.map((trip) => ({
-      id: trip.Trip.id,
-      title: trip.Trip.title,
-      content: trip.Trip.content,
-      coverImage: trip.Trip.coverImage, // 修改为从trip.Trip获取
-      images: trip.Trip.images,
-      video: trip.Trip.video_url,
-      status: trip.Trip.status,
-      createTime: trip.Trip.create_time,
-      travelDate: trip.Trip.travel_data,
-      duration: trip.Trip.duration,
-      cost: trip.Trip.cost,
-      likeCount: trip.Trip.liked,
-      isLiked: false,
-      locations: trip.Trip.locations ? trip.Trip.locations : [], // 修改为从trip.Trip获取
-      author: {
-        id: trip.user.id,
-        nickname: trip.user.nick_name,
-        avatar: trip.user.icon,
-      },
-    }));
+    // 2. 从redis中获取每个游记的点赞数量 - 覆盖查询结果(可能还没更新)
+    const formattedList = await Promise.all(
+      starList.map(async (trip) => {
+        const likeCount = await redisClient.get(`travel:likeCount:${trip.Trip.id}`);
+        if (!likeCount) {
+          likeCount = trip.Trip.liked;
+          await redisClient.set(`travel:likeCount:${trip.Trip.id}`, String(trip.Trip.liked || 0));
+        }
+        return {
+          id: trip.Trip.id,
+          title: trip.Trip.title,
+          coverImage: trip.Trip.coverImage,
+          status: trip.Trip.status,
+          travelDate: trip.Trip.travel_data,
+          likeCount: parseInt(likeCount),
+          isLiked: false,
+          author: {
+            id: trip.user.id,
+            nickname: trip.user.nick_name,
+            avatar: trip.user.icon,
+          },
+        };
+      }),
+    );
 
     // 3. 获取用户点赞状态
-    const likedTripIds = (
-      await TripLike.findAll({
-        where: {
-          user_id: req.query.userId,
-          travel_id: {
-            [Op.in]: formattedList.map((trip) => trip.id), // 使用格式化后的列表
+    // 3.1 从redis中查询用户的点赞列表
+    const likedTripIds = await redisClient.sMembers(`user:likes:${req.query.userId}`);
+    // 3.2 如果用户的点赞列表不存在，则从数据库中查询并保存到redis中
+    if (likedTripIds === null) {
+      likedTripIds = (
+        await TripLike.findAll({
+          where: {
+            user_id: req.query.userId,
+            travel_id: {
+              [Op.in]: trips.map((trip) => trip.id),
+            },
+            is_liked: 1,
           },
-          is_liked: 1,
-        },
-        attributes: ['travel_id'],
-        raw: true,
-      })
-    ).map((like) => like.travel_id);
+          attributes: ['travel_id'],
+          raw: true,
+        })
+      ).map((like) => String(like.travel_id));
+      // 将用户的点赞列表保存到redis中
+      await redisClient.sAdd(`user:likes:${req.query.userId}`, likedTripIds);
+    }
 
-    console.log(likedTripIds); // 打印出likedTripIds数组的内容，以确认是否正确获取了数据
-
-    // 为每个游记添加isLiked字段
+    // 3.3 为每个游记添加isLiked字段
     formattedList.forEach((trip) => {
-      trip.isLiked = likedTripIds.includes(trip.id);
+      trip.isLiked = likedTripIds.includes(String(trip.id));
     });
 
     return res.status(200).json({

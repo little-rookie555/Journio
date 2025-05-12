@@ -32,8 +32,6 @@ router.get('/list', tripHandler.getAllTrips);
 router.get('/detail/:id', tripHandler.getTripDetail); // 通过query参数传递搜索关键词
 // 获取某个用户的所有游记
 router.get('/user/:userId', checkAuth, tripHandler.getTripsByUser); // 通过URL参数传递用户ID
-// 通过标题的关键词搜索游记 - 浏览游记，无需鉴权
-router.get('/search', tripHandler.searchTrip); // 通过query参数传递搜索关键词
 // // 获取访问当前用户某个审核状态的所有游记
 // router.get("/status/", checkAuth, tripHandler.getTripByStatus); // 通过URL参数传递审核状态
 
@@ -60,6 +58,6 @@ router.get('/follow/list', checkAuth, followHandler.getFollowList);
 // 获取粉丝列表
 router.get('/fan/list', checkAuth, followHandler.getFanList);
 // 获取收藏列表
-router.get('/star/list', checkAuth, followHandler.getStarList);
+router.get('/star/list', followHandler.getStarList);
 
 module.exports = router;

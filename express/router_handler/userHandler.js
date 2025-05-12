@@ -8,14 +8,14 @@ const config = require('../config/config');
 exports.getUserInfo = async (req, res) => {
   const userId = req.query.id;
   try {
-    // 查询用户基本信息
+    // 1. 查询用户表 基本信息
     const user = await User.findByPk(userId, {
       attributes: ['id', 'nick_name', 'icon', 'desc', 'follow_count', 'fan_count'],
     });
 
     if (!user) return res.cc('获取用户信息失败！');
 
-    // 查询获赞数（通过用户发布的所有游记获得的点赞总数）
+    // 2. 查询获赞数（通过用户发布的所有游记获得的点赞总数）
     const travels = await Trip.findAll({
       where: {
         user_id: userId,

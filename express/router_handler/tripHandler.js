@@ -1,4 +1,4 @@
-const { Trip, TripLike, TripStar, User, Comment } = require('../models');
+const { Trip, TripLike, TripStar, User, Comment, TripReviewRecord } = require('../models');
 const upload = require('../middlewares/upload');
 const multer = require('multer');
 const ffmpeg = require('fluent-ffmpeg');
@@ -6,6 +6,8 @@ ffmpeg.setFfmpegPath('D:\\softwore\\ffmpeg-7.0.2-essentials_build\\bin\\ffmpeg.e
 const db = require('../config/db');
 const Op = require('sequelize').Op;
 const { extractVideoThumbnail } = require('./imageHandler');
+// 引入Redis客户端
+const redisClient = require('../config/redis');
 
 // 创建游记
 exports.createTrip = async (req, res) => {
@@ -195,8 +197,6 @@ exports.getAllTrips = async (req, res) => {
     const keyword = req.query.keyword || '';
     const offset = (page - 1) * limit;
 
-    // console.log('getAllTrips called', req.query, page, limit, offset);
-
     // 1. 查询所有已审核通过的游记
     const { count, rows: trips } = await Trip.findAndCountAll({
       where: {
@@ -242,51 +242,65 @@ exports.getAllTrips = async (req, res) => {
       },
     });
 
-    console.log('count', count);
+    // 2. 从redis中获取每个游记的点赞数量 - 覆盖查询结果(可能还没更新)
+    const formattedTrips = await Promise.all(
+      trips.map(async (trip) => {
+        const likeCount = await redisClient.get(`travel:likeCount:${trip.id}`);
+        if (!likeCount) {
+          likeCount = trip.liked;
+          await redisClient.set(`travel:likeCount:${trip.id}`, String(trip.liked || 0));
+        }
 
-    // 2. 格式化数据
-    const formattedTrips = trips.map((trip) => ({
-      id: trip.id,
-      title: trip.title,
-      content: trip.content,
-      coverImage: trip.coverImage,
-      images: trip.images,
-      video: trip.video_url,
-      status: trip.status,
-      createTime: trip.create_time,
-      travelDate: trip.travel_data,
-      duration: trip.duration,
-      cost: trip.cost,
-      likeCount: trip.liked,
-      isLiked: false,
-      locations: trip.locations ? trip.locations : [], // 新增locations字段，用于存储旅行地点的数组
-      author: {
-        id: trip.user.id,
-        nickname: trip.user.nick_name,
-        avatar: trip.user.icon,
-      },
-    }));
-
-    // 3. 若传入userid
-    if (req.query.userId) {
-      // 批量查询当前用户点赞的所有游记ID
-      const likedTripIds = (
-        await TripLike.findAll({
-          where: {
-            user_id: req.query.userId,
-            travel_id: {
-              [Op.in]: trips.map((trip) => trip.id),
-            },
-            is_liked: 1,
+        return {
+          id: trip.id,
+          title: trip.title,
+          content: trip.content,
+          coverImage: trip.coverImage,
+          images: trip.images,
+          video: trip.video_url,
+          status: trip.status,
+          createTime: trip.create_time,
+          travelDate: trip.travel_data,
+          duration: trip.duration,
+          cost: trip.cost,
+          likeCount: parseInt(likeCount),
+          isLiked: false,
+          locations: trip.locations ? trip.locations : [], // 新增locations字段，用于存储旅行地点的数组
+          author: {
+            id: trip.user.id,
+            nickname: trip.user.nick_name,
+            avatar: trip.user.icon,
           },
-          attributes: ['travel_id'],
-          raw: true,
-        })
-      ).map((like) => like.travel_id);
+        };
+      }),
+    );
 
-      // 为每个游记添加isLiked字段
+    // 3. 若传入userid 则判断用户是否点赞
+    if (req.query.userId) {
+      // 3.1 从redis中查询用户的点赞列表
+      const likedTripIds = await redisClient.sMembers(`user:likes:${req.query.userId}`);
+      // 3.2 如果用户的点赞列表不存在，则从数据库中查询并保存到redis中
+      if (likedTripIds === null) {
+        likedTripIds = (
+          await TripLike.findAll({
+            where: {
+              user_id: req.query.userId,
+              travel_id: {
+                [Op.in]: trips.map((trip) => trip.id),
+              },
+              is_liked: 1,
+            },
+            attributes: ['travel_id'],
+            raw: true,
+          })
+        ).map((like) => String(like.travel_id));
+        // 将用户的点赞列表保存到redis中
+        await redisClient.sAdd(`user:likes:${req.query.userId}`, likedTripIds);
+      }
+
+      // 3.3 为每个游记添加isLiked字段
       formattedTrips.forEach((trip) => {
-        trip.isLiked = likedTripIds.includes(trip.id);
+        trip.isLiked = likedTripIds.includes(String(trip.id));
       });
     }
 
@@ -309,6 +323,7 @@ exports.getAllTrips = async (req, res) => {
 // 获取单个游记详情
 exports.getTripDetail = async (req, res) => {
   try {
+    // 1. 获取游记详情
     const trip = await Trip.findByPk(req.params.id, {
       include: [
         {
@@ -319,8 +334,16 @@ exports.getTripDetail = async (req, res) => {
       ],
     });
 
+    // 2. 从redis中获取点赞数量,覆盖查询结果(可能还没更新)
+    const likeCount = await redisClient.get(`travel:likeCount:${trip.id}`);
+    if (!likeCount) {
+      // 2.1 若不存在则从数据库中查询并保存到redis中
+      likeCount = trip.liked;
+      await redisClient.set(`travel:likeCount:${trip.id}`, String(trip.liked));
+    }
+
+    // 3. 若游记存在 格式化输出
     if (trip) {
-      // 格式化日期为中文格式
       res.status(200).json({
         code: 200,
         data: {
@@ -335,7 +358,7 @@ exports.getTripDetail = async (req, res) => {
           travelDate: trip.travelData, // 使用格式化后的日期
           duration: trip.duration,
           cost: trip.cost,
-          likeCount: trip.liked,
+          likeCount: likeCount,
           locations: trip.locations ? trip.locations : [], // 新增locations字段，用于存储旅行地点的数组
           author: {
             id: trip.user.id,
@@ -359,40 +382,6 @@ exports.getTripDetail = async (req, res) => {
   }
 };
 
-// 搜索游记
-exports.searchTrip = async (req, res) => {
-  try {
-    const keyword = req.query.keyword;
-    const { Op } = require('sequelize'); // 操作符 - 复杂查询（Or.like - 模糊查询）
-
-    const trips = await Trip.findAll({
-      where: {
-        [Op.and]: [
-          {
-            [Op.or]: [
-              { title: { [Op.like]: `%${keyword}%` } },
-              { content: { [Op.like]: `%${keyword}%` } },
-            ],
-          },
-          { is_deleted: 0 },
-          { status: 1 }, // 审核通过
-        ],
-      },
-      include: [
-        {
-          model: User,
-          as: 'user',
-          attributes: ['id', 'nick_name', 'icon'],
-        },
-      ],
-    });
-
-    res.status(200).json({ data: trips });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-};
-
 // 获取访问接口用户的所有游记
 exports.getTripsByUser = async (req, res) => {
   try {
@@ -405,6 +394,7 @@ exports.getTripsByUser = async (req, res) => {
       [Op.and]: [{ user_id: userId }, { is_deleted: 0 }],
     };
 
+    // 1. 查询用户的所有游记
     const { count, rows: trips } = await Trip.findAndCountAll({
       where,
       limit,
@@ -415,6 +405,11 @@ exports.getTripsByUser = async (req, res) => {
           model: User,
           as: 'user',
           attributes: ['id', 'nick_name', 'icon'],
+        },
+        {
+          model: TripReviewRecord,
+          as: 'reviewRecords',
+          attributes: ['reason', 'reviewer_id'],
         },
       ],
     });
@@ -431,43 +426,67 @@ exports.getTripsByUser = async (req, res) => {
       });
     }
 
-    // 格式化数据以匹配前端期望的格式
-    const formattedTrips = trips.map((trip) => ({
-      id: trip.id,
-      title: trip.title,
-      content: trip.content,
-      coverImage: trip.coverImage,
-      images: trip.images,
-      status: trip.status,
-      createTime: trip.create_time,
-      locations: trip.locations ? trip.locations : [], // 新增locations字段，用于存储旅行地点的数组
-      likeCount: trip.liked,
-      isLiked: false,
-      author: {
-        id: trip.user.id,
-        nickname: trip.user.nick_name,
-        avatar: trip.user.icon,
-      },
-    }));
+    // 2. 从redis中获取每个游记的点赞数量 - 覆盖查询结果(可能还没更新)
+    const formattedTrips = await Promise.all(
+      trips.map(async (trip) => {
+        const likeCount = await redisClient.get(`travel:likeCount:${trip.id}`);
+        if (!likeCount) {
+          likeCount = trip.liked;
+          await redisClient.set(`travel:likeCount:${trip.id}`, String(trip.liked || 0));
+        }
 
-    // 批量查询当前用户是否对游记点过赞
-    const likedTripIds = (
-      await TripLike.findAll({
-        where: {
-          user_id: userId,
-          travel_id: {
-            [Op.in]: formattedTrips.map((trip) => trip.id),
+        // 获取最新的审核记录
+        const latestReview =
+          trip.reviewRecords && trip.reviewRecords.length > 0
+            ? trip.reviewRecords[trip.reviewRecords.length - 1]
+            : null;
+
+        return {
+          id: trip.id,
+          title: trip.title,
+          content: trip.content,
+          coverImage: trip.coverImage,
+          images: trip.images,
+          status: trip.status,
+          createTime: trip.create_time,
+          travelDate: trip.travel_data ? trip.travel_data : [],
+          likeCount: parseInt(likeCount),
+          isLiked: false,
+          locations: trip.locations ? trip.locations : [], // 新增locations字段，用于存储旅行地点的数组
+          reason: latestReview ? latestReview.reason : '', // 修改这里，使用最新的审核记录
+          author: {
+            id: trip.user.id,
+            nickname: trip.user.nick_name,
+            avatar: trip.user.icon,
           },
-          is_liked: 1,
-        },
-        attributes: ['travel_id'],
-        raw: true,
-      })
-    ).map((like) => like.travel_id);
+        };
+      }),
+    );
 
-    // 为每个游记添加isLiked字段
+    // 3. 判断用户是否点赞
+    // 3.1 从redis中查询用户的点赞列表
+    const likedTripIds = await redisClient.sMembers(`user:likes:${userId}`);
+    // 3.2 如果用户的点赞列表不存在，则从数据库中查询并保存到redis中
+    if (likedTripIds === null) {
+      likedTripIds = (
+        await TripLike.findAll({
+          where: {
+            user_id: userId,
+            travel_id: {
+              [Op.in]: trips.map((trip) => trip.id),
+            },
+            is_liked: 1,
+          },
+          attributes: ['travel_id'],
+          raw: true,
+        })
+      ).map((like) => String(like.travel_id));
+      // 将用户的点赞列表保存到redis中
+      await redisClient.sAdd(`user:likes:${userId}`, likedTripIds);
+    }
+    // 3.3 为每个游记添加isLiked字段
     formattedTrips.forEach((trip) => {
-      trip.isLiked = likedTripIds.includes(trip.id);
+      trip.isLiked = likedTripIds.includes(String(trip.id));
     });
 
     // 使用res.json发送响应
@@ -486,77 +505,89 @@ exports.getTripsByUser = async (req, res) => {
 
 // 点赞/取消点赞
 exports.likeTrip = async (req, res) => {
-  const transaction = await db.transaction(); // 创建事务
   try {
     const { travelId, userId, liked } = req.body;
 
     try {
-      // 1. 查找游记
-      const trip = await Trip.findByPk(travelId, { transaction });
-
-      if (!trip || trip.is_deleted === 1) {
-        await transaction.rollback();
-        return res.status(404).json({
-          code: 404,
-          message: '游记不存在',
-        });
-      }
-
-      // 2. 如果是获取状态的请求，只需查询点赞记录
+      // 1. 如果是获取状态的请求，只需查询点赞记录
       if (liked === undefined) {
-        const likeRecord = await TripLike.findOne({
-          where: {
-            travel_id: travelId,
-            user_id: userId,
-          },
-          transaction,
-        });
-        await transaction.commit();
+        // 1.1 优先从Redis缓存中获取点赞状态
+        const isLiked = await redisClient.sIsMember(`user:likes:${userId}`, String(travelId));
+        const likeCount = await redisClient.get(`travel:likeCount:${travelId}`);
+
+        // 1.2 如果缓存中不存在点赞状态，则从数据库中获取
+        if (isLiked === null) {
+          const likeRecord = await TripLike.findOne({
+            where: {
+              travel_id: travelId,
+              user_id: userId,
+            },
+          });
+          isLiked = likeRecord ? true : false;
+          // 更新缓存
+          await redisClient.sAdd(`user:likes:${userId}`, String(travelId));
+        }
+
+        // 1.3 如果缓存中不存在点赞计数，则从数据库中获取
+        if (likeCount === null) {
+          likeCount = await TripLike.count({
+            where: {
+              travel_id: travelId,
+            },
+          });
+          // 更新缓存
+          await redisClient.set(`travel:likeCount:${travelId}`, String(likeCount));
+        }
+
         return res.status(200).json({
           code: 200,
           data: {
-            liked: likeRecord && likeRecord.is_liked === 1 ? true : false,
-            likeCount: trip.liked,
+            liked: isLiked,
+            likeCount: parseInt(likeCount),
           },
         });
       }
 
       if (!liked) {
-        // 若为取消点赞，则从数据库中删除该记录
+        // 2. 如果是取消点赞的请求，从Redis缓存中移除点赞记录
+        // 2.1 更新数据库中的点赞状态
         await TripLike.destroy({
           where: {
             travel_id: travelId,
             user_id: userId,
           },
-          transaction,
         });
-        // 更新游记的点赞数量
-        await trip.update({ liked: trip.liked - 1 }, { transaction });
+        // 2.2 更新Redis缓存中的点赞记录
+        await redisClient.sRem(`user:likes:${userId}`, String(travelId));
+
+        // 更新点赞计数缓存
+        await redisClient.decr(`travel:likeCount:${travelId}`);
       } else {
-        // 若为点赞，则在数据库中创建新记录
-        await TripLike.create(
-          {
-            travel_id: travelId,
-            user_id: userId,
-            is_liked: 1,
-          },
-          { transaction },
-        );
-        // 更新游记的点赞数量
-        await trip.update({ liked: trip.liked + 1 }, { transaction });
+        // 3. 如果是点赞的请求，将点赞记录添加到Redis缓存中
+        // 3.1 更新数据库中的点赞状态
+        await TripLike.create({
+          travel_id: travelId,
+          user_id: userId,
+          is_liked: 1,
+        });
+        // 3.2 更新Redis缓存中的点赞记录
+        await redisClient.sAdd(`user:likes:${userId}`, String(travelId));
+
+        // 更新点赞计数缓存
+        await redisClient.incr(`travel:likeCount:${travelId}`);
       }
 
-      await transaction.commit(); // 提交事务
+      // 5. 获取更新后的点赞数
+      const updatedLikeCount = await redisClient.get(`travel:likeCount:${travelId}`);
 
       return res.status(200).json({
         code: 200,
         data: {
           liked: liked,
-          likeCount: trip.liked,
+          likeCount: parseInt(updatedLikeCount),
         },
       });
     } catch (error) {
-      await transaction.rollback();
       throw error;
     }
   } catch (error) {
@@ -572,67 +603,60 @@ exports.starTrip = async (req, res) => {
   try {
     const { travelId, userId, starred } = req.body;
 
-    // 开启事务
-    const transaction = await db.transaction();
-
     try {
-      // 1. 查找游记
-      const trip = await Trip.findByPk(travelId, { transaction });
-
-      if (!trip || trip.is_deleted === 1) {
-        await transaction.rollback();
-        return res.status(404).json({
-          code: 404,
-          message: '游记不存在',
-        });
-      }
-
-      // 2. 如果是获取状态的请求，只需查询收藏记录
+      // 1. 如果是获取状态的请求，优先从Redis缓存中获取收藏状态
       if (starred === undefined) {
-        const starRecord = await TripStar.findOne({
-          where: {
-            travel_id: travelId,
-            user_id: userId,
-          },
-          transaction,
-        });
-        // 若starRecord.is_starred为1，则返回true，否则返回false
-        await transaction.commit();
+        // 1.1 优先从Redis缓存中获取收藏状态
+        const isStarred = await redisClient.sIsMember(`user:stars:${userId}`, String(travelId));
+
+        // 1.2 如果缓存中不存在收藏状态，则从数据库中获取
+        if (isStarred === null) {
+          const starRecord = await TripStar.findOne({
+            where: {
+              travel_id: travelId,
+              user_id: userId,
+            },
+          });
+          isStarred = starRecord ? true : false;
+          // 更新缓存
+          await redisClient.sAdd(`user:stars:${userId}`, String(travelId));
+        }
+
         return res.status(200).json({
           code: 200,
           data: {
-            starred: starRecord && starRecord.is_starred === 1 ? true : false,
+            starred: isStarred,
           },
         });
       }
 
-      // 3. 收藏 - 查找收藏记录或创建新记录
       if (!starred) {
-        // 若为取消收藏，则从数据库中删除该记录
+        // 2. 如果是取消收藏的请求，从Redis缓存中移除收藏记录
+        // 2.1 更新数据库中的收藏状态
         await TripStar.destroy({
           where: {
             travel_id: travelId,
             user_id: userId,
           },
-          transaction,
         });
-        // 更新游记的收藏数量
-        await trip.update({ starred: trip.starred - 1 }, { transaction });
+        // 2.2 从Redis缓存中移除收藏记录
+        await redisClient.sRem(`user:stars:${userId}`, String(travelId));
+
+        // 2.3 更新收藏计数缓存
+        await redisClient.decr(`travel:starCount:${travelId}`);
       } else {
-        // 若为收藏，则在数据库中创建新记录
-        await TripStar.create(
-          {
-            travel_id: travelId,
-            user_id: userId,
-            is_starred: 1,
-          },
-          { transaction },
-        );
-        // 更新游记的收藏数量
-        await trip.update({ starred: trip.starred + 1 }, { transaction });
+        // 3. 如果是收藏的请求，将收藏记录添加到Redis缓存中
+        // 3.1 更新数据库中的收藏状态
+        await TripStar.create({
+          travel_id: travelId,
+          user_id: userId,
+          is_starred: 1,
+        });
+        // 3.2 将收藏记录添加到Redis缓存中
+        await redisClient.sAdd(`user:stars:${userId}`, String(travelId));
+        // 更新收藏计数缓存
+        await redisClient.incr(`travel:starCount:${travelId}`);
       }
-      // 提交事务
-      await transaction.commit();
 
       return res.status(200).json({
         code: 200,
@@ -641,7 +665,6 @@ exports.starTrip = async (req, res) => {
         },
       });
     } catch (error) {
-      await transaction.rollback();
       throw error;
     }
   } catch (error) {
