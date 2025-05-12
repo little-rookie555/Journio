@@ -1,62 +1,109 @@
 import { AuthRoute } from '@/components/AuthRoute';
-import Following from '@/pages/Following';
-import Layout from '@/pages/Layout';
-import Login from '@/pages/Login';
-import MyTravels from '@/pages/MyTravels';
-import Profile from '@/pages/Profile';
-import Register from '@/pages/Register';
-import TravelDetail from '@/pages/TravelDetail';
-import TravelList from '@/pages/TravelList';
-import TravelPublish from '@/pages/TravelPublish';
 import { createBrowserRouter } from 'react-router-dom';
+import React, { Suspense } from 'react';
+
+// 使用 React.lazy() 懒加载组件
+const Layout = React.lazy(() => import('@/pages/Layout'));
+const Login = React.lazy(() => import('@/pages/Login'));
+const Register = React.lazy(() => import('@/pages/Register'));
+const TravelPublish = React.lazy(() => import('@/pages/TravelPublish'));
+const Following = React.lazy(() => import('@/pages/Following'));
+const TravelDetail = React.lazy(() => import('@/pages/TravelDetail'));
+const TravelList = React.lazy(() => import('@/pages/TravelList'));
+const MyTravels = React.lazy(() => import('@/pages/MyTravels'));
+const Profile = React.lazy(() => import('@/pages/Profile'));
+
+// 创建加载中组件
+const LoadingComponent = () => (
+  <div
+    style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh',
+    }}
+  >
+    加载中...
+  </div>
+);
 
 export const router = createBrowserRouter([
   {
     path: '/login',
-    element: <Login />,
+    element: (
+      <Suspense fallback={<LoadingComponent />}>
+        <Login />
+      </Suspense>
+    ),
   },
   {
     path: '/profile/:userId',
-    element: <Profile />,
+    element: (
+      <Suspense fallback={<LoadingComponent />}>
+        <Profile />
+      </Suspense>
+    ),
   },
   {
     path: '/register',
-    element: <Register />,
+    element: (
+      <Suspense fallback={<LoadingComponent />}>
+        <Register />
+      </Suspense>
+    ),
   },
   {
     path: '/publish',
     element: (
-      <AuthRoute>
-        <TravelPublish />
-      </AuthRoute>
+      <Suspense fallback={<LoadingComponent />}>
+        <AuthRoute>
+          <TravelPublish />
+        </AuthRoute>
+      </Suspense>
     ),
   },
   {
     path: 'following/:id',
     element: (
-      <AuthRoute>
-        <Following />
-      </AuthRoute>
+      <Suspense fallback={<LoadingComponent />}>
+        <AuthRoute>
+          <Following />
+        </AuthRoute>
+      </Suspense>
     ),
   },
   {
     path: '/detail/:id',
-    element: <TravelDetail />,
+    element: (
+      <Suspense fallback={<LoadingComponent />}>
+        <TravelDetail />
+      </Suspense>
+    ),
   },
   {
     path: '/',
-    element: <Layout />,
+    element: (
+      <Suspense fallback={<LoadingComponent />}>
+        <Layout />
+      </Suspense>
+    ),
     children: [
       {
         index: true,
-        element: <TravelList />,
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <TravelList />
+          </Suspense>
+        ),
       },
       {
         path: 'my-travels',
         element: (
-          <AuthRoute>
-            <MyTravels />
-          </AuthRoute>
+          <Suspense fallback={<LoadingComponent />}>
+            <AuthRoute>
+              <MyTravels />
+            </AuthRoute>
+          </Suspense>
         ),
       },
     ],
