@@ -1,9 +1,18 @@
 import { uploadFile } from '@/api/upload';
+import { compressImage } from '@/components/ImageCompressor';
 import { Toast } from 'antd-mobile';
 
 export const useFileUpload = () => {
   const handleUpload = async (file: File) => {
     try {
+      // 判断是否为图片文件
+      // console.log(file.size);
+      if (file.type.startsWith('image/')) {
+        // 压缩图片
+        const compressedFile = await compressImage(file);
+        file = compressedFile;
+      }
+      // console.log('压缩后', file.size);
       const res = await uploadFile(file);
       if (res.code === 200) {
         return {

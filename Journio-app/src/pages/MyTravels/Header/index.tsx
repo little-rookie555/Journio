@@ -1,4 +1,5 @@
 import { uploadFile } from '@/api/upload';
+import { compressImage } from '@/components/ImageCompressor';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
   Button,
@@ -191,6 +192,9 @@ const UserHeader: React.FC<UserHeaderProps> = ({ onLogout, userInfo, onUpdateInf
                 maxCount={1}
                 upload={async (file) => {
                   try {
+                    // console.log('上传文件:', file.size);
+                    file = await compressImage(file);
+                    // console.log('压缩后文件大小:', file.size);
                     const res = await uploadFile(file);
                     if (res.code === 200) {
                       return {
