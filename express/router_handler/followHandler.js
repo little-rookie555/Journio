@@ -245,7 +245,7 @@ exports.getStarList = async (req, res) => {
 
     // 3. 获取用户点赞状态
     // 3.1 从redis中查询用户的点赞列表
-    const likedTripIds = await redisClient.sMembers(`user:likes:${req.query.userId}`);
+    let likedTripIds = await redisClient.sMembers(`user:likes:${req.query.userId}`);
     // 3.2 如果用户的点赞列表不存在，则从数据库中查询并保存到redis中
     if (likedTripIds === null) {
       likedTripIds = (

@@ -245,7 +245,7 @@ exports.getAllTrips = async (req, res) => {
     // 2. 从redis中获取每个游记的点赞数量 - 覆盖查询结果(可能还没更新)
     const formattedTrips = await Promise.all(
       trips.map(async (trip) => {
-        const likeCount = await redisClient.get(`travel:likeCount:${trip.id}`);
+        let likeCount = await redisClient.get(`travel:likeCount:${trip.id}`); // 将const改为let
         if (!likeCount) {
           likeCount = trip.liked;
           await redisClient.set(`travel:likeCount:${trip.id}`, String(trip.liked || 0));
@@ -278,7 +278,7 @@ exports.getAllTrips = async (req, res) => {
     // 3. 若传入userid 则判断用户是否点赞
     if (req.query.userId) {
       // 3.1 从redis中查询用户的点赞列表
-      const likedTripIds = await redisClient.sMembers(`user:likes:${req.query.userId}`);
+      let likedTripIds = await redisClient.sMembers(`user:likes:${req.query.userId}`);
       // 3.2 如果用户的点赞列表不存在，则从数据库中查询并保存到redis中
       if (likedTripIds === null) {
         likedTripIds = (
@@ -465,7 +465,7 @@ exports.getTripsByUser = async (req, res) => {
 
     // 3. 判断用户是否点赞
     // 3.1 从redis中查询用户的点赞列表
-    const likedTripIds = await redisClient.sMembers(`user:likes:${userId}`);
+    let likedTripIds = await redisClient.sMembers(`user:likes:${userId}`);
     // 3.2 如果用户的点赞列表不存在，则从数据库中查询并保存到redis中
     if (likedTripIds === null) {
       likedTripIds = (
@@ -512,8 +512,8 @@ exports.likeTrip = async (req, res) => {
       // 1. 如果是获取状态的请求，只需查询点赞记录
       if (liked === undefined) {
         // 1.1 优先从Redis缓存中获取点赞状态
-        const isLiked = await redisClient.sIsMember(`user:likes:${userId}`, String(travelId));
-        const likeCount = await redisClient.get(`travel:likeCount:${travelId}`);
+        let isLiked = await redisClient.sIsMember(`user:likes:${userId}`, String(travelId));
+        let likeCount = await redisClient.get(`travel:likeCount:${travelId}`);
 
         // 1.2 如果缓存中不存在点赞状态，则从数据库中获取
         if (isLiked === null) {
@@ -607,7 +607,7 @@ exports.starTrip = async (req, res) => {
       // 1. 如果是获取状态的请求，优先从Redis缓存中获取收藏状态
       if (starred === undefined) {
         // 1.1 优先从Redis缓存中获取收藏状态
-        const isStarred = await redisClient.sIsMember(`user:stars:${userId}`, String(travelId));
+        let isStarred = await redisClient.sIsMember(`user:stars:${userId}`, String(travelId));
 
         // 1.2 如果缓存中不存在收藏状态，则从数据库中获取
         if (isStarred === null) {
