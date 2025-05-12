@@ -56,9 +56,9 @@ const Following: React.FC = () => {
   const handleTabChange = (key: string) => {
     setActiveTab(key);
     if (key === 'fans') {
-      navigate('/following?tab=fans');
+      navigate(`/following/${userInfo?.id}?tab=fans`);
     } else {
-      navigate('/following');
+      navigate(`/following/${userInfo?.id}`);
     }
   };
 

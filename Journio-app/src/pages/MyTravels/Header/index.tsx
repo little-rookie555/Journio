@@ -101,11 +101,14 @@ const UserHeader: React.FC<UserHeaderProps> = ({ onLogout, userInfo, onUpdateInf
 
           <div className="user-actions">
             <div className="stats">
-              <div className="stat-item" onClick={() => navigate('/following')}>
+              <div className="stat-item" onClick={() => navigate(`/following/${userInfo?.id}`)}>
                 <div className="stat-value">{userInfo?.followingCount || 0}</div>
                 <div className="stat-label">关注</div>
               </div>
-              <div className="stat-item" onClick={() => navigate('/following?tab=fans')}>
+              <div
+                className="stat-item"
+                onClick={() => navigate(`/following/${userInfo?.id}?tab=fans`)}
+              >
                 <div className="stat-value">{userInfo?.fanCount || 0}</div>
                 <div className="stat-label">粉丝</div>
               </div>

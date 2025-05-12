@@ -1,10 +1,10 @@
 import { getUserTravels, likeTravel } from '@/api/travel';
 import { getUserInfo } from '@/api/user';
-import LikeButton from '@/components/LikeButton';
+import TravelCardList from '@/components/TravelCardList';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useTravelStore } from '@/store/travel';
 import { useUserStore } from '@/store/user';
-import { Avatar, Button, DotLoading, Image, NavBar, Result, Toast } from 'antd-mobile';
+import { Button, DotLoading, Image, NavBar, Toast } from 'antd-mobile';
 import { SendOutline } from 'antd-mobile-icons';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -128,31 +128,6 @@ const Profile = () => {
     }
   };
 
-  const renderCard = (item: any) => (
-    <div key={item.id} className="travel-card" onClick={() => navigate(`/detail/${item.id}`)}>
-      <Image src={item.coverImage} className="travel-image" />
-      <div className="travel-info">
-        <h3 className="travel-title">{item.title}</h3>
-        <div className="card-bottom">
-          <div className="author-info">
-            <Avatar src={item.author.avatar} />
-            <span className="author-name">{item.author.nickname}</span>
-          </div>
-          <div className="action-item" onClick={(e) => e.stopPropagation()}>
-            <LikeButton
-              isLiked={item.isLiked}
-              onChange={() => handleLike(item)}
-              likeCount={item.likeCount}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const leftList = travelList.filter((_, index) => index % 2 === 0);
-  const rightList = travelList.filter((_, index) => index % 2 === 1);
-
   return (
     <div className={`profile-page ${theme === 'dark' ? 'dark' : ''}`}>
       <div className="header-container">
@@ -208,18 +183,15 @@ const Profile = () => {
       </div>
 
       <div className="travel-list">
-        {travelList.length === 0 && !loading ? (
-          <Result
-            status="info"
-            title="暂无游记"
-            description={isOwnProfile ? '快来分享你的旅行故事吧' : '该用户还没有发布游记'}
+        <div className="travel-list">
+          <TravelCardList
+            list={travelList}
+            loading={loading}
+            emptyText={isOwnProfile ? '快来分享你的旅行故事吧' : '该用户还没有发布游记'}
+            onLike={handleLike}
+            userInfo={userInfo}
           />
-        ) : (
-          <div className="masonry-grid">
-            <div className="masonry-column">{leftList.map(renderCard)}</div>
-            <div className="masonry-column">{rightList.map(renderCard)}</div>
-          </div>
-        )}
+        </div>
 
         {loading && (
           <div className="loading">
