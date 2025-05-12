@@ -2,18 +2,18 @@ const express = require('express');
 const router = express.Router();
 
 // user相关路由
-const userRoutes = require('./userRouter');
-const tripRoutes = require('./tripRoutes');
-const auditRoutes = require('./auditRoutes');
-const adminRoutes = require('./adminRoutes');
-const statisticRoutes = require('./statisticRoutes');
-const imageRouter = require('./imageRoutes');
+const userRouter = require('./userRouter');
+const tripRouter = require('./tripRouter');
+const auditRouter = require('./auditRouter');
+const adminRouter = require('./adminRouter');
+const statisticRouter = require('./statisticRouter');
+const imageRouter = require('./imageRouter');
 
-router.use('/user', userRoutes);
-router.use('/travel', tripRoutes);
-router.use('/audit', auditRoutes);
-router.use('/admin', adminRoutes);
-router.use('/statistic', statisticRoutes);
+router.use('/user', userRouter);
+router.use('/travel', tripRouter);
+router.use('/audit', auditRouter);
+router.use('/admin', adminRouter);
+router.use('/statistic', statisticRouter);
 router.use('/image', imageRouter);
 
 module.exports = router;

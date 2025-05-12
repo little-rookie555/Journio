@@ -12,6 +12,15 @@ exports.followUser = async (req, res) => {
         user_id: userId,
         follow_user_id: followUserId,
       });
+      // 在数据库中更新关注数和粉丝数
+      await User.increment('follow_count', {
+        by: 1,
+        where: { id: userId },
+      });
+      await User.increment('fan_count', {
+        by: 1,
+        where: { id: followUserId },
+      });
       return res.status(200).json({
         code: 200,
         message: '关注成功',
@@ -23,6 +32,15 @@ exports.followUser = async (req, res) => {
           user_id: userId,
           follow_user_id: followUserId,
         },
+      });
+      // 在数据库中更新关注数和粉丝数
+      await User.decrement('follow_count', {
+        by: 1,
+        where: { id: userId },
+      });
+      await User.decrement('fan_count', {
+        by: 1,
+        where: { id: followUserId },
       });
       return res.status(200).json({
         code: 200,

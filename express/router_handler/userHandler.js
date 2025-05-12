@@ -10,43 +10,25 @@ exports.getUserInfo = async (req, res) => {
   try {
     // 查询用户基本信息
     const user = await User.findByPk(userId, {
-      attributes: ['id', 'nick_name', 'icon', 'desc'],
+      attributes: ['id', 'nick_name', 'icon', 'desc', 'follow_count', 'fan_count'],
     });
 
     if (!user) return res.cc('获取用户信息失败！');
 
-    // 查询关注数
-    const followingCount = await TripFollow.count({
-      where: { user_id: userId },
-    });
-
-    // 查询粉丝数
-    const fanCount = await TripFollow.count({
-      where: { follow_user_id: userId },
-    });
-
     // 查询获赞数（通过用户发布的所有游记获得的点赞总数）
-    const likedCount =
-      (await Trip.sum('liked', {
-        where: { user_id: userId },
-      })) || 0;
-
-    // 查询收藏数（用户收藏的游记数量）
-    const starredCount = await TripStar.count({
+    const travels = await Trip.findAll({
       where: {
         user_id: userId,
-        is_starred: 1,
-      },
-    });
-
-    // 查询已通过游记数
-    const approvedTripCount = await Trip.count({
-      where: {
-        user_id: userId,
-        status: 1, // 1表示已通过
         is_deleted: 0,
+        status: 1,
       },
+      attributes: ['id', 'liked', 'starred'],
     });
+    const [likedCount, starredCount] = travels.reduce(
+      (acc, travel) => [acc[0] + (travel.liked || 0), acc[1] + (travel.starred || 0)],
+      [0, 0],
+    );
+    const approvedTripCount = travels.length;
 
     res.send({
       code: 200,
@@ -56,8 +38,8 @@ exports.getUserInfo = async (req, res) => {
         nickname: user.nick_name,
         avatar: user.icon,
         desc: user.desc,
-        followingCount, // 关注数
-        fanCount, // 粉丝数
+        followingCount: user.follow_count, // 关注数
+        fanCount: user.fan_count, // 粉丝数
         likedCount, // 获赞数
         starredCount, // 收藏数
         approvedTripCount, // 已通过游记数
@@ -75,8 +57,6 @@ exports.updateUserInfo = async (req, res) => {
     const id = req.id;
     const { nickname, avatar, desc } = req.body;
 
-    // console.log(nickname, avatar, desc); // 打印请求参数，用于调试
-
     // 查询昵称是否被占用（排除当前用户）
     const existnick = await User.findOne({
       where: {
@@ -90,7 +70,7 @@ exports.updateUserInfo = async (req, res) => {
     }
 
     // 更新用户信息
-    const result = await User.update(
+    await User.update(
       {
         nick_name: nickname,
         icon: avatar,
@@ -100,25 +80,14 @@ exports.updateUserInfo = async (req, res) => {
       { where: { id } },
     );
 
-    if (result[0] !== 1) return res.cc('更新用户失败，请稍后再试！');
-
-    // 获取更新后的用户信息
-    const updatedUser = await User.findByPk(id, {
-      attributes: ['id', 'username', 'nick_name', 'icon', 'desc', 'create_time'],
-    });
-
-    // console.log(updatedUser); // 打印更新后的用户信息，用于调试
-
     res.send({
       code: 200,
       message: '更新成功！',
       data: {
-        id: updatedUser.id,
-        username: updatedUser.username,
+        id: id,
         desc: desc,
-        nickname: updatedUser.nick_name,
-        avatar: updatedUser.icon,
-        createTime: updatedUser.create_time,
+        nickname: nickname,
+        avatar: avatar,
       },
     });
   } catch (error) {

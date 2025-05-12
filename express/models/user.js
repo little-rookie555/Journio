@@ -58,6 +58,16 @@ const User = sequelize.define(
       allowNull: true,
       defaultValue: '',
     },
+    follow_count: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false,
+    },
+    fan_count: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false,
+    },
   },
   {
     tableName: 'tb_user',

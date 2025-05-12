@@ -92,7 +92,7 @@ exports.updateTrip = async (req, res) => {
 
     // 如果有视频，先处理视频截图
     let coverImage = req.body.coverImage;
-    if (req.body.video) {
+    if (req.body.video !== trip.video_url) {
       coverImage = await extractVideoThumbnail(req.body.video);
     }
     // 更新游记内容
@@ -195,7 +195,7 @@ exports.getAllTrips = async (req, res) => {
     const keyword = req.query.keyword || '';
     const offset = (page - 1) * limit;
 
-    console.log('getAllTrips called', req.query, page, limit, offset);
+    // console.log('getAllTrips called', req.query, page, limit, offset);
 
     // 1. 查询所有已审核通过的游记
     const { count, rows: trips } = await Trip.findAndCountAll({
@@ -396,7 +396,6 @@ exports.searchTrip = async (req, res) => {
 // 获取访问接口用户的所有游记
 exports.getTripsByUser = async (req, res) => {
   try {
-    console.log('getTripsByUser called', req.params);
     const userId = req.params.userId;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.pageSize) || 1000;
@@ -487,11 +486,9 @@ exports.getTripsByUser = async (req, res) => {
 
 // 点赞/取消点赞
 exports.likeTrip = async (req, res) => {
+  const transaction = await db.transaction(); // 创建事务
   try {
     const { travelId, userId, liked } = req.body;
-
-    // 开启事务
-    const transaction = await db.transaction();
 
     try {
       // 1. 查找游记
@@ -514,37 +511,42 @@ exports.likeTrip = async (req, res) => {
           },
           transaction,
         });
-        // 若likeRecord.is_liked为1，则返回true，否则返回false
-        const is_liked = likeRecord && likeRecord.is_liked === 1 ? true : false;
         await transaction.commit();
         return res.status(200).json({
           code: 200,
           data: {
-            liked: is_liked,
+            liked: likeRecord && likeRecord.is_liked === 1 ? true : false,
             likeCount: trip.liked,
           },
         });
       }
 
-      // 3. 点赞 - 查找点赞记录或创建新记录
-      const [likeRecord, created] = await TripLike.findOrCreate({
-        where: { travel_id: travelId, user_id: userId },
-        defaults: { is_liked: liked }, // 创建新纪录时的默认值
-        transaction,
-      });
-
-      // 4. 点赞 - 如果记录已存在且状态不同，则更新点赞状态和计数
-      if (!created && likeRecord.is_liked !== liked) {
-        await likeRecord.update({ is_liked: liked }, { transaction });
-        const likeCount = liked ? trip.liked + 1 : trip.liked - 1;
-        await trip.update({ liked: likeCount }, { transaction });
-      }
-      // 5. 如果是新记录且是点赞操作
-      else if (created && liked) {
+      if (!liked) {
+        // 若为取消点赞，则从数据库中删除该记录
+        await TripLike.destroy({
+          where: {
+            travel_id: travelId,
+            user_id: userId,
+          },
+          transaction,
+        });
+        // 更新游记的点赞数量
+        await trip.update({ liked: trip.liked - 1 }, { transaction });
+      } else {
+        // 若为点赞，则在数据库中创建新记录
+        await TripLike.create(
+          {
+            travel_id: travelId,
+            user_id: userId,
+            is_liked: 1,
+          },
+          { transaction },
+        );
+        // 更新游记的点赞数量
         await trip.update({ liked: trip.liked + 1 }, { transaction });
       }
 
-      await transaction.commit();
+      await transaction.commit(); // 提交事务
 
       return res.status(200).json({
         code: 200,
@@ -585,7 +587,7 @@ exports.starTrip = async (req, res) => {
         });
       }
 
-      // 2. 如果是获取状态的请求，只需查询点赞记录
+      // 2. 如果是获取状态的请求，只需查询收藏记录
       if (starred === undefined) {
         const starRecord = await TripStar.findOne({
           where: {
@@ -595,34 +597,41 @@ exports.starTrip = async (req, res) => {
           transaction,
         });
         // 若starRecord.is_starred为1，则返回true，否则返回false
-        const is_starred = starRecord && starRecord.is_starred === 1 ? true : false;
         await transaction.commit();
         return res.status(200).json({
           code: 200,
           data: {
-            starred: is_starred,
+            starred: starRecord && starRecord.is_starred === 1 ? true : false,
           },
         });
       }
 
       // 3. 收藏 - 查找收藏记录或创建新记录
-      const [starRecord, created] = await TripStar.findOrCreate({
-        where: { travel_id: travelId, user_id: userId },
-        defaults: { is_starred: starred }, // 创建新纪录时的默认值
-        transaction,
-      });
-
-      // 4. 点赞 - 如果记录已存在且状态不同，则更新点赞状态和计数
-      if (!created && starRecord.is_starred !== starred) {
-        await starRecord.update({ is_starred: starred }, { transaction });
-        const Count = starred ? trip.starred + 1 : trip.starred - 1;
-        await trip.update({ starred: Count }, { transaction });
-      }
-      // 5. 如果是新记录且是点赞操作
-      else if (created && starred) {
+      if (!starred) {
+        // 若为取消收藏，则从数据库中删除该记录
+        await TripStar.destroy({
+          where: {
+            travel_id: travelId,
+            user_id: userId,
+          },
+          transaction,
+        });
+        // 更新游记的收藏数量
+        await trip.update({ starred: trip.starred - 1 }, { transaction });
+      } else {
+        // 若为收藏，则在数据库中创建新记录
+        await TripStar.create(
+          {
+            travel_id: travelId,
+            user_id: userId,
+            is_starred: 1,
+          },
+          { transaction },
+        );
+        // 更新游记的收藏数量
         await trip.update({ starred: trip.starred + 1 }, { transaction });
       }
-
+      // 提交事务
       await transaction.commit();
 
       return res.status(200).json({
