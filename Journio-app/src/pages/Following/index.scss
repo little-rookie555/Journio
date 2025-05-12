@@ -28,8 +28,27 @@
   }
 
   .follow-status {
-    font-size: 13px;
-    color: var(--adm-color-primary);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: var(--adm-color-primary);
+    color: #fff;
+
+    &.followed {
+      background-color: transparent;
+      border: 1px solid #ccc;
+      color: #999;
+    }
+  }
+
+  .dark {
+    .follow-status {
+      &.followed {
+        border-color: rgba(255, 255, 255, 0.15);
+        color: rgba(255, 255, 255, 0.65);
+      }
+    }
   }
 
   .travel-cover {
