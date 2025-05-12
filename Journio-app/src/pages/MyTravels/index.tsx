@@ -201,6 +201,7 @@ const MyTravels: React.FC = () => {
                             Modal.show({
                               content: item.reason || '未提供拒绝原因',
                               closeOnMaskClick: true,
+                              title: '拒绝原因',
                             });
                           }}
                         >
