@@ -4,6 +4,7 @@ import { AuditItem, AuditStatus } from '@/store/audit';
 export interface TripStore {
   code: number;
   data: AuditItem[];
+  total: number; // 添加total字段
   message?: string;
 }
 
@@ -62,6 +63,10 @@ export const deleteAudit = (id: string): Promise<TripParams> => {
  * 根据状态获取游记审核列表
  * @param status 审核状态
  */
-export const getAuditListByStatus = (status: AuditStatus): Promise<TripStore> => {
-  return request.get(`/audit/list/${status}`);
+export const getAuditListByStatus = (
+  status: AuditStatus,
+  page: number = 1,
+  pageSize: number = 10,
+): Promise<TripStore> => {
+  return request.get(`/audit/list/${status}`, { params: { page, pageSize } });
 };

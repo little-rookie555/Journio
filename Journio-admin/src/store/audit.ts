@@ -51,8 +51,12 @@ export interface AuditItem {
 interface AuditStore {
   auditList: AuditItem[];
   loading: boolean;
-  fetchAuditList: () => Promise<void>; // 获取列表方法
-  fetchAuditListByStatus: (status: AuditStatus) => Promise<void>; // 获取列表方法
+  fetchAuditList: () => Promise<void>;
+  fetchAuditListByStatus: (
+    status: AuditStatus,
+    page: number,
+    pageSize: number,
+  ) => Promise<{ total: number }>;
   approveAudit: (key: string) => Promise<void>;
   rejectAudit: (key: string, reson: string) => Promise<void>;
   deleteAudit: (key: string) => Promise<void>;
@@ -77,18 +81,21 @@ export const useAuditStore = create<AuditStore>((set, get) => ({
       set({ loading: false });
     }
   },
-  fetchAuditListByStatus: async (status: AuditStatus) => {
+  fetchAuditListByStatus: async (status: AuditStatus, page: number, pageSize: number) => {
     set({ loading: true });
     try {
-      const res = await getAuditListByStatus(status);
+      const res = await getAuditListByStatus(status, page, pageSize);
       if (res.code === 200) {
         set({ auditList: res.data });
+        return { total: res.total }; // 确保返回包含total字段的对象
       } else {
         message.error(res.message || '获取游记列表失败');
+        return { total: 0 };
       }
     } catch (error) {
       console.error('获取游记列表失败:', error);
       message.error('获取游记列表失败');
+      return { total: 0 };
     } finally {
       set({ loading: false });
     }

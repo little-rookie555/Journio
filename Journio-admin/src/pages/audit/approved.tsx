@@ -1,5 +1,5 @@
 import { AuditItem, AuditStatus, getAuditStatusText, useAuditStore } from '@/store/audit';
-import { Button, Modal, Table, Tag, Spin } from 'antd';
+import { Button, Modal, Table, Tag, message, Spin } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useEffect, useState } from 'react';
 import { getAuditDetail } from '@/api/audit';
@@ -7,10 +7,25 @@ import { getAuditDetail } from '@/api/audit';
 const ApprovedAudit: React.FC = () => {
   const { auditList, loading, fetchAuditListByStatus } = useAuditStore();
   const [detailLoading, setDetailLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0, // 添加total状态
+  });
 
   useEffect(() => {
-    fetchAuditListByStatus(AuditStatus.Approved);
-  }, [fetchAuditListByStatus]);
+    const fetchData = async () => {
+      const response = await fetchAuditListByStatus(
+        AuditStatus.Approved,
+        pagination.current,
+        pagination.pageSize,
+      );
+      if (response?.total) {
+        setPagination((prev) => ({ ...prev, total: response.total }));
+      }
+    };
+    fetchData();
+  }, [fetchAuditListByStatus, pagination.current, pagination.pageSize, setPagination]);
 
   const handleView = async (record: AuditItem) => {
     setDetailLoading(true);
@@ -45,6 +60,7 @@ const ApprovedAudit: React.FC = () => {
       });
     } catch (error) {
       console.error('获取游记详情失败:', error);
+      message.error('获取游记详情失败');
     } finally {
       setDetailLoading(false);
     }
@@ -100,6 +116,15 @@ const ApprovedAudit: React.FC = () => {
         <Table
           columns={columns}
           dataSource={auditList.filter((item) => item.status === AuditStatus.Approved)}
+          pagination={{
+            ...pagination,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total) => `共 ${total} 条`,
+            onChange: (page, pageSize) => {
+              setPagination({ current: page, pageSize, total: pagination.total });
+            },
+          }}
         />
       </Spin>
     </div>

@@ -7,10 +7,25 @@ import { getAuditDetail } from '@/api/audit';
 const RejectedAudit: React.FC = () => {
   const { auditList, loading, fetchAuditListByStatus } = useAuditStore();
   const [detailLoading, setDetailLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0, // 添加total状态
+  });
 
   useEffect(() => {
-    fetchAuditListByStatus(AuditStatus.Rejected);
-  }, [fetchAuditListByStatus]);
+    const fetchData = async () => {
+      const response = await fetchAuditListByStatus(
+        AuditStatus.Rejected,
+        pagination.current,
+        pagination.pageSize,
+      );
+      if (response?.total) {
+        setPagination((prev) => ({ ...prev, total: response.total }));
+      }
+    };
+    fetchData();
+  }, [fetchAuditListByStatus, pagination.current, pagination.pageSize]);
 
   const handleView = async (record: AuditItem) => {
     setDetailLoading(true);
@@ -110,6 +125,15 @@ const RejectedAudit: React.FC = () => {
         <Table
           columns={columns}
           dataSource={auditList.filter((item) => item.status === AuditStatus.Rejected)}
+          pagination={{
+            ...pagination,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total) => `共 ${total} 条`,
+            onChange: (page, pageSize) => {
+              setPagination({ current: page, pageSize, total: pagination.total });
+            },
+          }}
         />
       </Spin>
     </div>

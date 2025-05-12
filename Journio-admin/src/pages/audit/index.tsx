@@ -10,6 +10,10 @@ const AuditList: React.FC = () => {
   const role = localStorage.getItem('role');
   const [detailLoading, setDetailLoading] = useState(false);
   const rejectReasonRef = useRef('');
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+  });
 
   useEffect(() => {
     fetchAuditList();
@@ -195,7 +199,16 @@ const AuditList: React.FC = () => {
     <div>
       <h2>游记审核列表</h2>
       <Spin spinning={loading || detailLoading}>
-        <Table columns={columns} dataSource={auditList} />
+        <Table
+          columns={columns}
+          dataSource={auditList}
+          pagination={{
+            ...pagination,
+            onChange: (page, pageSize) => {
+              setPagination({ current: page, pageSize });
+            },
+          }}
+        />
       </Spin>
     </div>
   );

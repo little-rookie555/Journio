@@ -1,48 +1,77 @@
 import request from '@/utils/request';
 
-export interface ApiResponse<T> {
+export interface TripStore {
   code: number;
-  data: T;
+  data: any;
   message?: string;
 }
 
-export interface DailyStats {
-  date: string;
-  user: number;
-  trip: number;
+export interface ListResponse {
+  code: number;
+  data: {
+    list: any[];
+    total: number;
+  };
+  message?: string;
 }
 
-export type DailyStatsResponse = ApiResponse<DailyStats[]>;
-export type NumberResponse = ApiResponse<number>;
-
 /**
- * 获取用户数量
- * @returns 用户数量number
+ * 获取总用户数
  */
-export const getUser = (): Promise<NumberResponse> => {
+export const getUser = (): Promise<TripStore> => {
   return request.get('/statistic/user');
 };
 
 /**
- * 获取游记数量
- * @returns 游记数量number
+ * 获取总游记数
  */
-export const getTravel = (): Promise<NumberResponse> => {
-  return request.get(`/statistic/trip`);
+export const getTravel = (): Promise<TripStore> => {
+  return request.get('/statistic/trip');
 };
 
 /**
- * 获取待审核游记数量
- * @returns 游记数量number
+ * 获取待审核游记数
  */
-export const getPendingTravel = (): Promise<NumberResponse> => {
-  return request.get(`/statistic/pending`);
+export const getPendingTravel = (): Promise<TripStore> => {
+  return request.get('/statistic/pending');
 };
 
 /**
- * 获取前一周的新增用户数、新增游记数
- * @returns 游记数量number
+ * 获取每日统计数据
  */
-export const getList = (): Promise<DailyStatsResponse> => {
-  return request.get('/statistic/last-week');
+export const getList = (
+  page: number = 1,
+  pageSize: number = 10,
+  startDate?: string,
+  endDate?: string,
+): Promise<ListResponse> => {
+  return request.get('/statistic/last-week', {
+    params: {
+      page,
+      pageSize,
+      startDate,
+      endDate,
+    },
+  });
+};
+
+/**
+ * 获取总点赞数
+ */
+export const getLike = (): Promise<TripStore> => {
+  return request.get('/statistic/like');
+};
+
+/**
+ * 获取总收藏数
+ */
+export const getStar = (): Promise<TripStore> => {
+  return request.get('/statistic/star');
+};
+
+/**
+ * 获取高质量游记比例
+ */
+export const getQualityRate = (): Promise<TripStore> => {
+  return request.get('/statistic/quality');
 };

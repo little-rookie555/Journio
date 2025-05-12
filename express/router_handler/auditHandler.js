@@ -69,20 +69,20 @@ exports.logoutAdmin = async (req, res) => {
   }
 };
 
-// 获取访问接口用户某个审核状态的所有游记
+// 获取访问某个审核状态的所有游记
 exports.getTripByStatus = async (req, res) => {
   try {
     if (req.role !== 2 && req.role !== 3) {
       return res.status(403).json({ message: '无权限获取审核游记列表' });
     }
     const status = req.params.status;
-    const page = parseInt(req.query.pageNum) || 1;
+    const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.pageSize) || 10;
     const offset = (page - 1) * limit;
 
     const { count, rows: trips } = await Trip.findAndCountAll({
       where: {
-        is_deleted: 0, // 修复语法错误
+        is_deleted: 0,
         status: status,
       },
       limit,
@@ -92,7 +92,7 @@ exports.getTripByStatus = async (req, res) => {
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'nick_name', 'icon', 'username'], // 添加username字段
+          attributes: ['id', 'nick_name', 'icon', 'username'],
         },
         {
           model: TripReviewRecord,
@@ -121,6 +121,7 @@ exports.getTripByStatus = async (req, res) => {
     res.status(200).json({
       code: 200,
       data: formattedTrips,
+      total: count, // 新增total字段，用于前端分页组件的totalInf
       message: '获取成功',
     });
   } catch (error) {
@@ -138,7 +139,7 @@ exports.getTripList = async (req, res) => {
       return res.status(403).json({ message: '无权限获取审核游记列表' });
     }
 
-    const page = parseInt(req.query.pageNum) || 1;
+    const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.pageSize) || 10;
     const offset = (page - 1) * limit;
 

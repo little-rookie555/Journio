@@ -7,11 +7,26 @@ import { getAuditDetail } from '@/api/audit';
 const PendingAudit: React.FC = () => {
   const { auditList, loading, fetchAuditListByStatus, approveAudit, rejectAudit } = useAuditStore();
   const [detailLoading, setDetailLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0, // 添加total状态
+  });
   const rejectReasonRef = useRef('');
 
   useEffect(() => {
-    fetchAuditListByStatus(AuditStatus.Pending);
-  }, [fetchAuditListByStatus]);
+    const fetchData = async () => {
+      const response = await fetchAuditListByStatus(
+        AuditStatus.Pending,
+        pagination.current,
+        pagination.pageSize,
+      );
+      if (response?.total) {
+        setPagination((prev) => ({ ...prev, total: response.total }));
+      }
+    };
+    fetchData();
+  }, [fetchAuditListByStatus, pagination.current, pagination.pageSize]);
 
   const handleView = async (record: AuditItem) => {
     setDetailLoading(true);
@@ -49,7 +64,11 @@ const PendingAudit: React.FC = () => {
                     await approveAudit(detailData.key);
                     Modal.destroyAll();
                     message.success('审批通过成功');
-                    fetchAuditListByStatus(AuditStatus.Pending);
+                    fetchAuditListByStatus(
+                      AuditStatus.Pending,
+                      pagination.current,
+                      pagination.pageSize,
+                    );
                   } catch (error) {
                     console.error('审批失败:', error);
                   }
@@ -78,7 +97,11 @@ const PendingAudit: React.FC = () => {
                     await rejectAudit(detailData.key, rejectReasonRef.current);
                     Modal.destroyAll();
                     message.error('已拒绝该游记');
-                    fetchAuditListByStatus(AuditStatus.Pending);
+                    fetchAuditListByStatus(
+                      AuditStatus.Pending,
+                      pagination.current,
+                      pagination.pageSize,
+                    );
                   } catch (error) {
                     console.error('拒绝失败:', error);
                   }
@@ -153,6 +176,15 @@ const PendingAudit: React.FC = () => {
         <Table
           columns={columns}
           dataSource={auditList.filter((item) => item.status === AuditStatus.Pending)}
+          pagination={{
+            ...pagination,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total) => `共 ${total} 条`,
+            onChange: (page, pageSize) => {
+              setPagination({ current: page, pageSize, total: pagination.total });
+            },
+          }}
         />
       </Spin>
     </div>

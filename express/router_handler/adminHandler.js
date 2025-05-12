@@ -11,7 +11,7 @@ exports.getAllAdmins = async (req, res) => {
   }
 
   // 分页查询
-  const { page = 1, pageSize = 10, search = '' } = req.query;
+  const { page = 1, pageSize = 10, search = '' } = req.params;
   const offset = (page - 1) * pageSize;
 
   try {
@@ -68,7 +68,7 @@ exports.getAllUsers = async (req, res) => {
   }
 
   // 分页查询
-  const { page = 1, pageSize = 10, search = '' } = req.query;
+  const { page = 1, pageSize = 10, search = '' } = req.params;
   const offset = (page - 1) * pageSize;
 
   try {

@@ -1,4 +1,9 @@
-import { UnorderedListOutlined, UserOutlined } from '@ant-design/icons';
+import {
+  FileOutlined,
+  DashboardOutlined,
+  UnorderedListOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
 import { Layout, Menu } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
@@ -26,13 +31,13 @@ const MainLayout: React.FC = () => {
   const menuItems = [
     {
       key: 'Statistic',
-      icon: <UnorderedListOutlined />,
+      icon: <DashboardOutlined />,
       label: '数据统计',
       onClick: () => navigate('/statistic'),
     },
     {
       key: 'audit',
-      icon: <UnorderedListOutlined />,
+      icon: <FileOutlined />,
       label: '游记列表',
       // onClick: () => navigate('/audit'),
       children: [
@@ -55,7 +60,7 @@ const MainLayout: React.FC = () => {
     },
     {
       key: 'admin',
-      icon: <UnorderedListOutlined />,
+      icon: <UserOutlined />,
       label: '管理列表',
       children: [
         ...(role !== '3'

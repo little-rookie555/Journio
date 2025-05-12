@@ -50,7 +50,7 @@ router.post('/upload', tripHandler.uploadTripMedia); // 使用POST方法
 router.post('/trips/:id/views', tripHandler.updateViews);
 
 // 关注用户
-router.post('/follow', checkAuth, followHandler.followUser);
+router.post('/follow', followHandler.followUser);
 // 查询是否关注
 router.get('/follow/check', checkAuth, followHandler.checkIsFollow);
 // 获取关注列表

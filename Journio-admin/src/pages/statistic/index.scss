@@ -50,40 +50,38 @@
       }
     }
 
-    // 待处理卡片样式
-    .pending-card {
-      .pending-title {
-        font-size: 14px;
-        color: #666;
-        margin-bottom: 8px;
-      }
-
-      .pending-content {
-        .pending-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .pending-label {
-          font-size: 14px;
-        }
-
-        .pending-value {
-          font-size: 20px;
-          font-weight: bold;
-        }
-
-        .pending-value {
-          font-size: 30px;
-          font-weight: bold;
-        }
-      }
-    }
-
     // 图表样式
     .chart-container {
       height: 400px;
+    }
+  }
+  // 待处理卡片样式
+  .pending-card {
+    .pending-title {
+      font-size: 18px;
+      color: #666;
+      margin-bottom: 8px;
+      flex-direction: column;
+    }
+
+    .pending-content {
+      .pending-item {
+        display: flex;
+        align-items: center;
+      }
+
+      .pending-label {
+        font-size: 14px;
+      }
+
+      .pending-value {
+        font-size: 25px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 70%;
+      }
     }
   }
 }
