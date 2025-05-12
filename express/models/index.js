@@ -46,6 +46,10 @@ TripFollow.belongsTo(User, {
   foreignKey: 'follow_user_id',
   as: 'followUser',
 });
+TripFollow.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'fanUser',
+});
 
 // 同步所有模型到数据库
 const syncModels = async () => {

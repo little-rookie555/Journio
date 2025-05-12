@@ -6,23 +6,32 @@ const redisClient = require('../config/redis');
 
 // 关注功能
 exports.followUser = async (req, res) => {
+  const transaction = await db.transaction(); // 创建事务
   try {
     const { userId, followUserId, isFollow } = req.body;
     if (isFollow) {
       // 若关注，则将结果保存入数据库
-      await TripFollow.create({
-        user_id: userId,
-        follow_user_id: followUserId,
-      });
+      await TripFollow.create(
+        {
+          user_id: userId,
+          follow_user_id: followUserId,
+        },
+        { transaction },
+      );
+
       // 在数据库中更新关注数和粉丝数
       await User.increment('follow_count', {
         by: 1,
         where: { id: userId },
+        transaction,
       });
       await User.increment('fan_count', {
         by: 1,
         where: { id: followUserId },
+        transaction,
       });
+
+      await transaction.commit(); // 提交事务
       return res.status(200).json({
         code: 200,
         message: '关注成功',
@@ -34,22 +43,29 @@ exports.followUser = async (req, res) => {
           user_id: userId,
           follow_user_id: followUserId,
         },
+        transaction,
       });
+
       // 在数据库中更新关注数和粉丝数
       await User.decrement('follow_count', {
         by: 1,
         where: { id: userId },
+        transaction,
       });
       await User.decrement('fan_count', {
         by: 1,
         where: { id: followUserId },
+        transaction,
       });
+
+      await transaction.commit(); // 提交事务
       return res.status(200).json({
         code: 200,
         message: '取消关注成功',
       });
     }
   } catch (error) {
+    if (transaction) await transaction.rollback(); // 回滚事务
     return res.status(500).json({
       code: 500,
       message: error.message,
@@ -64,33 +80,27 @@ exports.getFollowList = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.pageSize) || 1000;
     const offset = (page - 1) * limit;
-    // 先获取关注用户的ID列表
+
+    // 换为关联查询
     const followList = await TripFollow.findAll({
       where: { user_id: userId },
       limit,
       offset,
-      attributes: ['follow_user_id'],
-    });
-
-    // 获取被关注用户的ID数组
-    const followUserIds = followList.map((item) => item.follow_user_id);
-
-    // 从User表中查询这些用户的详细信息
-    const userList = await User.findAll({
-      where: {
-        id: {
-          [Op.in]: followUserIds,
+      include: [
+        {
+          model: User,
+          as: 'followUser',
+          attributes: ['id', 'nick_name', 'icon', 'desc'],
         },
-      },
-      attributes: ['id', 'nick_name', 'icon', 'desc'],
+      ],
     });
 
     // 格式化返回数据
-    const formattedList = userList.map((user) => ({
-      id: user.id,
-      username: user.nick_name,
-      avatar: user.icon,
-      desc: user.desc,
+    const formattedList = followList.map((follow) => ({
+      id: follow.followUser.id,
+      username: follow.followUser.nick_name,
+      avatar: follow.followUser.icon,
+      desc: follow.followUser.desc,
     }));
 
     return res.status(200).json({
@@ -113,33 +123,26 @@ exports.getFanList = async (req, res) => {
     const limit = parseInt(req.query.pageSize) || 1000;
     const offset = (page - 1) * limit;
 
-    // 先获取关注用户的ID列表
+    // 使用联表查询一次性获取粉丝用户信息
     const fanList = await TripFollow.findAll({
       where: { follow_user_id: userId },
       limit,
       offset,
-      attributes: ['user_id'],
-    });
-
-    // 获取被关注用户的ID数组
-    const fanUserIds = fanList.map((item) => item.user_id);
-
-    // 从User表中查询这些用户的详细信息
-    const userList = await User.findAll({
-      where: {
-        id: {
-          [Op.in]: fanUserIds,
+      include: [
+        {
+          model: User,
+          as: 'fanUser',
+          attributes: ['id', 'nick_name', 'icon', 'desc'],
         },
-      },
-      attributes: ['id', 'nick_name', 'icon', 'desc'],
+      ],
     });
 
     // 格式化返回数据
-    const formattedList = userList.map((user) => ({
-      id: user.id,
-      username: user.nick_name,
-      avatar: user.icon,
-      desc: user.desc,
+    const formattedList = fanList.map((fan) => ({
+      id: fan.fanUser.id,
+      username: fan.fanUser.nick_name,
+      avatar: fan.fanUser.icon,
+      desc: fan.fanUser.desc,
     }));
 
     return res.status(200).json({
