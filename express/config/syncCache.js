@@ -1,4 +1,4 @@
-const { Trip } = require('../models');
+const { Trip, TripLike, TripStar } = require('../models');
 const redisClient = require('./redis');
 const db = require('./db');
 
@@ -6,8 +6,6 @@ const db = require('./db');
 async function syncLikeAndStarToDatabase() {
   const transaction = await db.transaction();
   try {
-    console.log('开始同步点赞和收藏数据到数据库...');
-
     // 1. 同步每个游记的点赞、收藏数
 
     // 1.1 获取所有游记
@@ -42,53 +40,63 @@ async function syncLikeAndStarToDatabase() {
       }
     }
 
-    // 2. 同步点赞记录、收藏记录
-    // 获取所有用户点赞记录
-    const userLikes = await redisClient.keys('user:likes:*');
-    const userStars = await redisClient.keys('user:stars:*');
+    //   // 2. 同步点赞记录、收藏记录
+    //   // 获取所有用户点赞记录
+    //   const userLikes = await redisClient.keys('user:likes:*');
+    //   const userStars = await redisClient.keys('user:stars:*');
 
-    // 遍历每个用户点赞记录，更新数据库
-    for (const userLikeKey of userLikes) {
-      const userId = parseInt(userLikeKey.split(':')[2]);
-      const likedTravelIds = await redisClient.sMembers(userLikeKey);
+    //   // 遍历每个用户点赞记录，更新数据库
+    //   for (const userLikeKey of userLikes) {
+    //     const userId = parseInt(userLikeKey.split(':')[2]);
+    //     const likedTravelIds = await redisClient.sMembers(userLikeKey);
 
-      // 更新用户点赞记录
-      await Trip.bulkCreate(
-        likedTravelIds.map((travelId) => ({
-          user_id: userId,
-          travel_id: praseInt(travelId),
-          is_liked: true,
-        })),
-        { updateOnDuplicate: ['is_liked'] },
-        { transaction },
-      );
-    }
+    //     // console.log(userId, likedTravelIds);
 
-    // 遍历每个用户收藏记录，更新数据库
-    for (const userStarKey of userStars) {
-      const userId = parseInt(userStarKey.split(':')[2]);
-      const starredTravelIds = await redisClient.sMembers(userStarKey);
+    //     // 更新用户点赞记录
+    //     await TripLike.bulkCreate(
+    //       likedTravelIds.map((travelId) => ({
+    //         travel_id: parseInt(travelId),
+    //         user_id: userId,
+    //         is_liked: 1,
+    //         create_time: Date.now(),
+    //       })),
+    //       {
+    //         updateOnDuplicate: ['is_liked'],
+    //         transaction
+    //       }
+    //     );
+    //   }
 
-      // 更新用户收藏记录
-      await Trip.bulkCreate(
-        starredTravelIds.map((travelId) => ({
-          user_id: userId,
-          travel_id: praseInt(travelId),
-          is_starred: true,
-        })),
-        { updateOnDuplicate: ['is_starred'] },
-        { transaction },
-      );
-    }
+    //   // 遍历每个用户收藏记录，更新数据库
+    //   for (const userStarKey of userStars) {
+    //     const userId = parseInt(userStarKey.split(':')[2]);
+    //     const starredTravelIds = await redisClient.sMembers(userStarKey);
+
+    //     // 更新用户收藏记录
+    //     await TripStar.bulkCreate(
+    //       starredTravelIds.map((travelId) => ({
+    //         travel_id: parseInt(travelId),
+    //         user_id: userId,
+    //         is_starred: 1,
+
+    //       })),
+    //       {
+    //         updateOnDuplicate: ['is_starred'],
+    //         transaction
+    //       }
+    //     );
+    //   }
 
     await transaction.commit();
+
+    console.log('同步点赞和收藏数据成功');
   } catch (error) {
     await transaction.rollback();
     console.error('同步点赞和收藏数据失败:', error);
   }
 }
 
-// 设置定时任务，每小时同步一次
+// 设置定时任务，每10min同步一次
 function setupSyncTask() {
   setInterval(syncLikeAndStarToDatabase, 10 * 60 * 1000);
 

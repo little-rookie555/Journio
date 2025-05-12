@@ -335,7 +335,7 @@ exports.getTripDetail = async (req, res) => {
     });
 
     // 2. 从redis中获取点赞数量,覆盖查询结果(可能还没更新)
-    const likeCount = await redisClient.get(`travel:likeCount:${trip.id}`);
+    let likeCount = await redisClient.get(`travel:likeCount:${trip.id}`);
     if (!likeCount) {
       // 2.1 若不存在则从数据库中查询并保存到redis中
       likeCount = trip.liked;
@@ -429,7 +429,7 @@ exports.getTripsByUser = async (req, res) => {
     // 2. 从redis中获取每个游记的点赞数量 - 覆盖查询结果(可能还没更新)
     const formattedTrips = await Promise.all(
       trips.map(async (trip) => {
-        const likeCount = await redisClient.get(`travel:likeCount:${trip.id}`);
+        let likeCount = await redisClient.get(`travel:likeCount:${trip.id}`);
         if (!likeCount) {
           likeCount = trip.liked;
           await redisClient.set(`travel:likeCount:${trip.id}`, String(trip.liked || 0));

@@ -224,7 +224,7 @@ exports.getStarList = async (req, res) => {
     // 2. 从redis中获取每个游记的点赞数量 - 覆盖查询结果(可能还没更新)
     const formattedList = await Promise.all(
       starList.map(async (trip) => {
-        const likeCount = await redisClient.get(`travel:likeCount:${trip.Trip.id}`);
+        let likeCount = await redisClient.get(`travel:likeCount:${trip.Trip.id}`);
         if (!likeCount) {
           likeCount = trip.Trip.liked;
           await redisClient.set(`travel:likeCount:${trip.Trip.id}`, String(trip.Trip.liked || 0));
