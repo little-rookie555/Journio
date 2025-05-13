@@ -42,6 +42,7 @@ export interface AuditItem {
   title: string;
   author: string;
   status: AuditStatus;
+  images: string[];
   createTime: string;
   updateTime: string;
   content: string;

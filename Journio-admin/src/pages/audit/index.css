@@ -1,0 +1,43 @@
+/* 轮播图样式 */
+.audit-carousel .slick-prev,
+.audit-carousel .slick-next {
+  font-size: 20px;
+  color: #1890ff;
+}
+
+.custom-arrow-prev,
+.custom-arrow-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.custom-arrow-prev {
+  left: 10px;
+}
+
+.custom-arrow-next {
+  right: 10px;
+}
+
+/* 确保轮播图容器有足够的高度 */
+.audit-carousel {
+  min-height: 300px;
+}
+
+.audit-carousel .slick-dots li button {
+  background: #1890ff;
+}
+
+.audit-carousel .slick-dots li.slick-active button {
+  background: #096dd9;
+}

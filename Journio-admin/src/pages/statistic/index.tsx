@@ -67,6 +67,13 @@ const StatisticPage: React.FC = () => {
         getQualityRate(),
       ]);
 
+      console.log('userRes', userRes);
+      console.log('travelRes', travelRes);
+      console.log('likeRes', likeRes);
+      console.log('starRes', starRes);
+      console.log('pendingRes', pendingRes);
+      console.log('qualityRes', qualityRes);
+
       if (userRes.code === 200) setTotalUsers(userRes.data);
       if (travelRes.code === 200) setTotalTrips(travelRes.data);
       if (likeRes.code === 200) setTotalLikes(likeRes.data);
