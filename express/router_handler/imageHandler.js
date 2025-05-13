@@ -26,7 +26,7 @@ const local_style = [
     bgColor: '#2c3e50',
     fontFamily: 'Arial',
     fontSize: 36,
-    fontColor: '#ecf0f1',
+    fontColor: '#000000',
     bgStyle: 'gradient',
     gradientColor: '#3498db',
   },
@@ -35,7 +35,7 @@ const local_style = [
     bgColor: '#f9e7c9',
     fontFamily: 'Times New Roman',
     fontSize: 28,
-    fontColor: '#8b4513',
+    fontColor: '#000000',
     bgStyle: 'pattern',
     patternColor: '#d2b48c',
   },
@@ -44,7 +44,7 @@ const local_style = [
     bgColor: '#f0f8ff',
     fontFamily: 'Verdana',
     fontSize: 32,
-    fontColor: '#4682b4',
+    fontColor: '#000000',
     bgStyle: 'dots',
     dotsColor: '#87ceeb',
   },
@@ -54,7 +54,7 @@ const local_style = [
     bgColor: '#f9f871', // 明亮的黄色背景
     fontFamily: 'Microsoft YaHei',
     fontSize: 40,
-    fontColor: '#333333',
+    fontColor: '#000000',
     bgStyle: 'solid',
     hasHighlight: true,
     highlightColor: '#ff7f50', // 橙红色高亮
@@ -67,7 +67,7 @@ const local_style = [
     bgColor: '#87cefa', // 淡蓝色背景
     fontFamily: 'Microsoft YaHei',
     fontSize: 42,
-    fontColor: '#ffffff', // 白色文字
+    fontColor: '#000000', // 白色文字
     bgStyle: 'bubble',
     bubbleColor: '#1e90ff',
   },
@@ -77,7 +77,7 @@ const local_style = [
     bgColor: '#f5f5f5', // 浅灰色背景
     fontFamily: 'Microsoft YaHei',
     fontSize: 38,
-    fontColor: '#1e3a8a', // 深蓝色文字
+    fontColor: '#000000', // 深蓝色文字
     bgStyle: 'quote',
     quoteColor: '#1e3a8a',
     hasHighlight: true,
@@ -89,7 +89,7 @@ const local_style = [
     bgColor: '#e8f5e9', // 淡绿色背景
     fontFamily: 'Microsoft YaHei',
     fontSize: 36,
-    fontColor: '#2e7d32', // 深绿色文字
+    fontColor: '#000000', // 深绿色文字
     bgStyle: 'gradient',
     gradientColor: '#a5d6a7', // 浅绿色渐变
   },
@@ -99,7 +99,7 @@ const local_style = [
     bgColor: '#121212', // 深黑色背景
     fontFamily: 'Microsoft YaHei',
     fontSize: 38,
-    fontColor: '#e0e0e0', // 浅灰色文字
+    fontColor: '#000000', // 浅灰色文字
     bgStyle: 'solid',
     hasHighlight: true,
     highlightColor: '#bb86fc', // 紫色高亮
@@ -110,7 +110,7 @@ const local_style = [
     bgColor: '#ffffff', // 白色背景
     fontFamily: 'Microsoft YaHei',
     fontSize: 38,
-    fontColor: '#4a6572', // 灰蓝色文字
+    fontColor: '#000000', // 灰蓝色文字
     bgStyle: 'watercolor',
     watercolorColors: ['#ffcdd2', '#bbdefb', '#c8e6c9', '#fff9c4'], // 水彩颜色
   },
@@ -120,7 +120,7 @@ const local_style = [
     bgColor: '#fafafa', // 几乎白色的背景
     fontFamily: 'Microsoft YaHei',
     fontSize: 32,
-    fontColor: '#212121', // 深灰色文字
+    fontColor: '#000000', // 深灰色文字
     bgStyle: 'solid',
     hasBorder: true,
     borderColor: '#bdbdbd', // 浅灰色边框
@@ -129,198 +129,102 @@ const local_style = [
 ];
 
 /**
+ * 从ref文件夹获取随机背景图片
+ * @returns {Promise<string>} 返回图片路径
+ */
+const getRandomBackgroundImage = async () => {
+  try {
+    const refPath = path.join(__dirname, '../public/ref');
+    console.log('查找背景图片目录:', refPath);
+
+    if (!fs.existsSync(refPath)) {
+      console.log('背景图片目录不存在，正在创建...');
+      fs.mkdirSync(refPath, { recursive: true });
+      throw new Error(`背景图片目录不存在: ${refPath}`);
+    }
+
+    const files = await fs.promises.readdir(refPath);
+    console.log('目录中的文件:', files);
+
+    const imageFiles = files.filter((file) => /\.(jpg|jpeg|png)$/i.test(file));
+    console.log('找到的图片文件:', imageFiles);
+
+    if (imageFiles.length === 0) {
+      throw new Error(`未在目录中找到背景图片: ${refPath}`);
+    }
+
+    const randomImage = imageFiles[Math.floor(Math.random() * imageFiles.length)];
+    const imagePath = path.join(refPath, randomImage);
+    console.log('选择的背景图片:', imagePath);
+
+    return imagePath;
+  } catch (error) {
+    console.error('获取背景图片失败:', error);
+    throw error;
+  }
+};
+
+/**
  * 根据传入的style生成简单图片
- * @param {string} text - 要在图片上显示的文字
- * @param {number} width - 图片宽度
- * @param {number} height - 图片高度
- * @param {string} outputPath - 输出路径
- * @param {object} style - 样式配置
- * @returns {Promise<string>} - 返回生成的图片路径
  */
 const generateImageService = async (
   text,
-  width = 400,
+  width = 300,
   height = 400,
   outputPath = null,
   style = {},
 ) => {
   try {
+    console.log('开始生成图片，参数:', { text, width, height, outputPath, style });
+
     // 创建一个画布
     const canvas = createCanvas(width, height);
     const ctx = canvas.getContext('2d');
+    console.log('画布创建成功');
 
-    const currentStyle = style;
+    // 获取随机背景图片
+    const bgImagePath = await getRandomBackgroundImage();
+    console.log('准备加载背景图片:', bgImagePath);
 
-    // 获取样式参数
-    const {
-      name = '默认样式',
-      bgColor = '#ffffff',
-      fontFamily = 'Arial',
-      fontSize = 30,
-      fontColor = '#000000',
-      bgStyle = 'solid',
-      gradientColor,
-      patternColor,
-      dotsColor,
-      gridSize,
-      dotSize,
-      dotSpacing,
-      hasHighlight,
-      highlightColor,
-      hasIcon,
-      iconType,
-      bubbleColor,
-      quoteColor,
-    } = currentStyle;
+    const bgImage = await loadImage(bgImagePath);
+    console.log('背景图片加载成功');
 
-    // 根据不同的背景样式绘制背景
-    switch (bgStyle) {
-      case 'gradient':
-        // 渐变背景
-        const gradient = ctx.createLinearGradient(0, 0, width, height);
-        gradient.addColorStop(0, bgColor);
-        gradient.addColorStop(1, gradientColor || '#f0f0f0');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, width, height);
-        break;
-      case 'pattern':
-        // 图案背景（网格）
-        ctx.fillStyle = bgColor;
-        ctx.fillRect(0, 0, width, height);
+    // 确定输出路径
+    const timestamp = Date.now();
+    const styleName = style.name ? style.name.replace(/\s+/g, '_').toLowerCase() : 'default';
+    const finalOutputPath =
+      outputPath ||
+      path.join(__dirname, '../public/generated', `image_${styleName}_${timestamp}.png`);
+    console.log('图片输出路径:', finalOutputPath);
 
-        // 绘制网格
-        ctx.strokeStyle = patternColor || '#e0e0e0';
-        ctx.lineWidth = 1;
-
-        const gridSizeValue = gridSize || 20;
-        for (let x = 0; x <= width; x += gridSizeValue) {
-          ctx.beginPath();
-          ctx.moveTo(x, 0);
-          ctx.lineTo(x, height);
-          ctx.stroke();
-        }
-
-        for (let y = 0; y <= height; y += gridSizeValue) {
-          ctx.beginPath();
-          ctx.moveTo(0, y);
-          ctx.lineTo(width, y);
-          ctx.stroke();
-        }
-        break;
-      case 'dots':
-        // 点状背景
-        ctx.fillStyle = bgColor;
-        ctx.fillRect(0, 0, width, height);
-
-        ctx.fillStyle = dotsColor || '#e0e0e0';
-        const dotSizeValue = dotSize || 3;
-        const dotSpacingValue = dotSpacing || 20;
-
-        for (let x = dotSpacingValue; x < width; x += dotSpacingValue) {
-          for (let y = dotSpacingValue; y < height; y += dotSpacingValue) {
-            ctx.beginPath();
-            ctx.arc(x, y, dotSizeValue, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-        break;
-      case 'bubble':
-        // 气泡背景（参考图2）
-        ctx.fillStyle = bgColor;
-        ctx.fillRect(0, 0, width, height);
-
-        // 绘制气泡形状
-        const bubbleWidth = width * 0.9;
-        const bubbleHeight = height * 0.7;
-        const bubbleX = (width - bubbleWidth) / 2;
-        const bubbleY = height * 0.15;
-
-        // 绘制气泡主体
-        ctx.fillStyle = bubbleColor || '#87cefa';
-        ctx.beginPath();
-        ctx.moveTo(bubbleX + bubbleWidth / 2, bubbleY + bubbleHeight);
-        ctx.lineTo(bubbleX + bubbleWidth / 4, height * 0.95); // 气泡尖角
-        ctx.lineTo(bubbleX + bubbleWidth / 3, bubbleY + bubbleHeight);
-
-        // 绘制气泡圆角矩形
-        const radius = 30;
-        ctx.moveTo(bubbleX + radius, bubbleY);
-        ctx.lineTo(bubbleX + bubbleWidth - radius, bubbleY);
-        ctx.quadraticCurveTo(
-          bubbleX + bubbleWidth,
-          bubbleY,
-          bubbleX + bubbleWidth,
-          bubbleY + radius,
-        );
-        ctx.lineTo(bubbleX + bubbleWidth, bubbleY + bubbleHeight - radius);
-        ctx.quadraticCurveTo(
-          bubbleX + bubbleWidth,
-          bubbleY + bubbleHeight,
-          bubbleX + bubbleWidth - radius,
-          bubbleY + bubbleHeight,
-        );
-        ctx.lineTo(bubbleX + radius, bubbleY + bubbleHeight);
-        ctx.quadraticCurveTo(
-          bubbleX,
-          bubbleY + bubbleHeight,
-          bubbleX,
-          bubbleY + bubbleHeight - radius,
-        );
-        ctx.lineTo(bubbleX, bubbleY + radius);
-        ctx.quadraticCurveTo(bubbleX, bubbleY, bubbleX + radius, bubbleY);
-        ctx.closePath();
-        ctx.fill();
-        break;
-      case 'quote':
-        // 引用风格背景（参考图3）
-        ctx.fillStyle = bgColor;
-        ctx.fillRect(0, 0, width, height);
-
-        // 绘制引号
-        ctx.fillStyle = quoteColor || '#1e3a8a';
-        ctx.font = `bold ${fontSize * 2}px "Times New Roman"`;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.fillText('"', width * 0.1, height * 0.15);
-
-        ctx.textAlign = 'right';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText('"', width * 0.9, height * 0.85);
-
-        // 绘制黄色圆圈高亮（如果有）
-        if (hasHighlight && highlightColor) {
-          ctx.beginPath();
-          ctx.arc(width * 0.2, height * 0.4, width * 0.15, 0, Math.PI * 2);
-          ctx.fillStyle = highlightColor;
-          ctx.globalAlpha = 0.3;
-          ctx.fill();
-          ctx.globalAlpha = 1.0;
-        }
-        break;
-      default:
-        // 纯色背景
-        ctx.fillStyle = bgColor;
-        ctx.fillRect(0, 0, width, height);
-
-        // 如果是黄色猫咪风格（参考图1），添加高亮区域
-        if (hasHighlight && highlightColor && name === '黄色猫咪风格') {
-          ctx.fillStyle = highlightColor;
-          ctx.globalAlpha = 0.6;
-          const highlightHeight = height * 0.15;
-          const highlightY = height * 0.45;
-          ctx.fillRect(0, highlightY, width, highlightHeight);
-          ctx.globalAlpha = 1.0;
-        }
+    // 确保输出目录存在
+    const outputDir = path.dirname(finalOutputPath);
+    if (!fs.existsSync(outputDir)) {
+      console.log('创建输出目录:', outputDir);
+      fs.mkdirSync(outputDir, { recursive: true });
     }
 
+    // 绘制背景图片并调整大小以填充画布
+    ctx.drawImage(bgImage, 0, 0, width, height);
+
+    // 移除了添加半透明遮罩的代码
+    // ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    // ctx.fillRect(0, 0, width, height);
+
+    const currentStyle = style;
+    const {
+      fontFamily = 'Microsoft YaHei',
+      fontSize = 40,
+      fontColor = '#000000', // 将默认字体颜色改为黑色
+    } = currentStyle;
+
     // 设置字体样式和颜色
-    // 修改字体设置，确保支持中文
     ctx.font = `${fontSize}px "${fontFamily}", "Microsoft YaHei", "SimHei", sans-serif`;
     ctx.fillStyle = fontColor;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    // 处理文本换行 - 修改为适合中文的逻辑
+    // 处理文本换行
     const maxWidth = width * 0.8;
     const lines = [];
 
@@ -331,7 +235,6 @@ const generateImageService = async (
 
     // 针对中文文本的换行处理
     if (/[\u4e00-\u9fa5]/.test(text)) {
-      // 包含中文字符，按字符长度分割
       let currentLine = '';
       for (let i = 0; i < text.length; i++) {
         const char = text[i];
@@ -349,7 +252,6 @@ const generateImageService = async (
         lines.push(currentLine);
       }
     } else {
-      // 英文文本，按空格分割单词
       const words = text.split(' ');
       let currentLine = words[0];
 
@@ -372,65 +274,10 @@ const generateImageService = async (
     const totalTextHeight = lines.length * lineHeight;
     let y = (height - totalTextHeight) / 2 + fontSize / 2;
 
-    // 如果是气泡风格，调整文字位置
-    if (bgStyle === 'bubble') {
-      y = height * 0.4;
-    }
-
     for (const line of lines) {
       ctx.fillText(line, width / 2, y);
       y += lineHeight;
     }
-
-    // 如果是黄色猫咪风格，添加猫咪图标
-    if (hasIcon && iconType === 'cat' && name === '黄色猫咪风格') {
-      // 这里只是简单绘制一个猫咪形状
-      // 实际应用中可以使用loadImage加载猫咪图片
-      const catX = width * 0.8;
-      const catY = height * 0.25;
-      const catSize = width * 0.15;
-
-      // 绘制猫咪头部
-      ctx.fillStyle = '#666666';
-      ctx.beginPath();
-      ctx.arc(catX, catY, catSize / 2, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 绘制猫咪耳朵
-      ctx.beginPath();
-      ctx.moveTo(catX - catSize / 3, catY - catSize / 3);
-      ctx.lineTo(catX - catSize / 2, catY - catSize * 0.7);
-      ctx.lineTo(catX - catSize * 0.1, catY - catSize / 2);
-      ctx.closePath();
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.moveTo(catX + catSize / 3, catY - catSize / 3);
-      ctx.lineTo(catX + catSize / 2, catY - catSize * 0.7);
-      ctx.lineTo(catX + catSize * 0.1, catY - catSize / 2);
-      ctx.closePath();
-      ctx.fill();
-
-      // 绘制猫咪脸
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(catX, catY + catSize * 0.1, catSize / 3, 0, Math.PI);
-      ctx.fill();
-
-      // 绘制猫咪眼睛
-      ctx.fillStyle = '#000000';
-      ctx.beginPath();
-      ctx.arc(catX - catSize / 6, catY, catSize / 10, 0, Math.PI * 2);
-      ctx.arc(catX + catSize / 6, catY, catSize / 10, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // 确定输出路径
-    const timestamp = Date.now();
-    const styleName = name.replace(/\s+/g, '_').toLowerCase();
-    const finalOutputPath =
-      outputPath ||
-      path.join(__dirname, '../public/generated', `image_${styleName}_${timestamp}.png`);
 
     // 确保目录存在
     const dir = path.dirname(finalOutputPath);
@@ -441,27 +288,52 @@ const generateImageService = async (
     // 将画布内容导出为图片
     const out = fs.createWriteStream(finalOutputPath);
     const stream = canvas.createPNGStream();
+    console.log('开始写入图片文件');
 
     await new Promise((resolve, reject) => {
       stream.pipe(out);
-      out.on('finish', resolve);
-      out.on('error', reject);
+      out.on('finish', () => {
+        console.log('图片文件写入完成');
+        resolve();
+      });
+      out.on('error', (err) => {
+        console.error('图片文件写入失败:', err);
+        reject(err);
+      });
     });
 
     return finalOutputPath;
   } catch (error) {
-    console.error('生成图片失败:', error);
-    throw error;
+    console.error('生成图片过程中发生错误:', error);
+    throw new Error(`生成图片失败: ${error.message}`);
   }
 };
 
-// 生成简单图片
+// 确保所需目录存在
+const ensureDirectories = () => {
+  const directories = [
+    path.join(__dirname, '../public/ref'),
+    path.join(__dirname, '../public/generated'),
+    path.join(__dirname, '../public/thumbnails'),
+  ];
+
+  directories.forEach((dir) => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  });
+};
+
+// 在生成图片前调用
 exports.generateImage = async (req, res) => {
   try {
+    // 确保目录存在
+    ensureDirectories();
+
     const { content, width, height } = req.body;
 
     // 默认宽高
-    const imageWidth = parseInt(width) || 400;
+    const imageWidth = parseInt(width) || 300;
     const imageHeight = parseInt(height) || 400;
 
     console.log('Received text:', content);
