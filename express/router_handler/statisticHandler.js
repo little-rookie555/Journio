@@ -56,7 +56,7 @@ exports.getStarNumber = async (req, res) => {
   }
 };
 
-// 获取前一周的统计数据
+// 获取统计数据
 exports.getAccessStats = async (req, res) => {
   try {
     const { page = 1, pageSize = 10, startDate, endDate } = req.query;

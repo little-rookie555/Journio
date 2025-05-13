@@ -116,21 +116,23 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
-// 禁用管理员
+// 禁用/恢复管理员
 exports.deleteAdmin = async (req, res) => {
   const userRole = req.role;
   if (userRole !== 3) {
     return res.status(403).json({ code: 403, message: '权限不足' });
   }
 
-  const { id } = req.body.data || req.body;
+  const { id, type } = req.body.data || req.body;
 
   try {
-    // await User.destroy({ where: { id } });
-    await User.update({ status: 0 }, { where: { id } }); // 恢复为普通用户角色
-    res.status(200).json({ code: 200, message: '删除管理员成功' });
+    await User.update({ status: type === 'disable' ? 0 : 1 }, { where: { id } });
+    res.status(200).json({
+      code: 200,
+      message: type === 'disable' ? '禁用管理员成功' : '恢复管理员成功',
+    });
   } catch (error) {
-    console.error('删除管理员失败:', error);
+    console.error('操作管理员失败:', error);
     return res.status(500).json({ code: 500, message: error.message });
   }
 };

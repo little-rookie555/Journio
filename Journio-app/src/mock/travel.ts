@@ -19,6 +19,7 @@ export interface TravelItem {
   }[];
   status: number; // 0: 待审核, 1: 已通过, 2: 已拒绝
   createTime: string;
+  updateTime: string;
   content: string;
   isLiked: boolean; // 添加是否点赞字段
   likeCount: number; // 添加点赞数字段
@@ -119,6 +120,7 @@ Mock.mock('/api/travel/publish', 'post', (options: any) => {
     },
     status: 0,
     createTime: Mock.Random.datetime('yyyy-MM-dd HH:mm:ss'),
+    updateTime: Mock.Random.datetime('yyyy-MM-dd HH:mm:ss'),
     likeCount: 0,
     isLiked: false,
     travelDate: params.travelDate,

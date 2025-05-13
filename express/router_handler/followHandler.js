@@ -3,6 +3,7 @@ const db = require('../config/db');
 const Op = require('sequelize').Op;
 // 引入Redis客户端
 const redisClient = require('../config/redis');
+const { ListResponse } = require('../utils/response');
 
 // 关注功能
 exports.followUser = async (req, res) => {
@@ -81,7 +82,7 @@ exports.getFollowList = async (req, res) => {
     const limit = parseInt(req.query.pageSize) || 1000;
     const offset = (page - 1) * limit;
 
-    // 换为关联查询
+    // 关联查询
     const followList = await TripFollow.findAll({
       where: { user_id: userId },
       limit,
@@ -203,6 +204,7 @@ exports.getStarList = async (req, res) => {
             'content',
             'coverImage',
             'create_time',
+            'update_time',
             'images',
             'status',
             'travel_data',
@@ -229,20 +231,9 @@ exports.getStarList = async (req, res) => {
           likeCount = trip.Trip.liked;
           await redisClient.set(`travel:likeCount:${trip.Trip.id}`, String(trip.Trip.liked || 0));
         }
-        return {
-          id: trip.Trip.id,
-          title: trip.Trip.title,
-          coverImage: trip.Trip.coverImage,
-          status: trip.Trip.status,
-          travelDate: trip.Trip.travel_data,
-          likeCount: parseInt(likeCount),
-          isLiked: false,
-          author: {
-            id: trip.user.id,
-            nickname: trip.user.nick_name,
-            avatar: trip.user.icon,
-          },
-        };
+        trip.Trip.likeCount = parseInt(likeCount);
+
+        return ListResponse(trip.Trip, trip.user);
       }),
     );
 
@@ -272,6 +263,8 @@ exports.getStarList = async (req, res) => {
     formattedList.forEach((trip) => {
       trip.isLiked = likedTripIds.includes(String(trip.id));
     });
+
+    console.log(formattedList);
 
     return res.status(200).json({
       code: 200,

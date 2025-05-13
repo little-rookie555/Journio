@@ -8,6 +8,7 @@ const Op = require('sequelize').Op;
 const { extractVideoThumbnail } = require('./imageHandler');
 // 引入Redis客户端
 const redisClient = require('../config/redis');
+const { DetailResponse, ListResponse } = require('../utils/response');
 
 // 创建游记
 exports.createTrip = async (req, res) => {
@@ -19,6 +20,8 @@ exports.createTrip = async (req, res) => {
     if (req.body.video) {
       coverImage = await extractVideoThumbnail(req.body.video);
     }
+
+    console.log(req.body);
 
     // 在 createTrip 函数中
     const tripData = {
@@ -38,33 +41,18 @@ exports.createTrip = async (req, res) => {
       locations: req.body.locations,
     };
 
-    const newTrip = await Trip.create(tripData);
+    await Trip.create(tripData);
 
-    // 获取用户信息
-    const user = await User.findByPk(userId, {
-      attributes: ['id', 'nick_name', 'icon'],
-    });
+    // // 获取用户信息
+    // const user = await User.findByPk(userId, {
+    //   attributes: ['id', 'nick_name', 'icon'],
+    // });
 
     // 返回格式与前端一致
     return res.status(201).json({
       code: 200,
-      data: {
-        id: newTrip.id,
-        title: newTrip.title,
-        content: newTrip.content,
-        coverImage: newTrip.coverImage,
-        images: newTrip.images,
-        status: newTrip.status,
-        createTime: newTrip.create_time,
-        travelDate: newTrip.travelData, // 修改字段名
-        duration: newTrip.duration,
-        cost: newTrip.cost,
-        author: {
-          id: user.id,
-          nickname: user.nick_name,
-          avatar: user.icon,
-        },
-      },
+      // data: DetailResponse(newTrip, user),
+      message: '创建成功',
     });
   } catch (error) {
     return res.status(500).json({
@@ -102,7 +90,7 @@ exports.updateTrip = async (req, res) => {
       title: req.body.title,
       content: req.body.content,
       images: req.body.images,
-      coverImage: coverImage,
+      coverImage: coverImage || req.body.images[0], // 修复bug：若用户删除了第一张图片，导致coverImage为空
       video_url: req.body.video,
       status: 0, // 修改后重新设为待审核状态
       update_time: new Date(),
@@ -115,31 +103,15 @@ exports.updateTrip = async (req, res) => {
 
     await trip.update(updateData);
 
-    // 获取用户信息
-    const user = await User.findByPk(userId, {
-      attributes: ['id', 'nick_name', 'icon'],
-    });
+    // // 获取用户信息
+    // const user = await User.findByPk(userId, {
+    //   attributes: ['id', 'nick_name', 'icon'],
+    // });
 
     return res.status(200).json({
       code: 200,
-      data: {
-        id: trip.id,
-        title: trip.title,
-        content: trip.content,
-        coverImage: trip.coverImage,
-        images: trip.images,
-        status: trip.status,
-        createTime: trip.create_time,
-        travelDate: trip.travelData,
-        duration: trip.duration,
-        cost: trip.cost,
-        locaitonsa: trip.locations,
-        author: {
-          id: user.id,
-          nickname: user.nick_name,
-          avatar: user.icon,
-        },
-      },
+      // data: DetailResponse(trip, user),
+      message: '更新成功',
     });
   } catch (error) {
     return res.status(500).json({
@@ -232,6 +204,7 @@ exports.getAllTrips = async (req, res) => {
           'images',
           'status',
           'create_time',
+          'update_time',
           'travel_data',
           'duration',
           'cost',
@@ -250,28 +223,9 @@ exports.getAllTrips = async (req, res) => {
           likeCount = trip.liked;
           await redisClient.set(`travel:likeCount:${trip.id}`, String(trip.liked || 0));
         }
+        trip.likeCount = parseInt(likeCount);
 
-        return {
-          id: trip.id,
-          title: trip.title,
-          content: trip.content,
-          coverImage: trip.coverImage,
-          images: trip.images,
-          video: trip.video_url,
-          status: trip.status,
-          createTime: trip.create_time,
-          travelDate: trip.travel_data,
-          duration: trip.duration,
-          cost: trip.cost,
-          likeCount: parseInt(likeCount),
-          isLiked: false,
-          locations: trip.locations ? trip.locations : [], // 新增locations字段，用于存储旅行地点的数组
-          author: {
-            id: trip.user.id,
-            nickname: trip.user.nick_name,
-            avatar: trip.user.icon,
-          },
-        };
+        return ListResponse(trip, trip.user);
       }),
     );
 
@@ -341,31 +295,13 @@ exports.getTripDetail = async (req, res) => {
       likeCount = trip.liked;
       await redisClient.set(`travel:likeCount:${trip.id}`, String(trip.liked));
     }
-
+    trip.likeCount = parseInt(likeCount);
+    console.log(DetailResponse(trip, trip.user));
     // 3. 若游记存在 格式化输出
     if (trip) {
       res.status(200).json({
         code: 200,
-        data: {
-          id: trip.id,
-          title: trip.title,
-          content: trip.content,
-          coverImage: trip.coverImage,
-          images: trip.images,
-          video: trip.video_url,
-          status: trip.status,
-          createTime: trip.create_time,
-          travelDate: trip.travelData, // 使用格式化后的日期
-          duration: trip.duration,
-          cost: trip.cost,
-          likeCount: likeCount,
-          locations: trip.locations ? trip.locations : [], // 新增locations字段，用于存储旅行地点的数组
-          author: {
-            id: trip.user.id,
-            nickname: trip.user.nick_name,
-            avatar: trip.user.icon,
-          },
-        },
+        data: DetailResponse(trip, trip.user),
       });
     } else {
       return res.status(404).json({
@@ -441,25 +377,10 @@ exports.getTripsByUser = async (req, res) => {
             ? trip.reviewRecords[trip.reviewRecords.length - 1]
             : null;
 
-        return {
-          id: trip.id,
-          title: trip.title,
-          content: trip.content,
-          coverImage: trip.coverImage,
-          images: trip.images,
-          status: trip.status,
-          createTime: trip.create_time,
-          travelDate: trip.travel_data ? trip.travel_data : [],
-          likeCount: parseInt(likeCount),
-          isLiked: false,
-          locations: trip.locations ? trip.locations : [], // 新增locations字段，用于存储旅行地点的数组
-          reason: latestReview ? latestReview.reason : '', // 修改这里，使用最新的审核记录
-          author: {
-            id: trip.user.id,
-            nickname: trip.user.nick_name,
-            avatar: trip.user.icon,
-          },
-        };
+        trip.likeCount = parseInt(likeCount);
+        trip.reviewRecords = latestReview;
+
+        return ListResponse(trip, trip.user);
       }),
     );
 
@@ -504,10 +425,12 @@ exports.getTripsByUser = async (req, res) => {
 };
 
 // 点赞/取消点赞
+// 并发安全问题：如果多个用户同时对一个游记点赞，可能会导致点赞数错误
+// 解决方案：使用Redis的setnx命令，保证只有一个用户可以成功点赞，其他用户只能等待
 exports.likeTrip = async (req, res) => {
+  const lockKey = `lock:like:${req.body.travelId}`;
   try {
     const { travelId, userId, liked } = req.body;
-
     try {
       // 1. 如果是获取状态的请求，只需查询点赞记录
       if (liked === undefined) {
@@ -548,6 +471,15 @@ exports.likeTrip = async (req, res) => {
         });
       }
 
+      // 获取分布式锁
+      const lockAcquired = await redisClient.set(lockKey, '1', 'NX', 'EX', 5);
+      if (!lockAcquired) {
+        return res.status(429).json({
+          code: 429,
+          message: '操作过于频繁，请稍后再试',
+        });
+      }
+
       if (!liked) {
         // 2. 如果是取消点赞的请求，从Redis缓存中移除点赞记录
         // 2.1 更新数据库中的点赞状态
@@ -557,10 +489,8 @@ exports.likeTrip = async (req, res) => {
             user_id: userId,
           },
         });
-        // 2.2 更新Redis缓存中的点赞记录
+        // 2.2 更新Redis缓存中的点赞记录、计数缓存
         await redisClient.sRem(`user:likes:${userId}`, String(travelId));
-
-        // 更新点赞计数缓存
         await redisClient.decr(`travel:likeCount:${travelId}`);
       } else {
         // 3. 如果是点赞的请求，将点赞记录添加到Redis缓存中
@@ -570,10 +500,8 @@ exports.likeTrip = async (req, res) => {
           user_id: userId,
           is_liked: 1,
         });
-        // 3.2 更新Redis缓存中的点赞记录
+        // 3.2 更新Redis缓存中的点赞记录、计数缓存
         await redisClient.sAdd(`user:likes:${userId}`, String(travelId));
-
-        // 更新点赞计数缓存
         await redisClient.incr(`travel:likeCount:${travelId}`);
       }
 
@@ -595,6 +523,12 @@ exports.likeTrip = async (req, res) => {
       code: 500,
       message: error.message,
     });
+  } finally {
+    try {
+      await redisClient.del(lockKey);
+    } catch (err) {
+      console.error('释放锁失败:', err);
+    }
   }
 };
 
