@@ -127,7 +127,7 @@ exports.registerUser = async (req, res) => {
       desc: userinfo.desc || '这个人很懒，还没有填写简介',
       icon:
         avatarUrl ||
-        'https://journio.oss-cn-beijing.aliyuncs.com/public/image/d7f25286eae11c9b6d5efec97508f18d.png',
+        'https://journio.oss-cn-beijing.aliyuncs.com/public/image/%E5%A4%B4%E5%83%8F2.png',
     });
 
     if (!newUser) return res.cc('注册用户失败，请稍后再试！');

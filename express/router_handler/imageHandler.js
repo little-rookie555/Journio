@@ -9,7 +9,7 @@ const upload = require('../middlewares/upload');
 const multer = require('multer');
 
 // 设置ffmpeg路径
-ffmpeg.setFfmpegPath('D:\\softwore\\ffmpeg-7.0.2-essentials_build\\bin\\ffmpeg.exe');
+ffmpeg.setFfmpegPath(process.env.FF_LOCATION);
 
 // 定义图片样式配置
 const local_style = [
