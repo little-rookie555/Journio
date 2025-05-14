@@ -54,7 +54,7 @@ export interface AdminStore {
   fetchAdminList: (page?: number, pageSize?: number, search?: string) => Promise<void>;
   fetchUserList: (page?: number, pageSize?: number, search?: string) => Promise<void>;
   createNewAdmin: (username: string, password: string, role: string) => Promise<void>;
-  removeAdmin: (id: string) => Promise<void>;
+  removeAdmin: (id: string, type: string) => Promise<void>;
   resetPassword: (id: string, password: string) => Promise<void>;
 }
 
@@ -103,16 +103,16 @@ export const useAdminStore = create<AdminStore>((set) => ({
     }
   },
 
-  removeAdmin: async (id: string) => {
+  removeAdmin: async (id: string, type: string) => {
     try {
-      await deleteAdmin(id);
-      message.success('删除用户成功');
+      await deleteAdmin(id, type);
+      message.success('操作成功');
       // 刷新列表
       const store = useAdminStore.getState();
       store.fetchAdminList();
     } catch (error) {
-      console.error('删除用户失败:', error);
-      message.error('删除用户失败');
+      console.error('禁用用户失败:', error);
+      message.error('禁用用户失败');
     }
   },
 

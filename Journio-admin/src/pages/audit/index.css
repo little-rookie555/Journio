@@ -1,7 +1,21 @@
 /* 轮播图样式 */
 .audit-carousel .slick-prev,
 .audit-carousel .slick-next {
+  color: #000;
   font-size: 20px;
+  z-index: 2;
+}
+
+.audit-carousel .slick-prev {
+  left: 10px;
+}
+
+.audit-carousel .slick-next {
+  right: 10px;
+}
+
+.audit-carousel .slick-prev:hover,
+.audit-carousel .slick-next:hover {
   color: #1890ff;
 }
 

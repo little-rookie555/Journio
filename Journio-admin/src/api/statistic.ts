@@ -41,7 +41,7 @@ export const getPendingTravel = (): Promise<TripStore> => {
  */
 export const getList = (
   page: number = 1,
-  pageSize: number = 10,
+  pageSize: number = 30,
   startDate?: string,
   endDate?: string,
 ): Promise<ListResponse> => {

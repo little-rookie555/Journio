@@ -59,7 +59,7 @@ exports.getStarNumber = async (req, res) => {
 // 获取统计数据
 exports.getAccessStats = async (req, res) => {
   try {
-    const { page = 1, pageSize = 10, startDate, endDate } = req.query;
+    const { page = 1, pageSize = 30, startDate, endDate } = req.query;
     const offset = (page - 1) * pageSize;
 
     // 设置日期范围
@@ -79,45 +79,78 @@ exports.getAccessStats = async (req, res) => {
       };
     }
 
+    // 获取所有日期（不分页）以计算总记录数
+    const allDates = await db.query(
+      `
+      SELECT DISTINCT DATE(create_time) as date 
+      FROM tb_user 
+      WHERE create_time ${startDate && endDate ? `BETWEEN '${startDate}' AND '${endDate}'` : `>= DATE_SUB(NOW(), INTERVAL 7 DAY)`}
+      UNION
+      SELECT DISTINCT DATE(create_time) as date 
+      FROM tb_blog 
+      WHERE create_time ${startDate && endDate ? `BETWEEN '${startDate}' AND '${endDate}'` : `>= DATE_SUB(NOW(), INTERVAL 7 DAY)`}
+      ORDER BY date ASC
+    `,
+      { type: db.QueryTypes.SELECT },
+    );
+
+    // 计算总记录数
+    const totalCount = allDates.length;
+
+    // 获取分页后的日期范围
+    const paginatedDates = allDates.slice(offset, offset + parseInt(pageSize));
+
+    if (paginatedDates.length === 0) {
+      return res.status(200).json({
+        code: 200,
+        data: {
+          list: [],
+          total: totalCount,
+        },
+      });
+    }
+
+    // 构建日期条件
+    const dateList = paginatedDates.map((item) => `'${item.date}'`).join(',');
+
     // 获取每日新增用户数
-    const userStats = await User.findAll({
-      attributes: [
-        [db.fn('DATE', db.col('create_time')), 'date'],
-        [db.fn('COUNT', db.col('id')), 'user'],
-      ],
-      where: dateRange,
-      group: ['date'],
-      order: [['date', 'DESC']],
-      limit: parseInt(pageSize),
-      offset: parseInt(offset),
-    });
+    const userStats = await db.query(
+      `
+      SELECT 
+        DATE(create_time) as date,
+        COUNT(id) as user
+      FROM tb_user
+      WHERE DATE(create_time) IN (${dateList})
+      GROUP BY DATE(create_time)
+      ORDER BY date ASC
+    `,
+      { type: db.QueryTypes.SELECT },
+    );
 
     // 获取每日新增游记数
-    const tripStats = await Trip.findAll({
-      attributes: [
-        [db.fn('DATE', db.col('create_time')), 'date'],
-        [db.fn('COUNT', db.col('id')), 'trip'],
-      ],
-      where: dateRange,
-      group: ['date'],
-      order: [['date', 'DESC']],
-    });
+    const tripStats = await db.query(
+      `
+      SELECT 
+        DATE(create_time) as date,
+        COUNT(id) as trip
+      FROM tb_blog
+      WHERE DATE(create_time) IN (${dateList})
+      GROUP BY DATE(create_time)
+      ORDER BY date ASC
+    `,
+      { type: db.QueryTypes.SELECT },
+    );
 
-    // 获取总记录数
-    const totalCount = await User.count({
-      attributes: [[db.fn('DATE', db.col('create_time')), 'date']],
-      where: dateRange,
-      group: ['date'],
-    });
+    // 合并数据，确保每个日期都有数据
+    const mergedStats = paginatedDates.map((dateObj) => {
+      const date = dateObj.date;
+      const userStat = userStats.find((stat) => stat.date === date);
+      const tripStat = tripStats.find((stat) => stat.date === date);
 
-    // 合并用户和游记统计数据
-    const mergedStats = userStats.map((userStat) => {
-      const date = userStat.get('date');
-      const tripStat = tripStats.find((t) => t.get('date') === date);
       return {
         date,
-        user: parseInt(userStat.get('user')),
-        trip: tripStat ? parseInt(tripStat.get('trip')) : 0,
+        user: userStat ? parseInt(userStat.user) : 0,
+        trip: tripStat ? parseInt(tripStat.trip) : 0,
       };
     });
 
@@ -125,7 +158,7 @@ exports.getAccessStats = async (req, res) => {
       code: 200,
       data: {
         list: mergedStats,
-        total: totalCount.length,
+        total: totalCount,
       },
     });
   } catch (error) {

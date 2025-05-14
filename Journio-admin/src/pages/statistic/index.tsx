@@ -67,13 +67,6 @@ const StatisticPage: React.FC = () => {
         getQualityRate(),
       ]);
 
-      console.log('userRes', userRes);
-      console.log('travelRes', travelRes);
-      console.log('likeRes', likeRes);
-      console.log('starRes', starRes);
-      console.log('pendingRes', pendingRes);
-      console.log('qualityRes', qualityRes);
-
       if (userRes.code === 200) setTotalUsers(userRes.data);
       if (travelRes.code === 200) setTotalTrips(travelRes.data);
       if (likeRes.code === 200) setTotalLikes(likeRes.data);
@@ -88,21 +81,22 @@ const StatisticPage: React.FC = () => {
     }
   };
 
-  const fetchDailyData = async () => {
+  const fetchDailyData = async (
+    page = currentPage,
+    size = pageSize,
+    startDate = dateRange[0],
+    endDate = dateRange[1],
+  ) => {
     setLoading(true);
     setError('');
     try {
-      const response = await getList(currentPage, pageSize, dateRange[0], dateRange[1]);
+      const response = await getList(page, size, startDate, endDate);
       if (response.code === 200 && response.data) {
-        const formattedData = response.data.list
-          .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) // 添加日期排序
-          .map((item) => ({
-            date: dayjs(item.date).format('MM-DD'),
-            newUsers: item.user || 0,
-            newNotes: item.trip || 0,
-          }));
-        console.log('后端的响应数据：', response);
-        console.log('formattedData', formattedData);
+        const formattedData = response.data.list.map((item) => ({
+          date: dayjs(item.date).format('MM-DD'),
+          newUsers: item.user || 0,
+          newNotes: item.trip || 0,
+        }));
 
         setDailyData(formattedData);
         setTotal(response.data.total);
@@ -117,28 +111,21 @@ const StatisticPage: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-    fetchDailyData();
-  }, [currentPage, pageSize]);
+    fetchDailyData(currentPage, pageSize);
+  }, [currentPage, pageSize]); // 依赖项保持不变
 
   const handleDateChange = async (dates: any, dateStrings: [string, string]) => {
     setDateRange(dateStrings);
     if (dateStrings[0] && dateStrings[1]) {
-      try {
-        const response = await getList(1, pageSize, dateStrings[0], dateStrings[1]);
-        if (response.code === 200 && response.data) {
-          const formattedData = response.data.list.map((item) => ({
-            date: item.date,
-            newUsers: item.user,
-            newNotes: item.trip,
-          }));
-          setDailyData(formattedData);
-          setTotal(response.data.total);
-          setCurrentPage(1);
-        }
-      } catch (error) {
-        console.error('获取日期范围数据失败:', error);
-      }
+      setCurrentPage(1); // 重置为第一页
+      fetchDailyData(1, pageSize, dateStrings[0], dateStrings[1]);
     }
+  };
+
+  // 修改分页组件的onChange处理函数
+  const handlePageChange = (page: number, pageSize?: number) => {
+    setCurrentPage(page);
+    fetchDailyData(page, pageSize || 10, dateRange[0], dateRange[1]);
   };
 
   return (
@@ -241,12 +228,7 @@ const StatisticPage: React.FC = () => {
             current={currentPage}
             pageSize={pageSize}
             total={total}
-            // onChange={(page, size) => {
-            //   setCurrentPage(page);
-            //   setPageSize(size);
-            // }}
-            // showSizeChanger
-            // showQuickJumper
+            onChange={handlePageChange}
             showTotal={(total) => `共 ${total} 条`}
           />
         }

@@ -196,7 +196,7 @@ exports.getTripDetail = async (req, res) => {
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'nick_name', 'icon'],
+          attributes: ['id', 'nick_name', 'icon', 'username'],
         },
       ],
     });

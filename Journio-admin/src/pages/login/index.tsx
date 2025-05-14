@@ -20,7 +20,7 @@ const Login: React.FC = () => {
     localStorage.setItem('username', res.data.userInfo.username);
     localStorage.setItem('role', res.data.role);
     message.success('登录成功');
-    navigate('/audit'); // 登录成功后跳转到审核页面
+    navigate('/statistic'); // 登录成功后跳转到审核页面
   };
 
   return (

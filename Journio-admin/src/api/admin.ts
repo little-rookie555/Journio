@@ -101,9 +101,10 @@ export const createAdmin = (
 /**
  * 删除用户
  * @param id 用户ID
+ * @param type 操作类型：disable-禁用，enable-恢复
  */
-export const deleteAdmin = (id: string): Promise<AdminUserParams> => {
-  return request.put('/admin/delete', { data: { id } });
+export const deleteAdmin = (id: string, type: string): Promise<AdminUserParams> => {
+  return request.put('/admin/delete', { data: { id, type } });
 };
 
 /**
