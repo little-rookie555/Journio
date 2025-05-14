@@ -1,3 +1,4 @@
+import { checkFollowStatus, followUser } from '@/api/follow';
 import {
   createComment,
   getCommentList,
@@ -45,7 +46,7 @@ const TravelDetail: React.FC = () => {
           console.log('res', res.data);
           setLikeCount(res.data.likeCount); // 设置初始点赞数
 
-          // 获取用户的点赞和收藏状态
+          // 获取用户的点赞、收藏和关注状态
           if (userInfo) {
             // 获取点赞状态
             const likeRes = await likeTravel({
@@ -63,6 +64,15 @@ const TravelDetail: React.FC = () => {
             });
             if (starRes.code === 200) {
               setIsStarred(starRes.data.starred);
+            }
+
+            // 获取关注状态
+            const followRes = await checkFollowStatus({
+              userId: userInfo.id,
+              followUserId: res.data.author.id,
+            });
+            if (followRes.code === 200) {
+              setIsFollowed(followRes.data);
             }
           }
         }
@@ -174,14 +184,38 @@ const TravelDetail: React.FC = () => {
   };
 
   // 添加关注处理函数
-  const handleFollow = () => {
+  const handleFollow = async () => {
     if (!checkLogin()) return;
-    // TODO: 调用关注 API
-    setIsFollowed(!isFollowed);
-    Toast.show({
-      content: !isFollowed ? '关注成功' : '已取消关注',
-      icon: 'success',
-    });
+
+    // 检查是否是自己的文章
+    if (userInfo && userInfo.id === travel.author.id) {
+      Toast.show({
+        content: '不能关注自己',
+        icon: 'fail',
+      });
+      return;
+    }
+
+    try {
+      const res = await followUser({
+        userId: userInfo!.id,
+        followUserId: travel.author.id,
+        isFollow: !isFollowed,
+      });
+
+      if (res.code === 200) {
+        setIsFollowed(!isFollowed);
+        Toast.show({
+          icon: 'success',
+          content: !isFollowed ? '关注成功' : '已取消关注',
+        });
+      }
+    } catch (error: any) {
+      Toast.show({
+        icon: 'fail',
+        content: error?.message || '操作失败',
+      });
+    }
   };
 
   // 添加分享处理函数
@@ -217,6 +251,7 @@ const TravelDetail: React.FC = () => {
         onFollow={handleFollow}
         onShare={handleShare}
         isFollowed={isFollowed}
+        authorId={travel.author.id} // 添加作者ID
       />
 
       <div className="detail-content">

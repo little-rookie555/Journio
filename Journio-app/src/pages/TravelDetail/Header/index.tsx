@@ -1,27 +1,32 @@
 import { Button, Image, NavBar, Toast } from 'antd-mobile';
 import { SendOutline } from 'antd-mobile-icons';
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './index.scss';
 
 interface HeaderProps {
   avatar: string;
   nickname: string;
+  authorId: number;
   theme?: 'light' | 'dark';
   onBack: () => void;
   isFollowed?: boolean;
-  onFollow?: () => void;
+  onFollow: () => void;
   onShare?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
   avatar,
   nickname,
+  authorId,
   theme,
   onBack,
   isFollowed = false,
   onFollow,
   onShare,
 }) => {
+  const navigate = useNavigate();
+
   const handleShare = () => {
     if (onShare) {
       onShare();
@@ -30,6 +35,10 @@ const Header: React.FC<HeaderProps> = ({
         content: '分享功能开发中',
       });
     }
+  };
+
+  const handleAvatarClick = () => {
+    navigate(`/profile/${authorId}`);
   };
 
   const right = (
@@ -43,15 +52,18 @@ const Header: React.FC<HeaderProps> = ({
       >
         {isFollowed ? '已关注' : '关注'}
       </Button>
+
       <SendOutline fontSize={24} onClick={handleShare} />
     </div>
   );
+
   const left = (
-    <div className="author-info">
+    <div className="author-info" onClick={handleAvatarClick}>
       <Image lazy src={avatar} className="avatar" />
       <span className="name">{nickname}</span>
     </div>
   );
+
   return (
     <div className={`travel-header ${theme === 'dark' ? 'dark' : ''}`}>
       <NavBar onBack={onBack} right={right} left={left}></NavBar>

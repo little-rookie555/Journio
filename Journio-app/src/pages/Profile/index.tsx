@@ -1,5 +1,6 @@
 import { getUserTravels, likeTravel } from '@/api/travel';
 import { getUserInfo } from '@/api/user';
+import { checkFollowStatus, followUser } from '@/api/follow';
 import TravelCardList from '@/components/TravelCardList';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useTravelStore } from '@/store/travel';
@@ -37,6 +38,17 @@ const Profile = () => {
             startCount: res.data.starredCount,
             bio: res.data.desc,
           });
+
+          // 获取关注状态
+          if (userInfo && !isOwnProfile) {
+            const followRes = await checkFollowStatus({
+              userId: userInfo.id,
+              followUserId: Number(userId),
+            });
+            if (followRes.code === 200) {
+              setIsFollowed(followRes.data);
+            }
+          }
         }
       } catch (error: any) {
         Toast.show({
@@ -70,7 +82,7 @@ const Profile = () => {
 
     fetchUserInfo();
     fetchUserTravels();
-  }, [userId]);
+  }, [userId, userInfo, isOwnProfile]);
 
   const handleFollow = async () => {
     if (!userInfo) {
@@ -81,8 +93,41 @@ const Profile = () => {
       navigate('/login');
       return;
     }
-    // TODO: 处理关注/取消关注
-    setIsFollowed(!isFollowed);
+
+    // 检查是否是自己
+    if (isOwnProfile) {
+      Toast.show({
+        content: '不能关注自己',
+        icon: 'fail',
+      });
+      return;
+    }
+
+    try {
+      const res = await followUser({
+        userId: userInfo.id,
+        followUserId: Number(userId),
+        isFollow: !isFollowed,
+      });
+
+      if (res.code === 200) {
+        setIsFollowed(!isFollowed);
+        // 更新关注数和粉丝数
+        setProfileUser((prev: any) => ({
+          ...prev,
+          followingCount: !isFollowed ? prev.followingCount + 1 : prev.followingCount - 1,
+        }));
+        Toast.show({
+          icon: 'success',
+          content: !isFollowed ? '关注成功' : '已取消关注',
+        });
+      }
+    } catch (error: any) {
+      Toast.show({
+        icon: 'fail',
+        content: error?.message || '操作失败',
+      });
+    }
   };
 
   const handleShare = () => {
