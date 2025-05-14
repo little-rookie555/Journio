@@ -1,3 +1,4 @@
+import { formatDate } from '@/components/utils';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useUserStore } from '@/store/user';
 import { Image, List, Tag } from 'antd-mobile';
@@ -56,7 +57,7 @@ const CommentList: React.FC<CommentListProps> = ({ comments, onShowPopup, author
                 }}
                 key={comment.id}
                 prefix={<Image src={comment.author.avatar} className="avatar" />}
-                description={comment.createTime}
+                description={formatDate(comment.createTime)}
               >
                 <div className="comment-content">
                   <div className="nickname-container">
