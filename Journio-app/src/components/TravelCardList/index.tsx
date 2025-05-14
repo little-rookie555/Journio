@@ -1,6 +1,6 @@
 import LikeButton from '@/components/LikeButton';
 
-import { Avatar, DotLoading, Image, Result, Toast } from 'antd-mobile';
+import { Avatar, DotLoading, Image, Result, Skeleton, Toast } from 'antd-mobile';
 import React, { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TravelCardSkeleton from './CardSkeleton';
@@ -47,7 +47,23 @@ const TravelCardList: React.FC<TravelCardListProps> = memo(
         className="travel-card"
         onClick={() => navigate(`/detail/${item.id}`)}
       >
-        <Image lazy src={item.coverImage} className="travel-image" />
+        <Image
+          lazy
+          src={item.coverImage}
+          className="travel-image"
+          placeholder={
+            <Skeleton
+              animated
+              style={{
+                width: '100%',
+                height: '150px',
+                // '--height': '200px',
+                // '--width': '100%',
+                // '--border-radius': '8px'
+              }}
+            />
+          }
+        />
         <div className="travel-info">
           <h3 className="travel-title">{item.title}</h3>
           <div className="card-bottom">
