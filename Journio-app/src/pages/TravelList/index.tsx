@@ -6,6 +6,14 @@ import { useUserStore } from '@/store/user';
 import { InfiniteScroll, SearchBar, Toast } from 'antd-mobile';
 import React, { useCallback, useEffect, useState } from 'react';
 import './index.scss';
+
+// 添加预加载图片函数
+const preloadImage = (src: string) => {
+  if (!src) return;
+  const img = new Image();
+  img.src = src;
+};
+
 const TravelList: React.FC = () => {
   const { theme } = useTheme();
   const { list, loading, total, keyword, setKeyword, fetchList, loadMore, updateLikeStatus } =
@@ -18,7 +26,14 @@ const TravelList: React.FC = () => {
     if (!list.length) {
       fetchList();
     }
-  }, []); // 移除 fetchList 依赖
+
+    // 预加载列表中每个游记的第一张图片
+    list.forEach((item) => {
+      if (item.coverImage) {
+        preloadImage(item.coverImage);
+      }
+    });
+  }, [list]); // 添加 list 作为依赖
 
   const handleSearch = useCallback(
     (value: string) => {

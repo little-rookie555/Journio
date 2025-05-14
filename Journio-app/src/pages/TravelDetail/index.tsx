@@ -10,7 +10,7 @@ import LocationMap from '@/components/LocationMap';
 import { useTheme } from '@/contexts/ThemeContext';
 import { TravelItem } from '@/mock/travel';
 import { useUserStore } from '@/store/user';
-import { Button, Image, ImageViewer, Popup, Swiper, TextArea, Toast } from 'antd-mobile';
+import { Button, Image, ImageViewer, Popup, Skeleton, Swiper, TextArea, Toast } from 'antd-mobile';
 import DOMPurify from 'dompurify';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -288,6 +288,9 @@ const TravelDetail: React.FC = () => {
                   <Swiper.Item key={index}>
                     <Image
                       lazy
+                      placeholder={
+                        <Skeleton animated style={{ width: '100%', height: '100%' }}></Skeleton>
+                      }
                       src={img}
                       className="swiper-image"
                       onClick={() => {
