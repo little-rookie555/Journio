@@ -21,7 +21,7 @@ exports.createTrip = async (req, res) => {
       coverImage = await extractVideoThumbnail(req.body.video);
     }
 
-    console.log(req.body);
+    // console.log(req.body);
 
     // 在 createTrip 函数中
     const tripData = {
@@ -169,6 +169,8 @@ exports.getAllTrips = async (req, res) => {
     const keyword = req.query.keyword || '';
     const offset = (page - 1) * limit;
 
+    // console.log('keyword:', keyword); // 打印关键字
+
     // 1. 查询所有已审核通过的游记
     const { count, rows: trips } = await Trip.findAndCountAll({
       where: {
@@ -214,6 +216,8 @@ exports.getAllTrips = async (req, res) => {
         ],
       },
     });
+
+    // console.log(trips.dataValues); // 打印查询结果
 
     // 2. 从redis中获取每个游记的点赞数量 - 覆盖查询结果(可能还没更新)
     const formattedTrips = await Promise.all(
@@ -296,7 +300,7 @@ exports.getTripDetail = async (req, res) => {
       await redisClient.set(`travel:likeCount:${trip.id}`, String(trip.liked));
     }
     trip.likeCount = parseInt(likeCount);
-    console.log(DetailResponse(trip, trip.user));
+    // console.log(DetailResponse(trip, trip.user));
     // 3. 若游记存在 格式化输出
     if (trip) {
       res.status(200).json({

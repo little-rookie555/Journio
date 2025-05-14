@@ -26,7 +26,7 @@ export const useTravelStore = create<TravelState>((set, get) => ({
   hasInitialized: false,
 
   setKeyword: (keyword) => {
-    set({ keyword, page: 1, list: [] });
+    set({ keyword, page: 1, list: [], hasInitialized: false }); // 重置 hasInitialized
   },
 
   fetchList: async () => {
