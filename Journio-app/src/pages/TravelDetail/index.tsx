@@ -241,6 +241,16 @@ const TravelDetail: React.FC = () => {
     return `${year}年${month}月${day}日 ${hours}:${minutes}`;
   };
 
+  // 添加视频关闭处理函数
+  const handleCloseVideo = () => {
+    setShowVideo(false);
+    // 获取视频元素并暂停播放
+    const videoElement = document.querySelector('.fullscreen-video') as HTMLVideoElement;
+    if (videoElement) {
+      videoElement.pause();
+    }
+  };
+
   return (
     <div className={`travel-detail ${theme === 'dark' ? 'dark' : ''}`}>
       <Header
@@ -386,10 +396,10 @@ const TravelDetail: React.FC = () => {
         </div>
       </Popup>
 
-      {/* 添加视频弹窗 */}
+      {/* 修改视频弹窗 */}
       <Popup
         visible={showVideo}
-        onMaskClick={() => setShowVideo(false)}
+        onMaskClick={handleCloseVideo}
         bodyStyle={{
           width: '100vw',
           height: '100vh',
@@ -397,7 +407,7 @@ const TravelDetail: React.FC = () => {
         }}
       >
         <div className="video-popup">
-          <div className="video-close" onClick={() => setShowVideo(false)}>
+          <div className="video-close" onClick={handleCloseVideo}>
             <span className="close-icon">×</span>
           </div>
           <video
