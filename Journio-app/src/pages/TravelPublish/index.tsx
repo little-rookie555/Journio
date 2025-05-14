@@ -9,14 +9,14 @@ import React, { useEffect, useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.bubble.css';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ImageData } from '../../api/travel';
 import { useDatePicker } from './hooks/useDatePicker';
 import { useFileUpload } from './hooks/useFileUpload';
 import { useLocationManagement } from './hooks/useLocationManagement';
 import { useTravelForm } from './hooks/useTravelForm';
+import ImagePreviewModal from './ImagePreview';
 import './index.scss';
 import TemplateList from './TemplateList';
-import ImagePreviewModal from './ImagePreview';
-import { ImageData } from '../../api/travel';
 
 const TravelPublish: React.FC = () => {
   const navigate = useNavigate();
@@ -39,6 +39,7 @@ const TravelPublish: React.FC = () => {
     mapVisible,
     setMapVisible,
     selectedLocations,
+    setSelectedLocations,
     handleLocationSelect,
     handleLocationChange,
     handleRemoveLocation,
@@ -88,6 +89,12 @@ const TravelPublish: React.FC = () => {
             locations: res.data.locations || [],
           });
           setContent(res.data.content);
+          setSelectedLocations(
+            res.data.locations.map((location) => ({
+              ...location,
+              location: location.coordinates,
+            })) || [],
+          );
         }
       } catch {
         Toast.show({

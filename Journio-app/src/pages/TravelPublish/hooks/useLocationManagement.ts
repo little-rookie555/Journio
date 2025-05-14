@@ -59,5 +59,6 @@ export const useLocationManagement = (form: ReturnType<typeof Form.useForm>[0]) 
     handleLocationSelect,
     handleLocationChange,
     handleRemoveLocation,
+    setSelectedLocations,
   };
 };

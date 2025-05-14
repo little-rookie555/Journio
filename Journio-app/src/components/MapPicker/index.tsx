@@ -111,6 +111,14 @@ const MapPicker: React.FC<MapPickerProps> = ({
     setMapCenter(location.location);
   };
 
+  // 添加useEffect来设置初始中心点
+  useEffect(() => {
+    if (value && value.length > 0) {
+      setMapCenter(value[0].location);
+      setSelectedLocationIndex(0);
+    }
+  }, [value]);
+
   return (
     <Popup
       visible={visible}
