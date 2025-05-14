@@ -1,6 +1,6 @@
 import { AuthRoute } from '@/components/AuthRoute';
-import { createBrowserRouter } from 'react-router-dom';
 import React, { Suspense } from 'react';
+import { createBrowserRouter } from 'react-router-dom';
 
 // 使用 React.lazy() 懒加载组件
 const Layout = React.lazy(() => import('@/pages/Layout'));

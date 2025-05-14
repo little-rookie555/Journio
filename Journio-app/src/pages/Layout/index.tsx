@@ -1,8 +1,9 @@
+import { useTheme } from '@/contexts/ThemeContext';
 import { TabBar } from 'antd-mobile';
 import { AddOutline, AppOutline, UserOutline } from 'antd-mobile-icons';
 import React from 'react';
+import { KeepAlive } from 'react-activation';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useTheme } from '@/contexts/ThemeContext';
 import './index.scss';
 
 const Layout: React.FC = () => {
@@ -49,22 +50,24 @@ const Layout: React.FC = () => {
   };
 
   return (
-    <div className={`layout ${theme === 'dark' ? 'dark' : ''}`}>
-      <div className="content">
-        <Outlet />
+    <KeepAlive
+      when={pathname === '/'} // 只在首页时启用缓存
+      id={pathname}
+      name={pathname}
+    >
+      <div className={`layout ${theme === 'dark' ? 'dark' : ''}`}>
+        <div className="content">
+          <Outlet />
+        </div>
+        <div className="tab-bar-container">
+          <TabBar safeArea activeKey={pathname} onChange={(value) => setRouteActive(value)}>
+            {tabs.map((item) => (
+              <TabBar.Item key={item.key} icon={item.icon} title={item.title} />
+            ))}
+          </TabBar>
+        </div>
       </div>
-      <div className="tab-bar-container">
-        <TabBar 
-          safeArea 
-          activeKey={pathname} 
-          onChange={(value) => setRouteActive(value)}
-        >
-          {tabs.map((item) => (
-            <TabBar.Item key={item.key} icon={item.icon} title={item.title} />
-          ))}
-        </TabBar>
-      </div>
-    </div>
+    </KeepAlive>
   );
 };
 
