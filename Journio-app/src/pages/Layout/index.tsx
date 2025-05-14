@@ -51,7 +51,7 @@ const Layout: React.FC = () => {
 
   return (
     <KeepAlive
-      when={pathname === '/'} // 只在首页时启用缓存
+      when={pathname === '/' || pathname === '/my-travels'} // 添加其他需要缓存的路径
       id={pathname}
       name={pathname}
     >
