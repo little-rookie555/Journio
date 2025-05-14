@@ -86,7 +86,8 @@ const Following: React.FC = () => {
         content: '请先登录',
         icon: 'fail',
       });
-      navigate('/login');
+      // 添加当前路径到导航状态
+      navigate('/login', { state: { from: location.pathname + location.search } });
       return;
     }
 

@@ -21,7 +21,8 @@ const Register: React.FC = () => {
           icon: 'success',
           content: '注册成功',
         });
-        navigate('/login');
+        // 跳转到登录页面时传递来源信息
+        navigate('/login', { state: { from: '/register' } });
       } else {
         Toast.show({
           icon: 'fail',
@@ -41,11 +42,14 @@ const Register: React.FC = () => {
 
   return (
     <div className={`register ${theme === 'dark' ? 'dark' : ''}`}>
-      <NavBar 
-        onBack={() => navigate('/')} 
+      <NavBar
+        onBack={() => navigate('/')}
         className="nav-bar"
         style={{
-          '--border-bottom': theme === 'dark' ? '1px solid var(--adm-border-color)' : '1px solid rgba(0, 0, 0, 0.05)'
+          '--border-bottom':
+            theme === 'dark'
+              ? '1px solid var(--adm-border-color)'
+              : '1px solid rgba(0, 0, 0, 0.05)',
         }}
       >
         注册账号

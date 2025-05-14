@@ -1,16 +1,28 @@
+import { useTheme } from '@/contexts/ThemeContext';
 import { useUserStore } from '@/store/user';
 import { Button, Form, Input, NavBar, Toast } from 'antd-mobile';
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './index.scss';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const { login, loading } = useUserStore();
   const { theme } = useTheme();
+  const location = useLocation();
   // 封装导航逻辑
   const handleNavigation = () => {
+    // 获取来源路径
+    const fromPath = location.state?.from || '';
+    // console.log('fromPath', fromPath);
+    // console.log('location', window.history.state);
+    // 如果是从注册页面来的，直接去首页
+    if (fromPath === '/register') {
+      navigate('/');
+      return;
+    }
+
+    // 其他情况尝试返回上一页
     const canGoBack = window.history.state && window.history.state.idx > 0;
     if (canGoBack) {
       navigate(-1);
@@ -37,11 +49,14 @@ const Login: React.FC = () => {
 
   return (
     <div className={`login ${theme === 'dark' ? 'dark' : ''}`}>
-      <NavBar 
-        onBack={handleNavigation} 
+      <NavBar
+        onBack={handleNavigation}
         className="nav-bar"
         style={{
-          '--border-bottom': theme === 'dark' ? '1px solid var(--adm-border-color)' : '1px solid rgba(0, 0, 0, 0.05)'
+          '--border-bottom':
+            theme === 'dark'
+              ? '1px solid var(--adm-border-color)'
+              : '1px solid rgba(0, 0, 0, 0.05)',
         }}
       >
         登录账号

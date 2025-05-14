@@ -2,7 +2,7 @@ import LikeButton from '@/components/LikeButton';
 
 import { Avatar, DotLoading, Image, Result, Skeleton, Toast } from 'antd-mobile';
 import React, { memo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import TravelCardSkeleton from './CardSkeleton';
 import './index.scss';
 
@@ -17,6 +17,7 @@ interface TravelCardListProps {
 const TravelCardList: React.FC<TravelCardListProps> = memo(
   ({ list, loading, emptyText = '暂无游记', onLike, userInfo }) => {
     const navigate = useNavigate();
+    const location = useLocation();
 
     // 将列表分成左右两列
     const leftList = list.filter((_, index) => index % 2 === 0);
@@ -29,7 +30,8 @@ const TravelCardList: React.FC<TravelCardListProps> = memo(
           content: '请先登录',
           icon: 'fail',
         });
-        navigate('/login');
+        // 添加当前路径到导航状态
+        navigate('/login', { state: { from: location.pathname } });
         return false;
       }
       return true;

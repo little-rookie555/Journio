@@ -1,7 +1,7 @@
 import { useUserStore } from '@/store/user';
 import { Toast } from 'antd-mobile';
 import { ReactNode, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 
 interface AuthRouteProps {
   children: ReactNode;
@@ -10,6 +10,7 @@ interface AuthRouteProps {
 
 export const AuthRoute = ({ children, message = '请先登录' }: AuthRouteProps) => {
   const { userInfo } = useUserStore();
+  const location = useLocation();
 
   useEffect(() => {
     if (!userInfo) {
@@ -22,7 +23,7 @@ export const AuthRoute = ({ children, message = '请先登录' }: AuthRouteProps
   }, [userInfo, message]);
 
   if (!userInfo) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
   return children;
