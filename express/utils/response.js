@@ -1,5 +1,5 @@
 // 统一响应处理函数
-export const DetailResponse = (trip, user) => {
+const DetailResponse = (trip, user) => {
   return {
     id: trip.id,
     title: trip.title,
@@ -25,7 +25,7 @@ export const DetailResponse = (trip, user) => {
   };
 };
 
-export const ListResponse = (trip, user) => {
+const ListResponse = (trip, user) => {
   return {
     id: trip.id,
     title: trip.title,
@@ -41,4 +41,9 @@ export const ListResponse = (trip, user) => {
     },
     ...(trip.reviewRecords && { reason: trip.reviewRecords.reason }),
   };
+};
+
+module.exports = {
+  DetailResponse,
+  ListResponse,
 };
