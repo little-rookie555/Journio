@@ -6,11 +6,14 @@
 
 - Journio-admin: 后台管理系统
 - Journio-app: 用户端应用
+- express: 后端服务
 
 ## 环境要求
 
 - Node.js >= 18
 - npm >= 9
+- redis >= 6.0
+- MySQL >= 5.7
 
 ## 开始使用
 
@@ -27,6 +30,7 @@ npm install
 ```bash
 cd Journio-admin && npm install
 cd ../Journio-app && npm install
+cd ../express && npm install
 ```
 
 ### 2. 开发环境配置
@@ -44,6 +48,7 @@ VS Code 推荐配置：
    - ESLint
    - Prettier
 2. 启用保存时自动格式化
+3. 在express目录下创建.env文件，补充配置信息：
 
 ### 3. 开发命令
 
@@ -88,6 +93,7 @@ npm run build
 
 ```
 Journio/
+├── express/              # 后端服务
 ├── Journio-admin/        # 后台管理系统
 ├── Journio-app/          # 用户端应用
 ├── .husky/               # Git 钩子配置
@@ -101,3 +107,4 @@ Journio/
 1. 提交代码前会自动进行代码格式化和 lint 检查
 2. 确保提交信息符合规范，否则提交会被拒绝
 3. 建议安装推荐的插件
+4. express目录下创建.env文件，补充配置信息，请参考.env.example文件
