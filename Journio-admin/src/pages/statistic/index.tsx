@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, DatePicker, Typography, Space, Pagination } from 'antd';
+import React, { useEffect } from 'react';
+import { Card, Row, Col, DatePicker, Typography, Pagination } from 'antd';
 import {
   UserOutlined,
   FileTextOutlined,
@@ -10,122 +10,67 @@ import {
 import dayjs from 'dayjs';
 import './index.scss';
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
   BarChart,
   Bar,
   ResponsiveContainer,
+  XAxis,
+  YAxis,
 } from 'recharts';
-import {
-  getUser,
-  getTravel,
-  getPendingTravel,
-  getList,
-  getLike,
-  getStar,
-  getQualityRate,
-} from '@/api/statistic';
 import { useNavigate } from 'react-router-dom';
+import { useStatisticStore } from '@/store/statistic';
 
 const { RangePicker } = DatePicker;
 const { Title } = Typography;
 
 const StatisticPage: React.FC = () => {
   const navigate = useNavigate();
-  const [dateRange, setDateRange] = useState<[string, string]>([
-    dayjs().subtract(7, 'day').format('YYYY-MM-DD'),
-    dayjs().format('YYYY-MM-DD'),
-  ]);
-  const [totalUsers, setTotalUsers] = useState<number>(0);
-  const [totalTrips, setTotalTrips] = useState<number>(0);
-  const [totalLikes, setTotalLikes] = useState<number>(0);
-  const [totalStars, setTotalStars] = useState<number>(0);
-  const [pendingTrips, setPendingTrips] = useState<number>(0);
-  const [dailyData, setDailyData] = useState<any[]>([]);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [pageSize] = useState<number>(10);
-  const [total, setTotal] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [, setError] = useState<string>('');
-  const [qualityRate, setQualityRate] = useState<number>(0);
-
-  const fetchData = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const [userRes, travelRes, likeRes, starRes, pendingRes, qualityRes] = await Promise.all([
-        getUser(),
-        getTravel(),
-        getLike(),
-        getStar(),
-        getPendingTravel(),
-        getQualityRate(),
-      ]);
-
-      if (userRes.code === 200) setTotalUsers(userRes.data);
-      if (travelRes.code === 200) setTotalTrips(travelRes.data);
-      if (likeRes.code === 200) setTotalLikes(likeRes.data);
-      if (starRes.code === 200) setTotalStars(starRes.data);
-      if (pendingRes.code === 200) setPendingTrips(pendingRes.data);
-      if (qualityRes.code === 200) setQualityRate(qualityRes.data);
-    } catch (error) {
-      console.error('获取统计数据失败:', error);
-      setError('获取统计数据失败，请稍后重试');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchDailyData = async (
-    page = currentPage,
-    size = pageSize,
-    startDate = dateRange[0],
-    endDate = dateRange[1],
-  ) => {
-    setLoading(true);
-    setError('');
-    try {
-      const response = await getList(page, size, startDate, endDate);
-      if (response.code === 200 && response.data) {
-        const formattedData = response.data.list.map((item) => ({
-          date: dayjs(item.date).format('MM-DD'),
-          newUsers: item.user || 0,
-          newNotes: item.trip || 0,
-        }));
-
-        setDailyData(formattedData);
-        setTotal(response.data.total);
-      }
-    } catch (error) {
-      console.error('获取每日统计数据失败:', error);
-      setError('获取每日统计数据失败，请稍后重试');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    dateRange,
+    totalUsers,
+    totalTrips,
+    totalLikes,
+    totalStars,
+    pendingTrips,
+    dailyData,
+    currentPage,
+    pageSize,
+    total,
+    loading,
+    qualityRate,
+    setDateRange,
+    setCurrentPage,
+    fetchData,
+    fetchDailyData,
+  } = useStatisticStore();
 
   useEffect(() => {
     fetchData();
-    fetchDailyData(currentPage, pageSize);
-  }, [currentPage, pageSize]); // 依赖项保持不变
+    fetchDailyData();
+  }, [
+    totalUsers,
+    totalTrips,
+    totalLikes,
+    totalStars,
+    qualityRate,
+    dateRange,
+    fetchDailyData,
+    fetchData,
+  ]);
 
   const handleDateChange = async (dates: any, dateStrings: [string, string]) => {
     setDateRange(dateStrings);
     if (dateStrings[0] && dateStrings[1]) {
-      setCurrentPage(1); // 重置为第一页
+      setCurrentPage(1);
       fetchDailyData(1, pageSize, dateStrings[0], dateStrings[1]);
     }
   };
 
-  // 修改分页组件的onChange处理函数
   const handlePageChange = (page: number, pageSize?: number) => {
     setCurrentPage(page);
-    fetchDailyData(page, pageSize || 10, dateRange[0], dateRange[1]);
+    fetchDailyData(page, pageSize || 10);
   };
 
   return (
@@ -256,8 +201,11 @@ const StatisticPage: React.FC = () => {
               <Legend
                 wrapperStyle={{
                   paddingTop: '20px',
-                  fontSize: '12px',
+                  fontSize: '18px',
                 }}
+                layout="horizontal"
+                // verticalAlign="top"
+                align="center"
               />
               <Bar
                 dataKey="newUsers"

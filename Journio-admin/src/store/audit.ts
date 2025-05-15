@@ -88,7 +88,7 @@ export const useAuditStore = create<AuditStore>((set, get) => ({
       const res = await getAuditListByStatus(status, page, pageSize);
       if (res.code === 200) {
         set({ auditList: res.data });
-        return { total: res.total }; // 确保返回包含total字段的对象
+        return { total: res.total };
       } else {
         message.error(res.message || '获取游记列表失败');
         return { total: 0 };

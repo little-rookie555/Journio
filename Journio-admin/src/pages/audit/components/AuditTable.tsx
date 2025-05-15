@@ -1,6 +1,5 @@
 import { AuditItem, AuditStatus, getAuditStatusText, useAuditStore } from '@/store/audit';
 import { Button, Modal, Popconfirm, Space, Table, Tag, message, Spin, Input, Carousel } from 'antd';
-import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useEffect, useState, useRef } from 'react';
 import { getAuditDetail } from '@/api/audit';
@@ -65,8 +64,6 @@ const AuditTable: React.FC<AuditTableProps> = ({ status, showActions = false }) 
                   <Carousel
                     dots={false}
                     arrows={true}
-                    // prevArrow={<LeftOutlined />}
-                    // nextArrow={<RightOutlined />}
                     style={{ width: '100%' }}
                     className="audit-carousel"
                   >
@@ -126,15 +123,6 @@ const AuditTable: React.FC<AuditTableProps> = ({ status, showActions = false }) 
                       await approveAudit(detailData.key);
                       Modal.destroyAll();
                       message.success('审批通过成功');
-                      // 重新获取最新的数据和总数
-                      const response = await fetchAuditListByStatus(
-                        status,
-                        pagination.current,
-                        pagination.pageSize,
-                      );
-                      if (response?.total !== undefined) {
-                        setPagination((prev) => ({ ...prev, total: response.total }));
-                      }
                     } catch (error) {
                       console.error('审批失败:', error);
                     }
@@ -163,15 +151,6 @@ const AuditTable: React.FC<AuditTableProps> = ({ status, showActions = false }) 
                       await rejectAudit(detailData.key, rejectReasonRef.current);
                       Modal.destroyAll();
                       message.error('已拒绝该游记');
-                      // 重新获取最新的数据和总数
-                      const response = await fetchAuditListByStatus(
-                        status,
-                        pagination.current,
-                        pagination.pageSize,
-                      );
-                      if (response?.total !== undefined) {
-                        setPagination((prev) => ({ ...prev, total: response.total }));
-                      }
                     } catch (error) {
                       console.error('拒绝失败:', error);
                     }
@@ -276,7 +255,6 @@ const AuditTable: React.FC<AuditTableProps> = ({ status, showActions = false }) 
           pagination={{
             ...pagination,
             showSizeChanger: true,
-            showQuickJumper: true,
             showTotal: (total) => `共 ${total} 条`,
             onChange: (page, pageSize) => {
               setPagination({ current: page, pageSize, total: pagination.total });

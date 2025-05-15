@@ -1,13 +1,7 @@
 import request from '@/utils/request';
+import { AdminUser } from '@/store/admin';
 
-export interface AdminUser {
-  key: string;
-  username: string;
-  role: number;
-  updateTime: string;
-  status: number;
-}
-
+// 统一响应接口
 export interface AdminUserResponse {
   code: number;
   data: AdminUser[];
@@ -21,16 +15,6 @@ export interface AdminUserDetail {
   message?: string;
 }
 
-export interface AdminUserParams {
-  code: number;
-  message?: string;
-}
-
-interface LoginParams {
-  username: string;
-  password: string;
-}
-
 export interface LoginResponse {
   code: number;
   data: {
@@ -41,6 +25,17 @@ export interface LoginResponse {
       username: string;
     };
   };
+}
+
+// 统一参数接口
+export interface AdminUserParams {
+  code: number;
+  message?: string;
+}
+
+interface LoginParams {
+  username: string;
+  password: string;
 }
 
 /**

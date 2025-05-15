@@ -1,8 +1,8 @@
 import React from 'react';
-import UserManagement from './UserTable';
+import Useratable from './components/UserTable';
 
 const UserList: React.FC = () => {
-  return <UserManagement type="user" />;
+  return <Useratable type="user" />;
 };
 
 export default UserList;

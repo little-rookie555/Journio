@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { AdminUser } from '@/api/admin';
+
 import {
   getAdminList,
   createAdmin,
@@ -23,6 +23,14 @@ export enum AdminRole {
 export enum AdminStatus {
   Active = 1,
   Inactive = 0,
+}
+
+export interface AdminUser {
+  key: string;
+  username: string;
+  role: number;
+  updateTime: string;
+  status: number;
 }
 
 export const getAdminRoleText = (role: number) => {
@@ -51,8 +59,8 @@ export interface AdminStore {
   adminList: AdminUser[];
   loading: boolean;
   total: number;
-  fetchAdminList: (page?: number, pageSize?: number, search?: string) => Promise<void>;
-  fetchUserList: (page?: number, pageSize?: number, search?: string) => Promise<void>;
+  fetchAdminList: (page?: number, pageSize?: number, search?: string) => Promise<{ total: number }>;
+  fetchUserList: (page?: number, pageSize?: number, search?: string) => Promise<{ total: number }>;
   createNewAdmin: (username: string, password: string, role: string) => Promise<void>;
   removeAdmin: (id: string, type: string) => Promise<void>;
   resetPassword: (id: string, password: string) => Promise<void>;
@@ -67,11 +75,12 @@ export const useAdminStore = create<AdminStore>((set) => ({
     set({ loading: true });
     try {
       const response = await getAdminList(page, pageSize, search);
-      console.log('response', response);
       set({ adminList: response.data, total: response.total || 0 });
+      return { total: response.total || 0 };
     } catch (error) {
       console.error('获取管理员列表失败:', error);
       message.error('获取管理员列表失败');
+      return { total: 0 };
     } finally {
       set({ loading: false });
     }
@@ -80,11 +89,12 @@ export const useAdminStore = create<AdminStore>((set) => ({
     set({ loading: true });
     try {
       const response = await getUserList(page, pageSize, search);
-      console.log('response', response);
       set({ adminList: response.data, total: response.total || 0 });
+      return { total: response.total || 0 };
     } catch (error) {
       console.error('获取用户列表失败:', error);
       message.error('获取用户列表失败');
+      return { total: 0 };
     } finally {
       set({ loading: false });
     }

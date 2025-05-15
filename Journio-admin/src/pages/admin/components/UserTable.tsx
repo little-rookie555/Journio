@@ -5,7 +5,7 @@ import {
   getAdminStatusText,
   useAdminStore,
 } from '@/store/admin';
-import { AdminUser } from '@/api/admin';
+import { AdminUser } from '@/store/admin';
 import { Button, Modal, Popconfirm, Space, Table, Tag, Spin, Input, Form, Select } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useEffect, useState } from 'react';
@@ -40,7 +40,13 @@ const UserManagement: React.FC<UserManagementProps> = ({ type }) => {
   const modalTitle = isAdmin ? '新增管理员' : '新增用户';
 
   useEffect(() => {
-    fetchList(pagination.current, pagination.pageSize, searchText);
+    const fetchData = async () => {
+      const response = await fetchList(pagination.current, pagination.pageSize, searchText);
+      if (response?.total) {
+        setPagination((prev) => ({ ...prev, total: response.total }));
+      }
+    };
+    fetchData();
   }, [fetchList, pagination.current, pagination.pageSize, searchText]);
 
   const handleCreate = async (values: any) => {
@@ -142,6 +148,11 @@ const UserManagement: React.FC<UserManagementProps> = ({ type }) => {
             setSearchText(value);
             setPagination((prev) => ({ ...prev, current: 1 }));
           }}
+          onChange={(e) => {
+            const value = e.target.value;
+            setSearchText(value);
+            setPagination((prev) => ({ ...prev, current: 1 }));
+          }}
           style={{ width: 200, marginBottom: 16 }}
         />
       </div>
@@ -153,7 +164,6 @@ const UserManagement: React.FC<UserManagementProps> = ({ type }) => {
           pagination={{
             ...pagination,
             showSizeChanger: true,
-            showQuickJumper: true,
             showTotal: (total) => `共 ${total} 条记录`,
             onChange: (page, pageSize) => {
               setPagination((prev) => ({

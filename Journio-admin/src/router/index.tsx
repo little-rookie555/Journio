@@ -1,6 +1,5 @@
 import AuthRoute from '@/components/AuthRoute';
 import MainLayout from '@/pages/Layout';
-import AuditList from '@/pages/audit';
 import AdminList from '@/pages/admin/admins';
 import UserList from '@/pages/admin/users';
 import Login from '@/pages/login';
@@ -36,14 +35,6 @@ export const router = createBrowserRouter([
         element: (
           <AuthRoute>
             <StatisticPage />
-          </AuthRoute>
-        ),
-      },
-      {
-        path: 'audit',
-        element: (
-          <AuthRoute>
-            <AuditList />
           </AuthRoute>
         ),
       },
