@@ -3,7 +3,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const config = require('../config/config');
 const db = require('../config/db');
-const { Op } = require('sequelize'); // 添加 Op 导入
+const { Op } = require('sequelize');
+const { stripHtml } = require('../utils/utils');
 
 // 登录
 exports.loginAdmin = async (req, res) => {
@@ -115,7 +116,7 @@ exports.getTripByStatus = async (req, res) => {
       image: trip.images,
       createTime: trip.create_time,
       updateTime: trip.update_time,
-      content: trip.content,
+      content: stripHtml(trip.content, 200), // 使用 stripHtml 处理内容，并限制长度为200
       rejectReason: trip.reviewRecords.length > 0 ? trip.reviewRecords[0].reason : '',
     }));
 
@@ -172,7 +173,7 @@ exports.getTripList = async (req, res) => {
       status: trip.status,
       createTime: trip.create_time,
       updateTime: trip.update_time,
-      content: trip.content,
+      content: stripHtml(trip.content, 200), // 使用 stripHtml 处理内容，并限制长度为200
     }));
 
     res.status(200).json({
@@ -211,7 +212,7 @@ exports.getTripDetail = async (req, res) => {
           status: trip.status,
           images: trip.images,
           createTime: trip.create_time,
-          content: trip.content,
+          content: stripHtml(trip.content), // 详情页面不限制长度，但仍需要清理HTML标签
         },
       });
     } else {
